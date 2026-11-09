@@ -1,0 +1,1279 @@
+{
+  "car": "rb16b",
+  "source": "/Users/louis/Suep/Project/AERO/assets/source/rb16b/source/Redbull rb16b/red_bull_rb16b.fbx",
+  "working_copy": "/Users/louis/Suep/Project/AERO/assets/working/rb16b/rb16b.blend",
+  "blender_version": "5.2.3 LTS",
+  "mesh_objects": 315,
+  "vertices": 197076,
+  "polygons_before_modifiers": 256249,
+  "bounds_in_blender_units": [
+    0.020436285063624382,
+    0.05514067783951759,
+    0.011678637936711311
+  ],
+  "unit_system": "METRIC",
+  "unit_scale": 1.0,
+  "geometry_modified": false,
+  "objects": [
+    {
+      "name": "x0_tyre_bl_SUB1",
+      "polygons": 3360
+    },
+    {
+      "name": "x0_tyre_bl_SUB0",
+      "polygons": 1560
+    },
+    {
+      "name": "disc_bl_SUB1",
+      "polygons": 80
+    },
+    {
+      "name": "disc_bl_SUB0",
+      "polygons": 288
+    },
+    {
+      "name": "wheel_bl",
+      "polygons": 5596
+    },
+    {
+      "name": "RIM_BLUR_LR_SUB1",
+      "polygons": 144
+    },
+    {
+      "name": "RIM_BLUR_LR_SUB0",
+      "polygons": 1658
+    },
+    {
+      "name": "DISK_LR",
+      "polygons": 322
+    },
+    {
+      "name": "hub_caliper_bl_SUB0",
+      "polygons": 2553
+    },
+    {
+      "name": "hub_caliper_bl_SUB1",
+      "polygons": 108
+    },
+    {
+      "name": "DISK_RR",
+      "polygons": 322
+    },
+    {
+      "name": "x0_tyre_br_SUB1",
+      "polygons": 3360
+    },
+    {
+      "name": "x0_tyre_br_SUB0",
+      "polygons": 1560
+    },
+    {
+      "name": "disc_br_SUB1",
+      "polygons": 80
+    },
+    {
+      "name": "disc_br_SUB0",
+      "polygons": 288
+    },
+    {
+      "name": "wheel_br",
+      "polygons": 5596
+    },
+    {
+      "name": "RIM_BLUR_RR_SUB1",
+      "polygons": 144
+    },
+    {
+      "name": "RIM_BLUR_RR_SUB0",
+      "polygons": 1658
+    },
+    {
+      "name": "hub_caliper_br_SUB0",
+      "polygons": 2553
+    },
+    {
+      "name": "hub_caliper_br_SUB1",
+      "polygons": 108
+    },
+    {
+      "name": "DISK_RF",
+      "polygons": 360
+    },
+    {
+      "name": "x0_tyre_fr_SUB1",
+      "polygons": 3360
+    },
+    {
+      "name": "x0_tyre_fr_SUB0",
+      "polygons": 1980
+    },
+    {
+      "name": "disc_fr_SUB1",
+      "polygons": 80
+    },
+    {
+      "name": "disc_fr_SUB0",
+      "polygons": 288
+    },
+    {
+      "name": "wheel_fr",
+      "polygons": 5559
+    },
+    {
+      "name": "RIM_BLUR_RF_SUB1",
+      "polygons": 72
+    },
+    {
+      "name": "RIM_BLUR_RF_SUB0",
+      "polygons": 1561
+    },
+    {
+      "name": "hub_caliper_fr_SUB0",
+      "polygons": 1754
+    },
+    {
+      "name": "hub_caliper_fr_SUB1",
+      "polygons": 113
+    },
+    {
+      "name": "DISK_LF",
+      "polygons": 360
+    },
+    {
+      "name": "x0_tyre_fl_SUB1",
+      "polygons": 3360
+    },
+    {
+      "name": "x0_tyre_fl_SUB0",
+      "polygons": 1980
+    },
+    {
+      "name": "wheel_fl",
+      "polygons": 5559
+    },
+    {
+      "name": "disc_fl_SUB1",
+      "polygons": 80
+    },
+    {
+      "name": "disc_fl_SUB0",
+      "polygons": 288
+    },
+    {
+      "name": "RIM_BLUR_LF_SUB1",
+      "polygons": 72
+    },
+    {
+      "name": "RIM_BLUR_LF_SUB0",
+      "polygons": 1561
+    },
+    {
+      "name": "hub_caliper_fl_SUB0",
+      "polygons": 1754
+    },
+    {
+      "name": "hub_caliper_fl_SUB1",
+      "polygons": 113
+    },
+    {
+      "name": "rearwingmoving_top_2_SUB1",
+      "polygons": 62
+    },
+    {
+      "name": "rearwingmoving_top_2_SUB0",
+      "polygons": 16
+    },
+    {
+      "name": "rearwingmoving_top_SUB3",
+      "polygons": 1008
+    },
+    {
+      "name": "rearwingmoving_top_SUB2",
+      "polygons": 498
+    },
+    {
+      "name": "rearwingmoving_top_SUB1",
+      "polygons": 152
+    },
+    {
+      "name": "rearwingmoving_top_SUB0",
+      "polygons": 16
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_337_001",
+      "polygons": 392
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_338_001",
+      "polygons": 414
+    },
+    {
+      "name": "CINTURE_OFF_SUB2",
+      "polygons": 786
+    },
+    {
+      "name": "CINTURE_OFF_SUB3",
+      "polygons": 912
+    },
+    {
+      "name": "CINTURE_OFF_SUB4",
+      "polygons": 104
+    },
+    {
+      "name": "CINTURE_OFF_SUB5",
+      "polygons": 328
+    },
+    {
+      "name": "CINTURE_OFF_SUB0",
+      "polygons": 10088
+    },
+    {
+      "name": "CINTURE_OFF_SUB1",
+      "polygons": 1720
+    },
+    {
+      "name": "CINTURE_ON_SUB1",
+      "polygons": 2322
+    },
+    {
+      "name": "CINTURE_ON_SUB0",
+      "polygons": 952
+    },
+    {
+      "name": "suspension_steeringarm_fr",
+      "polygons": 360
+    },
+    {
+      "name": "suspension3_fr",
+      "polygons": 674
+    },
+    {
+      "name": "suspension2_fr",
+      "polygons": 866
+    },
+    {
+      "name": "tether_fr",
+      "polygons": 10
+    },
+    {
+      "name": "suspension_fr",
+      "polygons": 204
+    },
+    {
+      "name": "suspension_steeringarm_fl",
+      "polygons": 360
+    },
+    {
+      "name": "suspension2_fl",
+      "polygons": 866
+    },
+    {
+      "name": "suspension3_fl",
+      "polygons": 674
+    },
+    {
+      "name": "tether_fl",
+      "polygons": 10
+    },
+    {
+      "name": "suspension_fl",
+      "polygons": 204
+    },
+    {
+      "name": "suspension3_bl_SUB1",
+      "polygons": 66
+    },
+    {
+      "name": "suspension3_bl_SUB0",
+      "polygons": 115
+    },
+    {
+      "name": "suspension_bl_SUB1",
+      "polygons": 330
+    },
+    {
+      "name": "suspension_bl_SUB0",
+      "polygons": 504
+    },
+    {
+      "name": "tether_bl",
+      "polygons": 10
+    },
+    {
+      "name": "suspension2_bl",
+      "polygons": 1054
+    },
+    {
+      "name": "suspension3_br_SUB1",
+      "polygons": 66
+    },
+    {
+      "name": "suspension3_br_SUB0",
+      "polygons": 115
+    },
+    {
+      "name": "suspension_br_SUB1",
+      "polygons": 330
+    },
+    {
+      "name": "suspension_br_SUB0",
+      "polygons": 504
+    },
+    {
+      "name": "suspension2_br",
+      "polygons": 1054
+    },
+    {
+      "name": "tether_br",
+      "polygons": 10
+    },
+    {
+      "name": "TAG_3_002",
+      "polygons": 14
+    },
+    {
+      "name": "TAG_DRS_PRE_002",
+      "polygons": 56
+    },
+    {
+      "name": "LED_Blue_001_002",
+      "polygons": 28
+    },
+    {
+      "name": "LED_Yellow_001_002",
+      "polygons": 28
+    },
+    {
+      "name": "LED_Red_001_002",
+      "polygons": 28
+    },
+    {
+      "name": "LED_KERS_0_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_1_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_3_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_4_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_5_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_6_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_7_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_8_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_9_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_10_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_11_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_12_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_13_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_14_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_15_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_16_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_17_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_18_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "LED_KERS_19_001_002",
+      "polygons": 2
+    },
+    {
+      "name": "TAG_2_002",
+      "polygons": 14
+    },
+    {
+      "name": "TAG_4_002",
+      "polygons": 14
+    },
+    {
+      "name": "TAG_10_002",
+      "polygons": 70
+    },
+    {
+      "name": "TAG_DRS_002",
+      "polygons": 56
+    },
+    {
+      "name": "TAG_UNUSED_002",
+      "polygons": 14
+    },
+    {
+      "name": "TAG_0_002",
+      "polygons": 14
+    },
+    {
+      "name": "TAG_1_002",
+      "polygons": 14
+    },
+    {
+      "name": "drs2_003",
+      "polygons": 48
+    },
+    {
+      "name": "LCD_002",
+      "polygons": 2
+    },
+    {
+      "name": "steering_wheel_SUB0_002",
+      "polygons": 11109
+    },
+    {
+      "name": "steering_wheel_SUB2_002",
+      "polygons": 3046
+    },
+    {
+      "name": "sw_decals_002",
+      "polygons": 1060
+    },
+    {
+      "name": "steering_wheel_SUB4_002",
+      "polygons": 8
+    },
+    {
+      "name": "driver_number_002",
+      "polygons": 39
+    },
+    {
+      "name": "drs_003",
+      "polygons": 48
+    },
+    {
+      "name": "drs2_001_001_002",
+      "polygons": 48
+    },
+    {
+      "name": "drs_001_001_002",
+      "polygons": 48
+    },
+    {
+      "name": "sidepod_fr_SUB3",
+      "polygons": 81
+    },
+    {
+      "name": "sidepod_fr_SUB2",
+      "polygons": 3142
+    },
+    {
+      "name": "sidepod_fr_SUB1",
+      "polygons": 1469
+    },
+    {
+      "name": "sidepod_fr_SUB0",
+      "polygons": 155
+    },
+    {
+      "name": "frontflap_fr_004",
+      "polygons": 1989
+    },
+    {
+      "name": "frontflap_fl_004",
+      "polygons": 1999
+    },
+    {
+      "name": "rearwing_top_SUB2",
+      "polygons": 832
+    },
+    {
+      "name": "rearwing_top_SUB1",
+      "polygons": 650
+    },
+    {
+      "name": "rearwing_top_SUB0",
+      "polygons": 130
+    },
+    {
+      "name": "rearwing_br_SUB2",
+      "polygons": 4
+    },
+    {
+      "name": "rearwing_br_SUB1",
+      "polygons": 1601
+    },
+    {
+      "name": "rearwing_br_SUB0",
+      "polygons": 2758
+    },
+    {
+      "name": "bargeboard_fr_004",
+      "polygons": 9027
+    },
+    {
+      "name": "topcanopy_bm_SUB3",
+      "polygons": 144
+    },
+    {
+      "name": "topcanopy_bm_SUB2",
+      "polygons": 1616
+    },
+    {
+      "name": "topcanopy_bm_SUB1",
+      "polygons": 36
+    },
+    {
+      "name": "topcanopy_bm_SUB0",
+      "polygons": 30
+    },
+    {
+      "name": "sidewing_fr_SUB1",
+      "polygons": 1706
+    },
+    {
+      "name": "sidewing_fr_SUB0",
+      "polygons": 855
+    },
+    {
+      "name": "wing_mirror_r_SUB2",
+      "polygons": 20
+    },
+    {
+      "name": "wing_mirror_r_SUB1",
+      "polygons": 1446
+    },
+    {
+      "name": "wing_mirror_r_SUB0",
+      "polygons": 292
+    },
+    {
+      "name": "frontwing_fr_01_004",
+      "polygons": 876
+    },
+    {
+      "name": "sidepod_fl_SUB3",
+      "polygons": 81
+    },
+    {
+      "name": "sidepod_fl_SUB2",
+      "polygons": 3146
+    },
+    {
+      "name": "sidepod_fl_SUB1",
+      "polygons": 1469
+    },
+    {
+      "name": "sidepod_fl_SUB0",
+      "polygons": 155
+    },
+    {
+      "name": "driver_surroun_004",
+      "polygons": 4294
+    },
+    {
+      "name": "rearwing_bl_SUB2",
+      "polygons": 4
+    },
+    {
+      "name": "rearwing_bl_SUB1",
+      "polygons": 1601
+    },
+    {
+      "name": "rearwing_bl_SUB0",
+      "polygons": 2756
+    },
+    {
+      "name": "bargeboard_fl_004",
+      "polygons": 9027
+    },
+    {
+      "name": "sidewing_fl_SUB1",
+      "polygons": 1707
+    },
+    {
+      "name": "sidewing_fl_SUB0",
+      "polygons": 855
+    },
+    {
+      "name": "wing_mirror_l_SUB2",
+      "polygons": 20
+    },
+    {
+      "name": "wing_mirror_l_SUB1",
+      "polygons": 1446
+    },
+    {
+      "name": "wing_mirror_l_SUB0",
+      "polygons": 292
+    },
+    {
+      "name": "frontwing_fl_01_004",
+      "polygons": 876
+    },
+    {
+      "name": "frontspoiler_fm_004",
+      "polygons": 3810
+    },
+    {
+      "name": "cockpit_SUB1",
+      "polygons": 10
+    },
+    {
+      "name": "cockpit_SUB0",
+      "polygons": 3158
+    },
+    {
+      "name": "windscreen_SUB1",
+      "polygons": 828
+    },
+    {
+      "name": "windscreen_SUB0",
+      "polygons": 16
+    },
+    {
+      "name": "diffuser_bm_SUB2",
+      "polygons": 144
+    },
+    {
+      "name": "diffuser_bm_SUB1",
+      "polygons": 4344
+    },
+    {
+      "name": "diffuser_bm_SUB0",
+      "polygons": 218
+    },
+    {
+      "name": "camera_wing_SUB2",
+      "polygons": 662
+    },
+    {
+      "name": "camera_wing_SUB1",
+      "polygons": 12
+    },
+    {
+      "name": "camera_wing_SUB0",
+      "polygons": 50
+    },
+    {
+      "name": "nosecone_SUB3",
+      "polygons": 2536
+    },
+    {
+      "name": "nosecone_SUB2",
+      "polygons": 4632
+    },
+    {
+      "name": "nosecone_SUB1",
+      "polygons": 64
+    },
+    {
+      "name": "nosecone_SUB0",
+      "polygons": 56
+    },
+    {
+      "name": "safetycell_SUB5",
+      "polygons": 58
+    },
+    {
+      "name": "safetycell_SUB4",
+      "polygons": 74
+    },
+    {
+      "name": "safetycell_SUB3",
+      "polygons": 31815
+    },
+    {
+      "name": "safetycell_SUB1",
+      "polygons": 1442
+    },
+    {
+      "name": "safetycell_SUB0",
+      "polygons": 8801
+    },
+    {
+      "name": "safetycell_SUB4_001_001",
+      "polygons": 17
+    },
+    {
+      "name": "safetycell_SUB4_002_001",
+      "polygons": 306
+    },
+    {
+      "name": "safetycell_SUB4_003_001",
+      "polygons": 17
+    },
+    {
+      "name": "safetycell_SUB4_004_001",
+      "polygons": 306
+    },
+    {
+      "name": "safetycell_SUB2_001_001",
+      "polygons": 13175
+    },
+    {
+      "name": "safetycell_SUB2_002_001",
+      "polygons": 156
+    },
+    {
+      "name": "safetycell_SUB3_001_001",
+      "polygons": 40
+    },
+    {
+      "name": "hal_SUB1",
+      "polygons": 732
+    },
+    {
+      "name": "hal_SUB0",
+      "polygons": 24
+    },
+    {
+      "name": "floor_damage_r_004",
+      "polygons": 2
+    },
+    {
+      "name": "floor_damage_l_004",
+      "polygons": 2
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_004_001",
+      "polygons": 167
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_005_001",
+      "polygons": 29
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_072_001",
+      "polygons": 192
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_073_001",
+      "polygons": 70
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_086_001",
+      "polygons": 118
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_109_001",
+      "polygons": 32
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_110_001",
+      "polygons": 77
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_111_001",
+      "polygons": 4
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_237_001",
+      "polygons": 38
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_264_001",
+      "polygons": 12
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_320_001",
+      "polygons": 33
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_321_001",
+      "polygons": 182
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_322_001",
+      "polygons": 6
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_323_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_324_001",
+      "polygons": 24
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_325_001",
+      "polygons": 35
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_326_001",
+      "polygons": 12
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_327_001",
+      "polygons": 38
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_328_001",
+      "polygons": 52
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_331_001",
+      "polygons": 24
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_332_001",
+      "polygons": 35
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_333_001",
+      "polygons": 12
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_334_001",
+      "polygons": 39
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_336_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_339_001",
+      "polygons": 2
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_340_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_341_001",
+      "polygons": 3
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_342_001",
+      "polygons": 192
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_343_001",
+      "polygons": 68
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_344_001",
+      "polygons": 6
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_345_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_346_001",
+      "polygons": 5
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_347_001",
+      "polygons": 7
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_348_001",
+      "polygons": 6
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_349_001",
+      "polygons": 12
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_360_001",
+      "polygons": 42
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_361_001",
+      "polygons": 10
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_362_001",
+      "polygons": 2
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_363_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_364_001",
+      "polygons": 15
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_365_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_366_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_367_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_368_001",
+      "polygons": 2
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_369_001",
+      "polygons": 13
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_370_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_371_001",
+      "polygons": 2
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_372_001",
+      "polygons": 6
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_373_001",
+      "polygons": 2
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_374_001",
+      "polygons": 25
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_375_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_376_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_377_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_378_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_379_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_382_001",
+      "polygons": 32
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_383_001",
+      "polygons": 89
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_384_001",
+      "polygons": 4
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_414_001",
+      "polygons": 38
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_422_001",
+      "polygons": 10
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_423_001",
+      "polygons": 18
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_424_001",
+      "polygons": 10
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_425_001",
+      "polygons": 52
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_427_001",
+      "polygons": 42
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_516_001",
+      "polygons": 24
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_517_001",
+      "polygons": 60
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_518_001",
+      "polygons": 4
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_519_001",
+      "polygons": 3
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_520_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_521_001",
+      "polygons": 117
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_530_001",
+      "polygons": 8
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_534_001",
+      "polygons": 1360
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_535_001",
+      "polygons": 768
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_536_001",
+      "polygons": 8
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_537_001",
+      "polygons": 912
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_538_001",
+      "polygons": 896
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_539_001",
+      "polygons": 38
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_540_001",
+      "polygons": 960
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_542_001",
+      "polygons": 109
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_543_001",
+      "polygons": 125
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_544_001",
+      "polygons": 63
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_545_001",
+      "polygons": 44
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_546_001",
+      "polygons": 30
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_547_001",
+      "polygons": 12
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_548_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_549_001",
+      "polygons": 18
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_550_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_551_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_552_001",
+      "polygons": 22
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_553_001",
+      "polygons": 26
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_554_001",
+      "polygons": 26
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_555_001",
+      "polygons": 1360
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_556_001",
+      "polygons": 768
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_557_001",
+      "polygons": 8
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_558_001",
+      "polygons": 912
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_559_001",
+      "polygons": 832
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_560_001",
+      "polygons": 38
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_561_001",
+      "polygons": 1280
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_563_001",
+      "polygons": 110
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_564_001",
+      "polygons": 118
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_565_001",
+      "polygons": 36
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_566_001",
+      "polygons": 8
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_567_001",
+      "polygons": 4
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_568_001",
+      "polygons": 19
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_569_001",
+      "polygons": 3
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_570_001",
+      "polygons": 28
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_571_001",
+      "polygons": 25
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_572_001",
+      "polygons": 25
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_573_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_574_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_575_001",
+      "polygons": 8
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_576_001",
+      "polygons": 106
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_577_001",
+      "polygons": 16
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_578_001",
+      "polygons": 89
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_579_001",
+      "polygons": 116
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_580_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_581_001",
+      "polygons": 18
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_582_001",
+      "polygons": 89
+    },
+    {
+      "name": "21_redbull_2_psd _SUB2_308_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB2_398_001",
+      "polygons": 1
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_001_001",
+      "polygons": 118
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_002_001",
+      "polygons": 18
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_003_001",
+      "polygons": 10
+    },
+    {
+      "name": "21_redbull_2_psd_009_001",
+      "polygons": 153
+    },
+    {
+      "name": "21_redbull_2_psd_001_001",
+      "polygons": 612
+    },
+    {
+      "name": "21_redbull_2_psd_003_001",
+      "polygons": 17
+    },
+    {
+      "name": "21_redbull_2_psd_005_001",
+      "polygons": 17
+    }
+  ]
+}

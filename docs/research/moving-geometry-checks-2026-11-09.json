@@ -1,0 +1,146 @@
+[
+  {
+    "car": "rb16b",
+    "wheels": {
+      "FL": {
+        "maxGeometricAxisDriftDegrees": 0.0000014787793334710982,
+        "samples": 25
+      },
+      "FR": {
+        "maxGeometricAxisDriftDegrees": 0.00007985864801076486,
+        "samples": 25
+      },
+      "RL": {
+        "maxGeometricAxisDriftDegrees": 0.00010445389338583826,
+        "samples": 25
+      },
+      "RR": {
+        "maxGeometricAxisDriftDegrees": 0.00010313359479036513,
+        "samples": 25
+      }
+    },
+    "fixedWing": [
+      {
+        "name": "rearwing_top_SUB2",
+        "maxVertexMovement": 0
+      },
+      {
+        "name": "rearwing_top_SUB1",
+        "maxVertexMovement": 0
+      },
+      {
+        "name": "rearwing_br_SUB2",
+        "maxVertexMovement": 0
+      },
+      {
+        "name": "rearwing_br_SUB1",
+        "maxVertexMovement": 0
+      },
+      {
+        "name": "rearwing_br_SUB0",
+        "maxVertexMovement": 0
+      },
+      {
+        "name": "rearwing_bl_SUB2",
+        "maxVertexMovement": 0
+      },
+      {
+        "name": "rearwing_bl_SUB1",
+        "maxVertexMovement": 0
+      },
+      {
+        "name": "rearwing_bl_SUB0",
+        "maxVertexMovement": 0
+      }
+    ],
+    "flapDecals": [
+      {
+        "name": "21_redbull_2_psd _SUB1_337_001",
+        "maxMovement": 0.09920047808642131
+      },
+      {
+        "name": "21_redbull_2_psd _SUB1_338_001",
+        "maxMovement": 0.0983572049663209
+      },
+      {
+        "name": "21_redbull_2_psd _SUB1_339_001",
+        "maxMovement": 0.0936835824267235
+      },
+      {
+        "name": "21_redbull_2_psd _SUB1_340_001",
+        "maxMovement": 0.0936835824267235
+      },
+      {
+        "name": "21_redbull_2_psd _SUB1_341_001",
+        "maxMovement": 0.0936835824267235
+      }
+    ],
+    "revision": "2026-11-09-continuity1",
+    "brakeDiscs": [
+      {
+        "name": "DISK_LF",
+        "attachedTo": "SPIN_FL",
+        "materials": [
+          "RB16B_CarbonDisc_Outer"
+        ]
+      },
+      {
+        "name": "DISK_RF",
+        "attachedTo": "SPIN_FR",
+        "materials": [
+          "RB16B_CarbonDisc_Outer"
+        ]
+      },
+      {
+        "name": "DISK_LR",
+        "attachedTo": "SPIN_RL",
+        "materials": [
+          "RB16B_CarbonDisc_Outer"
+        ]
+      },
+      {
+        "name": "DISK_RR",
+        "attachedTo": "SPIN_RR",
+        "materials": [
+          "RB16B_CarbonDisc_Outer"
+        ]
+      }
+    ]
+  },
+  {
+    "car": "rb19",
+    "wheels": {},
+    "fixedWing": [
+      {
+        "name": "RB19_Part_9016",
+        "maxVertexMovement": 0
+      },
+      {
+        "name": "DRS_Fixed_Mainplane_Lip",
+        "maxVertexMovement": 0
+      },
+      {
+        "name": "RB19_Part_8352",
+        "maxVertexMovement": 0
+      },
+      {
+        "name": "RB19_Part_9060",
+        "maxVertexMovement": 0
+      }
+    ],
+    "flapDecals": [],
+    "revision": "2026-11-09-continuity1",
+    "flapConnectedSheets": [
+      {
+        "name": "DRS_Flap_Surface",
+        "count": 1
+      }
+    ],
+    "fixedMainplaneLip": {
+      "name": "DRS_Fixed_Mainplane_Lip",
+      "maxVertexMovement": 0,
+      "samples": 21
+    },
+    "flapMaxAbsX": 0.5350000262260437
+  }
+]

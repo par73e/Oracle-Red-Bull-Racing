@@ -1,0 +1,5152 @@
+{
+  "car": "rb16b",
+  "source": "assets/working/rb16b/rb16b.blend",
+  "source_dimensions_in_blender_units": [
+    0.020436285063624382,
+    0.05514067783951759,
+    0.011678637936711311
+  ],
+  "source_unit_scale": 1.0,
+  "source_unit_system": "METRIC",
+  "mesh_objects": 315,
+  "objects": [
+    {
+      "name": "x0_tyre_bl_SUB1",
+      "vertices": 2057,
+      "base_polygons": 3360,
+      "evaluated_triangles": 3360,
+      "boundary_edges": 748,
+      "nonmanifold_edges": 748,
+      "parent": "x0_tyre_bl",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "x0_tyre_bl_SUB0",
+      "vertices": 960,
+      "base_polygons": 1560,
+      "evaluated_triangles": 1560,
+      "boundary_edges": 360,
+      "nonmanifold_edges": 360,
+      "parent": "x0_tyre_bl",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "disc_bl_SUB1",
+      "vertices": 60,
+      "base_polygons": 80,
+      "evaluated_triangles": 80,
+      "boundary_edges": 36,
+      "nonmanifold_edges": 36,
+      "parent": "disc_bl",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "disc_bl_SUB0",
+      "vertices": 210,
+      "base_polygons": 288,
+      "evaluated_triangles": 288,
+      "boundary_edges": 120,
+      "nonmanifold_edges": 120,
+      "parent": "disc_bl",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "wheel_bl",
+      "vertices": 4311,
+      "base_polygons": 5596,
+      "evaluated_triangles": 5596,
+      "boundary_edges": 2708,
+      "nonmanifold_edges": 2708,
+      "parent": "TYRE_LR",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "RIM_BLUR_LR_SUB1",
+      "vertices": 90,
+      "base_polygons": 144,
+      "evaluated_triangles": 144,
+      "boundary_edges": 36,
+      "nonmanifold_edges": 36,
+      "parent": "RIM_BLUR_LR",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "RIM_BLUR_LR_SUB0",
+      "vertices": 1301,
+      "base_polygons": 1658,
+      "evaluated_triangles": 1658,
+      "boundary_edges": 906,
+      "nonmanifold_edges": 906,
+      "parent": "RIM_BLUR_LR",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "DISK_LR",
+      "vertices": 391,
+      "base_polygons": 322,
+      "evaluated_triangles": 322,
+      "boundary_edges": 390,
+      "nonmanifold_edges": 390,
+      "parent": "WHEEL_LR",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "hub_caliper_bl_SUB0",
+      "vertices": 1840,
+      "base_polygons": 2553,
+      "evaluated_triangles": 2553,
+      "boundary_edges": 1009,
+      "nonmanifold_edges": 1009,
+      "parent": "hub_caliper_bl",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "hub_caliper_bl_SUB1",
+      "vertices": 103,
+      "base_polygons": 108,
+      "evaluated_triangles": 108,
+      "boundary_edges": 90,
+      "nonmanifold_edges": 90,
+      "parent": "hub_caliper_bl",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "DISK_RR",
+      "vertices": 391,
+      "base_polygons": 322,
+      "evaluated_triangles": 322,
+      "boundary_edges": 390,
+      "nonmanifold_edges": 390,
+      "parent": "WHEEL_RR",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "x0_tyre_br_SUB1",
+      "vertices": 2057,
+      "base_polygons": 3360,
+      "evaluated_triangles": 3360,
+      "boundary_edges": 748,
+      "nonmanifold_edges": 748,
+      "parent": "x0_tyre_br",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "x0_tyre_br_SUB0",
+      "vertices": 960,
+      "base_polygons": 1560,
+      "evaluated_triangles": 1560,
+      "boundary_edges": 360,
+      "nonmanifold_edges": 360,
+      "parent": "x0_tyre_br",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "disc_br_SUB1",
+      "vertices": 60,
+      "base_polygons": 80,
+      "evaluated_triangles": 80,
+      "boundary_edges": 36,
+      "nonmanifold_edges": 36,
+      "parent": "disc_br",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "disc_br_SUB0",
+      "vertices": 210,
+      "base_polygons": 288,
+      "evaluated_triangles": 288,
+      "boundary_edges": 120,
+      "nonmanifold_edges": 120,
+      "parent": "disc_br",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "wheel_br",
+      "vertices": 4305,
+      "base_polygons": 5596,
+      "evaluated_triangles": 5596,
+      "boundary_edges": 2696,
+      "nonmanifold_edges": 2696,
+      "parent": "TYRE_RR",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "RIM_BLUR_RR_SUB1",
+      "vertices": 90,
+      "base_polygons": 144,
+      "evaluated_triangles": 144,
+      "boundary_edges": 36,
+      "nonmanifold_edges": 36,
+      "parent": "RIM_BLUR_RR",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "RIM_BLUR_RR_SUB0",
+      "vertices": 1301,
+      "base_polygons": 1658,
+      "evaluated_triangles": 1658,
+      "boundary_edges": 906,
+      "nonmanifold_edges": 906,
+      "parent": "RIM_BLUR_RR",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "hub_caliper_br_SUB0",
+      "vertices": 1840,
+      "base_polygons": 2553,
+      "evaluated_triangles": 2553,
+      "boundary_edges": 1009,
+      "nonmanifold_edges": 1009,
+      "parent": "hub_caliper_br",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "hub_caliper_br_SUB1",
+      "vertices": 103,
+      "base_polygons": 108,
+      "evaluated_triangles": 108,
+      "boundary_edges": 90,
+      "nonmanifold_edges": 90,
+      "parent": "hub_caliper_br",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "DISK_RF",
+      "vertices": 398,
+      "base_polygons": 360,
+      "evaluated_triangles": 360,
+      "boundary_edges": 396,
+      "nonmanifold_edges": 396,
+      "parent": "WHEEL_RF",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "x0_tyre_fr_SUB1",
+      "vertices": 2057,
+      "base_polygons": 3360,
+      "evaluated_triangles": 3360,
+      "boundary_edges": 748,
+      "nonmanifold_edges": 748,
+      "parent": "x0_tyre_fr",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "x0_tyre_fr_SUB0",
+      "vertices": 1140,
+      "base_polygons": 1980,
+      "evaluated_triangles": 1980,
+      "boundary_edges": 300,
+      "nonmanifold_edges": 300,
+      "parent": "x0_tyre_fr",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "disc_fr_SUB1",
+      "vertices": 60,
+      "base_polygons": 80,
+      "evaluated_triangles": 80,
+      "boundary_edges": 36,
+      "nonmanifold_edges": 36,
+      "parent": "disc_fr",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "disc_fr_SUB0",
+      "vertices": 210,
+      "base_polygons": 288,
+      "evaluated_triangles": 288,
+      "boundary_edges": 120,
+      "nonmanifold_edges": 120,
+      "parent": "disc_fr",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "wheel_fr",
+      "vertices": 4413,
+      "base_polygons": 5559,
+      "evaluated_triangles": 5559,
+      "boundary_edges": 2967,
+      "nonmanifold_edges": 2967,
+      "parent": "TYRE_RF",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "RIM_BLUR_RF_SUB1",
+      "vertices": 72,
+      "base_polygons": 72,
+      "evaluated_triangles": 72,
+      "boundary_edges": 72,
+      "nonmanifold_edges": 72,
+      "parent": "RIM_BLUR_RF",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "RIM_BLUR_RF_SUB0",
+      "vertices": 1236,
+      "base_polygons": 1561,
+      "evaluated_triangles": 1561,
+      "boundary_edges": 871,
+      "nonmanifold_edges": 871,
+      "parent": "RIM_BLUR_RF",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "hub_caliper_fr_SUB0",
+      "vertices": 1147,
+      "base_polygons": 1754,
+      "evaluated_triangles": 1754,
+      "boundary_edges": 496,
+      "nonmanifold_edges": 496,
+      "parent": "hub_caliper_fr",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "hub_caliper_fr_SUB1",
+      "vertices": 109,
+      "base_polygons": 113,
+      "evaluated_triangles": 113,
+      "boundary_edges": 97,
+      "nonmanifold_edges": 97,
+      "parent": "hub_caliper_fr",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "DISK_LF",
+      "vertices": 398,
+      "base_polygons": 360,
+      "evaluated_triangles": 360,
+      "boundary_edges": 396,
+      "nonmanifold_edges": 396,
+      "parent": "WHEEL_LF",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "x0_tyre_fl_SUB1",
+      "vertices": 2057,
+      "base_polygons": 3360,
+      "evaluated_triangles": 3360,
+      "boundary_edges": 748,
+      "nonmanifold_edges": 748,
+      "parent": "x0_tyre_fl",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "x0_tyre_fl_SUB0",
+      "vertices": 1140,
+      "base_polygons": 1980,
+      "evaluated_triangles": 1980,
+      "boundary_edges": 300,
+      "nonmanifold_edges": 300,
+      "parent": "x0_tyre_fl",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "wheel_fl",
+      "vertices": 4402,
+      "base_polygons": 5559,
+      "evaluated_triangles": 5559,
+      "boundary_edges": 2955,
+      "nonmanifold_edges": 2955,
+      "parent": "TYRE_LF",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "disc_fl_SUB1",
+      "vertices": 60,
+      "base_polygons": 80,
+      "evaluated_triangles": 80,
+      "boundary_edges": 36,
+      "nonmanifold_edges": 36,
+      "parent": "disc_fl",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "disc_fl_SUB0",
+      "vertices": 210,
+      "base_polygons": 288,
+      "evaluated_triangles": 288,
+      "boundary_edges": 120,
+      "nonmanifold_edges": 120,
+      "parent": "disc_fl",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "RIM_BLUR_LF_SUB1",
+      "vertices": 72,
+      "base_polygons": 72,
+      "evaluated_triangles": 72,
+      "boundary_edges": 72,
+      "nonmanifold_edges": 72,
+      "parent": "RIM_BLUR_LF",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "RIM_BLUR_LF_SUB0",
+      "vertices": 1236,
+      "base_polygons": 1561,
+      "evaluated_triangles": 1561,
+      "boundary_edges": 871,
+      "nonmanifold_edges": 871,
+      "parent": "RIM_BLUR_LF",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "hub_caliper_fl_SUB0",
+      "vertices": 1147,
+      "base_polygons": 1754,
+      "evaluated_triangles": 1754,
+      "boundary_edges": 496,
+      "nonmanifold_edges": 496,
+      "parent": "hub_caliper_fl",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "hub_caliper_fl_SUB1",
+      "vertices": 109,
+      "base_polygons": 113,
+      "evaluated_triangles": 113,
+      "boundary_edges": 97,
+      "nonmanifold_edges": 97,
+      "parent": "hub_caliper_fl",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "rearwingmoving_top_2_SUB1",
+      "vertices": 92,
+      "base_polygons": 62,
+      "evaluated_triangles": 62,
+      "boundary_edges": 92,
+      "nonmanifold_edges": 92,
+      "parent": "DRS_3",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "rearwingmoving_top_2_SUB0",
+      "vertices": 20,
+      "base_polygons": 16,
+      "evaluated_triangles": 16,
+      "boundary_edges": 20,
+      "nonmanifold_edges": 20,
+      "parent": "DRS_3",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "rearwingmoving_top_SUB3",
+      "vertices": 632,
+      "base_polygons": 1008,
+      "evaluated_triangles": 1008,
+      "boundary_edges": 250,
+      "nonmanifold_edges": 250,
+      "parent": "DRS_1_SUB0",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "rearwingmoving_top_SUB2",
+      "vertices": 472,
+      "base_polygons": 498,
+      "evaluated_triangles": 498,
+      "boundary_edges": 404,
+      "nonmanifold_edges": 404,
+      "parent": "DRS_1_SUB0",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "rearwingmoving_top_SUB1",
+      "vertices": 194,
+      "base_polygons": 152,
+      "evaluated_triangles": 152,
+      "boundary_edges": 194,
+      "nonmanifold_edges": 194,
+      "parent": "DRS_1_SUB0",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "rearwingmoving_top_SUB0",
+      "vertices": 20,
+      "base_polygons": 16,
+      "evaluated_triangles": 16,
+      "boundary_edges": 20,
+      "nonmanifold_edges": 20,
+      "parent": "DRS_1_SUB0",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_337_001",
+      "vertices": 232,
+      "base_polygons": 392,
+      "evaluated_triangles": 392,
+      "boundary_edges": 70,
+      "nonmanifold_edges": 70,
+      "parent": "21_redbull_2_psd _SUB1_337",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_338_001",
+      "vertices": 245,
+      "base_polygons": 414,
+      "evaluated_triangles": 414,
+      "boundary_edges": 74,
+      "nonmanifold_edges": 74,
+      "parent": "21_redbull_2_psd _SUB1_338",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "CINTURE_OFF_SUB2",
+      "vertices": 422,
+      "base_polygons": 786,
+      "evaluated_triangles": 786,
+      "boundary_edges": 56,
+      "nonmanifold_edges": 56,
+      "parent": "CINTURE_OFF",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "CINTURE_OFF_SUB3",
+      "vertices": 1006,
+      "base_polygons": 912,
+      "evaluated_triangles": 912,
+      "boundary_edges": 918,
+      "nonmanifold_edges": 918,
+      "parent": "CINTURE_OFF",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "CINTURE_OFF_SUB4",
+      "vertices": 276,
+      "base_polygons": 104,
+      "evaluated_triangles": 104,
+      "boundary_edges": 276,
+      "nonmanifold_edges": 276,
+      "parent": "CINTURE_OFF",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "CINTURE_OFF_SUB5",
+      "vertices": 336,
+      "base_polygons": 328,
+      "evaluated_triangles": 328,
+      "boundary_edges": 336,
+      "nonmanifold_edges": 336,
+      "parent": "CINTURE_OFF",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "CINTURE_OFF_SUB0",
+      "vertices": 7036,
+      "base_polygons": 10088,
+      "evaluated_triangles": 10088,
+      "boundary_edges": 3748,
+      "nonmanifold_edges": 3748,
+      "parent": "CINTURE_OFF",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "CINTURE_OFF_SUB1",
+      "vertices": 1334,
+      "base_polygons": 1720,
+      "evaluated_triangles": 1720,
+      "boundary_edges": 852,
+      "nonmanifold_edges": 852,
+      "parent": "CINTURE_OFF",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "CINTURE_ON_SUB1",
+      "vertices": 2281,
+      "base_polygons": 2322,
+      "evaluated_triangles": 2322,
+      "boundary_edges": 1958,
+      "nonmanifold_edges": 1958,
+      "parent": "CINTURE_ON",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "CINTURE_ON_SUB0",
+      "vertices": 1154,
+      "base_polygons": 952,
+      "evaluated_triangles": 952,
+      "boundary_edges": 1154,
+      "nonmanifold_edges": 1154,
+      "parent": "CINTURE_ON",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension_steeringarm_fr",
+      "vertices": 244,
+      "base_polygons": 360,
+      "evaluated_triangles": 360,
+      "boundary_edges": 118,
+      "nonmanifold_edges": 118,
+      "parent": "Dummy003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension3_fr",
+      "vertices": 447,
+      "base_polygons": 674,
+      "evaluated_triangles": 674,
+      "boundary_edges": 204,
+      "nonmanifold_edges": 204,
+      "parent": "Dummy003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension2_fr",
+      "vertices": 581,
+      "base_polygons": 866,
+      "evaluated_triangles": 866,
+      "boundary_edges": 280,
+      "nonmanifold_edges": 280,
+      "parent": "Dummy003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "tether_fr",
+      "vertices": 10,
+      "base_polygons": 10,
+      "evaluated_triangles": 10,
+      "boundary_edges": 10,
+      "nonmanifold_edges": 10,
+      "parent": "Dummy003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension_fr",
+      "vertices": 181,
+      "base_polygons": 204,
+      "evaluated_triangles": 204,
+      "boundary_edges": 136,
+      "nonmanifold_edges": 136,
+      "parent": "Dummy003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension_steeringarm_fl",
+      "vertices": 244,
+      "base_polygons": 360,
+      "evaluated_triangles": 360,
+      "boundary_edges": 118,
+      "nonmanifold_edges": 118,
+      "parent": "Dummy004",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension2_fl",
+      "vertices": 581,
+      "base_polygons": 866,
+      "evaluated_triangles": 866,
+      "boundary_edges": 280,
+      "nonmanifold_edges": 280,
+      "parent": "Dummy004",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension3_fl",
+      "vertices": 447,
+      "base_polygons": 674,
+      "evaluated_triangles": 674,
+      "boundary_edges": 204,
+      "nonmanifold_edges": 204,
+      "parent": "Dummy004",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "tether_fl",
+      "vertices": 10,
+      "base_polygons": 10,
+      "evaluated_triangles": 10,
+      "boundary_edges": 10,
+      "nonmanifold_edges": 10,
+      "parent": "Dummy004",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension_fl",
+      "vertices": 181,
+      "base_polygons": 204,
+      "evaluated_triangles": 204,
+      "boundary_edges": 136,
+      "nonmanifold_edges": 136,
+      "parent": "Dummy004",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension3_bl_SUB1",
+      "vertices": 69,
+      "base_polygons": 66,
+      "evaluated_triangles": 66,
+      "boundary_edges": 62,
+      "nonmanifold_edges": 62,
+      "parent": "suspension3_bl",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension3_bl_SUB0",
+      "vertices": 83,
+      "base_polygons": 115,
+      "evaluated_triangles": 115,
+      "boundary_edges": 47,
+      "nonmanifold_edges": 47,
+      "parent": "suspension3_bl",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension_bl_SUB1",
+      "vertices": 258,
+      "base_polygons": 330,
+      "evaluated_triangles": 330,
+      "boundary_edges": 168,
+      "nonmanifold_edges": 168,
+      "parent": "suspension_bl",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension_bl_SUB0",
+      "vertices": 348,
+      "base_polygons": 504,
+      "evaluated_triangles": 504,
+      "boundary_edges": 182,
+      "nonmanifold_edges": 182,
+      "parent": "suspension_bl",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "tether_bl",
+      "vertices": 10,
+      "base_polygons": 10,
+      "evaluated_triangles": 10,
+      "boundary_edges": 10,
+      "nonmanifold_edges": 10,
+      "parent": "Dummy011",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension2_bl",
+      "vertices": 746,
+      "base_polygons": 1054,
+      "evaluated_triangles": 1054,
+      "boundary_edges": 406,
+      "nonmanifold_edges": 406,
+      "parent": "Dummy011",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension3_br_SUB1",
+      "vertices": 69,
+      "base_polygons": 66,
+      "evaluated_triangles": 66,
+      "boundary_edges": 62,
+      "nonmanifold_edges": 62,
+      "parent": "suspension3_br",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension3_br_SUB0",
+      "vertices": 83,
+      "base_polygons": 115,
+      "evaluated_triangles": 115,
+      "boundary_edges": 47,
+      "nonmanifold_edges": 47,
+      "parent": "suspension3_br",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension_br_SUB1",
+      "vertices": 258,
+      "base_polygons": 330,
+      "evaluated_triangles": 330,
+      "boundary_edges": 168,
+      "nonmanifold_edges": 168,
+      "parent": "suspension_br",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension_br_SUB0",
+      "vertices": 348,
+      "base_polygons": 504,
+      "evaluated_triangles": 504,
+      "boundary_edges": 182,
+      "nonmanifold_edges": 182,
+      "parent": "suspension_br",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "suspension2_br",
+      "vertices": 746,
+      "base_polygons": 1054,
+      "evaluated_triangles": 1054,
+      "boundary_edges": 406,
+      "nonmanifold_edges": 406,
+      "parent": "Dummy012",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "tether_br",
+      "vertices": 10,
+      "base_polygons": 10,
+      "evaluated_triangles": 10,
+      "boundary_edges": 10,
+      "nonmanifold_edges": 10,
+      "parent": "Dummy012",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "TAG_3_002",
+      "vertices": 16,
+      "base_polygons": 14,
+      "evaluated_triangles": 14,
+      "boundary_edges": 16,
+      "nonmanifold_edges": 16,
+      "parent": "TAG_3_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "TAG_DRS_PRE_002",
+      "vertices": 64,
+      "base_polygons": 56,
+      "evaluated_triangles": 56,
+      "boundary_edges": 64,
+      "nonmanifold_edges": 64,
+      "parent": "TAG_DRS_PRE_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_Blue_001_002",
+      "vertices": 32,
+      "base_polygons": 28,
+      "evaluated_triangles": 28,
+      "boundary_edges": 32,
+      "nonmanifold_edges": 32,
+      "parent": "LED_Blue_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_Yellow_001_002",
+      "vertices": 32,
+      "base_polygons": 28,
+      "evaluated_triangles": 28,
+      "boundary_edges": 32,
+      "nonmanifold_edges": 32,
+      "parent": "LED_Yellow_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_Red_001_002",
+      "vertices": 32,
+      "base_polygons": 28,
+      "evaluated_triangles": 28,
+      "boundary_edges": 32,
+      "nonmanifold_edges": 32,
+      "parent": "LED_Red_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_0_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_0_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_1_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_1_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_3_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_3_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_4_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_4_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_5_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_5_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_6_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_6_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_7_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_7_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_8_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_8_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_9_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_9_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_10_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_10_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_11_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_11_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_12_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_12_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_13_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_13_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_14_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_14_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_15_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_15_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_16_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_16_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_17_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_17_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_18_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_18_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LED_KERS_19_001_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LED_KERS_19_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "TAG_2_002",
+      "vertices": 16,
+      "base_polygons": 14,
+      "evaluated_triangles": 14,
+      "boundary_edges": 16,
+      "nonmanifold_edges": 16,
+      "parent": "TAG_2_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "TAG_4_002",
+      "vertices": 16,
+      "base_polygons": 14,
+      "evaluated_triangles": 14,
+      "boundary_edges": 16,
+      "nonmanifold_edges": 16,
+      "parent": "TAG_4_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "TAG_10_002",
+      "vertices": 80,
+      "base_polygons": 70,
+      "evaluated_triangles": 70,
+      "boundary_edges": 80,
+      "nonmanifold_edges": 80,
+      "parent": "TAG_10_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "TAG_DRS_002",
+      "vertices": 64,
+      "base_polygons": 56,
+      "evaluated_triangles": 56,
+      "boundary_edges": 64,
+      "nonmanifold_edges": 64,
+      "parent": "TAG_DRS_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "TAG_UNUSED_002",
+      "vertices": 16,
+      "base_polygons": 14,
+      "evaluated_triangles": 14,
+      "boundary_edges": 16,
+      "nonmanifold_edges": 16,
+      "parent": "TAG_UNUSED_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "TAG_0_002",
+      "vertices": 16,
+      "base_polygons": 14,
+      "evaluated_triangles": 14,
+      "boundary_edges": 16,
+      "nonmanifold_edges": 16,
+      "parent": "TAG_0_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "TAG_1_002",
+      "vertices": 16,
+      "base_polygons": 14,
+      "evaluated_triangles": 14,
+      "boundary_edges": 16,
+      "nonmanifold_edges": 16,
+      "parent": "TAG_1_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "drs2_003",
+      "vertices": 33,
+      "base_polygons": 48,
+      "evaluated_triangles": 48,
+      "boundary_edges": 16,
+      "nonmanifold_edges": 16,
+      "parent": "drs2_002",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "LCD_002",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "LCD_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "steering_wheel_SUB0_002",
+      "vertices": 10095,
+      "base_polygons": 11109,
+      "evaluated_triangles": 11109,
+      "boundary_edges": 8299,
+      "nonmanifold_edges": 8299,
+      "parent": "steering_wheel_SUB0_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "steering_wheel_SUB2_002",
+      "vertices": 2029,
+      "base_polygons": 3046,
+      "evaluated_triangles": 3046,
+      "boundary_edges": 996,
+      "nonmanifold_edges": 996,
+      "parent": "steering_wheel_SUB2_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "sw_decals_002",
+      "vertices": 1021,
+      "base_polygons": 1060,
+      "evaluated_triangles": 1060,
+      "boundary_edges": 852,
+      "nonmanifold_edges": 852,
+      "parent": "sw_decals_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "steering_wheel_SUB4_002",
+      "vertices": 10,
+      "base_polygons": 8,
+      "evaluated_triangles": 8,
+      "boundary_edges": 10,
+      "nonmanifold_edges": 10,
+      "parent": "steering_wheel_SUB4_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "driver_number_002",
+      "vertices": 36,
+      "base_polygons": 39,
+      "evaluated_triangles": 39,
+      "boundary_edges": 31,
+      "nonmanifold_edges": 31,
+      "parent": "driver_number_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "drs_003",
+      "vertices": 33,
+      "base_polygons": 48,
+      "evaluated_triangles": 48,
+      "boundary_edges": 16,
+      "nonmanifold_edges": 16,
+      "parent": "drs_002",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "drs2_001_001_002",
+      "vertices": 33,
+      "base_polygons": 48,
+      "evaluated_triangles": 48,
+      "boundary_edges": 16,
+      "nonmanifold_edges": 16,
+      "parent": "drs2_001_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "drs_001_001_002",
+      "vertices": 33,
+      "base_polygons": 48,
+      "evaluated_triangles": 48,
+      "boundary_edges": 16,
+      "nonmanifold_edges": 16,
+      "parent": "drs_001_001_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "sidepod_fr_SUB3",
+      "vertices": 55,
+      "base_polygons": 81,
+      "evaluated_triangles": 81,
+      "boundary_edges": 27,
+      "nonmanifold_edges": 27,
+      "parent": "sidepod_fr_006",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "sidepod_fr_SUB2",
+      "vertices": 1963,
+      "base_polygons": 3142,
+      "evaluated_triangles": 3142,
+      "boundary_edges": 750,
+      "nonmanifold_edges": 750,
+      "parent": "sidepod_fr_006",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "sidepod_fr_SUB1",
+      "vertices": 1025,
+      "base_polygons": 1469,
+      "evaluated_triangles": 1469,
+      "boundary_edges": 565,
+      "nonmanifold_edges": 565,
+      "parent": "sidepod_fr_006",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "sidepod_fr_SUB0",
+      "vertices": 217,
+      "base_polygons": 155,
+      "evaluated_triangles": 155,
+      "boundary_edges": 217,
+      "nonmanifold_edges": 217,
+      "parent": "sidepod_fr_006",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "frontflap_fr_004",
+      "vertices": 1833,
+      "base_polygons": 1989,
+      "evaluated_triangles": 1989,
+      "boundary_edges": 1425,
+      "nonmanifold_edges": 1425,
+      "parent": "frontflap_fr_003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "frontflap_fl_004",
+      "vertices": 1903,
+      "base_polygons": 1999,
+      "evaluated_triangles": 1999,
+      "boundary_edges": 1515,
+      "nonmanifold_edges": 1515,
+      "parent": "frontflap_fl_003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "rearwing_top_SUB2",
+      "vertices": 479,
+      "base_polygons": 832,
+      "evaluated_triangles": 832,
+      "boundary_edges": 126,
+      "nonmanifold_edges": 126,
+      "parent": "rearwing_top_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "rearwing_top_SUB1",
+      "vertices": 574,
+      "base_polygons": 650,
+      "evaluated_triangles": 650,
+      "boundary_edges": 442,
+      "nonmanifold_edges": 442,
+      "parent": "rearwing_top_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "rearwing_top_SUB0",
+      "vertices": 142,
+      "base_polygons": 130,
+      "evaluated_triangles": 130,
+      "boundary_edges": 142,
+      "nonmanifold_edges": 142,
+      "parent": "rearwing_top_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "rearwing_br_SUB2",
+      "vertices": 6,
+      "base_polygons": 4,
+      "evaluated_triangles": 4,
+      "boundary_edges": 6,
+      "nonmanifold_edges": 6,
+      "parent": "rearwing_br_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "rearwing_br_SUB1",
+      "vertices": 1267,
+      "base_polygons": 1601,
+      "evaluated_triangles": 1601,
+      "boundary_edges": 831,
+      "nonmanifold_edges": 831,
+      "parent": "rearwing_br_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "rearwing_br_SUB0",
+      "vertices": 2145,
+      "base_polygons": 2758,
+      "evaluated_triangles": 2758,
+      "boundary_edges": 1398,
+      "nonmanifold_edges": 1398,
+      "parent": "rearwing_br_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "bargeboard_fr_004",
+      "vertices": 8223,
+      "base_polygons": 9027,
+      "evaluated_triangles": 9027,
+      "boundary_edges": 6121,
+      "nonmanifold_edges": 6121,
+      "parent": "bargeboard_fr_003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "topcanopy_bm_SUB3",
+      "vertices": 126,
+      "base_polygons": 144,
+      "evaluated_triangles": 144,
+      "boundary_edges": 96,
+      "nonmanifold_edges": 96,
+      "parent": "topcanopy_bm_006",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "topcanopy_bm_SUB2",
+      "vertices": 1010,
+      "base_polygons": 1616,
+      "evaluated_triangles": 1616,
+      "boundary_edges": 392,
+      "nonmanifold_edges": 392,
+      "parent": "topcanopy_bm_006",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "topcanopy_bm_SUB1",
+      "vertices": 44,
+      "base_polygons": 36,
+      "evaluated_triangles": 36,
+      "boundary_edges": 44,
+      "nonmanifold_edges": 44,
+      "parent": "topcanopy_bm_006",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "topcanopy_bm_SUB0",
+      "vertices": 42,
+      "base_polygons": 30,
+      "evaluated_triangles": 30,
+      "boundary_edges": 42,
+      "nonmanifold_edges": 42,
+      "parent": "topcanopy_bm_006",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "sidewing_fr_SUB1",
+      "vertices": 1733,
+      "base_polygons": 1706,
+      "evaluated_triangles": 1706,
+      "boundary_edges": 1428,
+      "nonmanifold_edges": 1428,
+      "parent": "sidewing_fr_004",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "sidewing_fr_SUB0",
+      "vertices": 690,
+      "base_polygons": 855,
+      "evaluated_triangles": 855,
+      "boundary_edges": 477,
+      "nonmanifold_edges": 477,
+      "parent": "sidewing_fr_004",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "wing_mirror_r_SUB2",
+      "vertices": 24,
+      "base_polygons": 20,
+      "evaluated_triangles": 20,
+      "boundary_edges": 24,
+      "nonmanifold_edges": 24,
+      "parent": "wing_mirror_r_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "wing_mirror_r_SUB1",
+      "vertices": 1376,
+      "base_polygons": 1446,
+      "evaluated_triangles": 1446,
+      "boundary_edges": 1106,
+      "nonmanifold_edges": 1106,
+      "parent": "wing_mirror_r_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "wing_mirror_r_SUB0",
+      "vertices": 197,
+      "base_polygons": 292,
+      "evaluated_triangles": 292,
+      "boundary_edges": 98,
+      "nonmanifold_edges": 98,
+      "parent": "wing_mirror_r_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "frontwing_fr_01_004",
+      "vertices": 891,
+      "base_polygons": 876,
+      "evaluated_triangles": 876,
+      "boundary_edges": 722,
+      "nonmanifold_edges": 722,
+      "parent": "frontwing_fr_01_003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "sidepod_fl_SUB3",
+      "vertices": 55,
+      "base_polygons": 81,
+      "evaluated_triangles": 81,
+      "boundary_edges": 27,
+      "nonmanifold_edges": 27,
+      "parent": "sidepod_fl_006",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "sidepod_fl_SUB2",
+      "vertices": 1953,
+      "base_polygons": 3146,
+      "evaluated_triangles": 3146,
+      "boundary_edges": 734,
+      "nonmanifold_edges": 734,
+      "parent": "sidepod_fl_006",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "sidepod_fl_SUB1",
+      "vertices": 1028,
+      "base_polygons": 1469,
+      "evaluated_triangles": 1469,
+      "boundary_edges": 569,
+      "nonmanifold_edges": 569,
+      "parent": "sidepod_fl_006",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "sidepod_fl_SUB0",
+      "vertices": 217,
+      "base_polygons": 155,
+      "evaluated_triangles": 155,
+      "boundary_edges": 217,
+      "nonmanifold_edges": 217,
+      "parent": "sidepod_fl_006",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "driver_surroun_004",
+      "vertices": 2806,
+      "base_polygons": 4294,
+      "evaluated_triangles": 4294,
+      "boundary_edges": 1254,
+      "nonmanifold_edges": 1254,
+      "parent": "driver_surroun_003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "rearwing_bl_SUB2",
+      "vertices": 6,
+      "base_polygons": 4,
+      "evaluated_triangles": 4,
+      "boundary_edges": 6,
+      "nonmanifold_edges": 6,
+      "parent": "rearwing_bl_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "rearwing_bl_SUB1",
+      "vertices": 1262,
+      "base_polygons": 1601,
+      "evaluated_triangles": 1601,
+      "boundary_edges": 825,
+      "nonmanifold_edges": 825,
+      "parent": "rearwing_bl_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "rearwing_bl_SUB0",
+      "vertices": 2150,
+      "base_polygons": 2756,
+      "evaluated_triangles": 2756,
+      "boundary_edges": 1410,
+      "nonmanifold_edges": 1410,
+      "parent": "rearwing_bl_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "bargeboard_fl_004",
+      "vertices": 8254,
+      "base_polygons": 9027,
+      "evaluated_triangles": 9027,
+      "boundary_edges": 6153,
+      "nonmanifold_edges": 6153,
+      "parent": "bargeboard_fl_003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "sidewing_fl_SUB1",
+      "vertices": 1737,
+      "base_polygons": 1707,
+      "evaluated_triangles": 1707,
+      "boundary_edges": 1433,
+      "nonmanifold_edges": 1433,
+      "parent": "sidewing_fl_004",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "sidewing_fl_SUB0",
+      "vertices": 690,
+      "base_polygons": 855,
+      "evaluated_triangles": 855,
+      "boundary_edges": 477,
+      "nonmanifold_edges": 477,
+      "parent": "sidewing_fl_004",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "wing_mirror_l_SUB2",
+      "vertices": 24,
+      "base_polygons": 20,
+      "evaluated_triangles": 20,
+      "boundary_edges": 24,
+      "nonmanifold_edges": 24,
+      "parent": "wing_mirror_l_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "wing_mirror_l_SUB1",
+      "vertices": 1367,
+      "base_polygons": 1446,
+      "evaluated_triangles": 1446,
+      "boundary_edges": 1096,
+      "nonmanifold_edges": 1096,
+      "parent": "wing_mirror_l_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "wing_mirror_l_SUB0",
+      "vertices": 197,
+      "base_polygons": 292,
+      "evaluated_triangles": 292,
+      "boundary_edges": 98,
+      "nonmanifold_edges": 98,
+      "parent": "wing_mirror_l_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "frontwing_fl_01_004",
+      "vertices": 805,
+      "base_polygons": 876,
+      "evaluated_triangles": 876,
+      "boundary_edges": 592,
+      "nonmanifold_edges": 592,
+      "parent": "frontwing_fl_01_003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "frontspoiler_fm_004",
+      "vertices": 3089,
+      "base_polygons": 3810,
+      "evaluated_triangles": 3810,
+      "boundary_edges": 2142,
+      "nonmanifold_edges": 2142,
+      "parent": "frontspoiler_fm_003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "cockpit_SUB1",
+      "vertices": 12,
+      "base_polygons": 10,
+      "evaluated_triangles": 10,
+      "boundary_edges": 12,
+      "nonmanifold_edges": 12,
+      "parent": "cockpit_004",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "cockpit_SUB0",
+      "vertices": 2307,
+      "base_polygons": 3158,
+      "evaluated_triangles": 3158,
+      "boundary_edges": 1346,
+      "nonmanifold_edges": 1346,
+      "parent": "cockpit_004",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "windscreen_SUB1",
+      "vertices": 738,
+      "base_polygons": 828,
+      "evaluated_triangles": 828,
+      "boundary_edges": 618,
+      "nonmanifold_edges": 618,
+      "parent": "windscreen_004",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "windscreen_SUB0",
+      "vertices": 20,
+      "base_polygons": 16,
+      "evaluated_triangles": 16,
+      "boundary_edges": 20,
+      "nonmanifold_edges": 20,
+      "parent": "windscreen_004",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "diffuser_bm_SUB2",
+      "vertices": 306,
+      "base_polygons": 144,
+      "evaluated_triangles": 144,
+      "boundary_edges": 304,
+      "nonmanifold_edges": 304,
+      "parent": "diffuser_bm_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "diffuser_bm_SUB1",
+      "vertices": 3574,
+      "base_polygons": 4344,
+      "evaluated_triangles": 4344,
+      "boundary_edges": 2514,
+      "nonmanifold_edges": 2514,
+      "parent": "diffuser_bm_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "diffuser_bm_SUB0",
+      "vertices": 165,
+      "base_polygons": 218,
+      "evaluated_triangles": 218,
+      "boundary_edges": 104,
+      "nonmanifold_edges": 104,
+      "parent": "diffuser_bm_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "camera_wing_SUB2",
+      "vertices": 595,
+      "base_polygons": 662,
+      "evaluated_triangles": 662,
+      "boundary_edges": 458,
+      "nonmanifold_edges": 458,
+      "parent": "camera_wing_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "camera_wing_SUB1",
+      "vertices": 16,
+      "base_polygons": 12,
+      "evaluated_triangles": 12,
+      "boundary_edges": 16,
+      "nonmanifold_edges": 16,
+      "parent": "camera_wing_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "camera_wing_SUB0",
+      "vertices": 60,
+      "base_polygons": 50,
+      "evaluated_triangles": 50,
+      "boundary_edges": 60,
+      "nonmanifold_edges": 60,
+      "parent": "camera_wing_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "nosecone_SUB3",
+      "vertices": 1841,
+      "base_polygons": 2536,
+      "evaluated_triangles": 2536,
+      "boundary_edges": 1014,
+      "nonmanifold_edges": 1014,
+      "parent": "nosecone_006",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "nosecone_SUB2",
+      "vertices": 3237,
+      "base_polygons": 4632,
+      "evaluated_triangles": 4632,
+      "boundary_edges": 1726,
+      "nonmanifold_edges": 1726,
+      "parent": "nosecone_006",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "nosecone_SUB1",
+      "vertices": 72,
+      "base_polygons": 64,
+      "evaluated_triangles": 64,
+      "boundary_edges": 72,
+      "nonmanifold_edges": 72,
+      "parent": "nosecone_006",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "nosecone_SUB0",
+      "vertices": 76,
+      "base_polygons": 56,
+      "evaluated_triangles": 56,
+      "boundary_edges": 72,
+      "nonmanifold_edges": 72,
+      "parent": "nosecone_006",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "safetycell_SUB5",
+      "vertices": 60,
+      "base_polygons": 58,
+      "evaluated_triangles": 58,
+      "boundary_edges": 60,
+      "nonmanifold_edges": 60,
+      "parent": "safetycell_008",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "safetycell_SUB4",
+      "vertices": 48,
+      "base_polygons": 74,
+      "evaluated_triangles": 74,
+      "boundary_edges": 20,
+      "nonmanifold_edges": 20,
+      "parent": "safetycell_008",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "safetycell_SUB3",
+      "vertices": 23494,
+      "base_polygons": 31815,
+      "evaluated_triangles": 31815,
+      "boundary_edges": 12993,
+      "nonmanifold_edges": 12993,
+      "parent": "safetycell_008",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "safetycell_SUB1",
+      "vertices": 1226,
+      "base_polygons": 1442,
+      "evaluated_triangles": 1442,
+      "boundary_edges": 914,
+      "nonmanifold_edges": 914,
+      "parent": "safetycell_008",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "safetycell_SUB0",
+      "vertices": 7850,
+      "base_polygons": 8801,
+      "evaluated_triangles": 8801,
+      "boundary_edges": 5959,
+      "nonmanifold_edges": 5959,
+      "parent": "safetycell_008",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "safetycell_SUB4_001_001",
+      "vertices": 15,
+      "base_polygons": 17,
+      "evaluated_triangles": 17,
+      "boundary_edges": 11,
+      "nonmanifold_edges": 11,
+      "parent": "safetycell_SUB4_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "safetycell_SUB4_002_001",
+      "vertices": 186,
+      "base_polygons": 306,
+      "evaluated_triangles": 306,
+      "boundary_edges": 64,
+      "nonmanifold_edges": 64,
+      "parent": "safetycell_SUB4_002",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "safetycell_SUB4_003_001",
+      "vertices": 15,
+      "base_polygons": 17,
+      "evaluated_triangles": 17,
+      "boundary_edges": 11,
+      "nonmanifold_edges": 11,
+      "parent": "safetycell_SUB4_003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "safetycell_SUB4_004_001",
+      "vertices": 186,
+      "base_polygons": 306,
+      "evaluated_triangles": 306,
+      "boundary_edges": 64,
+      "nonmanifold_edges": 64,
+      "parent": "safetycell_SUB4_004",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "safetycell_SUB2_001_001",
+      "vertices": 9120,
+      "base_polygons": 13175,
+      "evaluated_triangles": 13175,
+      "boundary_edges": 4663,
+      "nonmanifold_edges": 4663,
+      "parent": "safetycell_SUB2_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "safetycell_SUB2_002_001",
+      "vertices": 110,
+      "base_polygons": 156,
+      "evaluated_triangles": 156,
+      "boundary_edges": 60,
+      "nonmanifold_edges": 60,
+      "parent": "safetycell_SUB2_002",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "safetycell_SUB3_001_001",
+      "vertices": 46,
+      "base_polygons": 40,
+      "evaluated_triangles": 40,
+      "boundary_edges": 46,
+      "nonmanifold_edges": 46,
+      "parent": "safetycell_SUB3_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "hal_SUB1",
+      "vertices": 506,
+      "base_polygons": 732,
+      "evaluated_triangles": 732,
+      "boundary_edges": 272,
+      "nonmanifold_edges": 272,
+      "parent": "hal_004",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "hal_SUB0",
+      "vertices": 26,
+      "base_polygons": 24,
+      "evaluated_triangles": 24,
+      "boundary_edges": 26,
+      "nonmanifold_edges": 26,
+      "parent": "hal_004",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "floor_damage_r_004",
+      "vertices": 6,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 6,
+      "nonmanifold_edges": 6,
+      "parent": "floor_damage_r_003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "floor_damage_l_004",
+      "vertices": 6,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 6,
+      "nonmanifold_edges": 6,
+      "parent": "floor_damage_l_003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_004_001",
+      "vertices": 109,
+      "base_polygons": 167,
+      "evaluated_triangles": 167,
+      "boundary_edges": 49,
+      "nonmanifold_edges": 49,
+      "parent": "21_redbull_2_psd _SUB1_004",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_005_001",
+      "vertices": 25,
+      "base_polygons": 29,
+      "evaluated_triangles": 29,
+      "boundary_edges": 19,
+      "nonmanifold_edges": 19,
+      "parent": "21_redbull_2_psd _SUB1_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_072_001",
+      "vertices": 147,
+      "base_polygons": 192,
+      "evaluated_triangles": 192,
+      "boundary_edges": 100,
+      "nonmanifold_edges": 100,
+      "parent": "21_redbull_2_psd _SUB1_072",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_073_001",
+      "vertices": 57,
+      "base_polygons": 70,
+      "evaluated_triangles": 70,
+      "boundary_edges": 40,
+      "nonmanifold_edges": 40,
+      "parent": "21_redbull_2_psd _SUB1_073",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_086_001",
+      "vertices": 76,
+      "base_polygons": 118,
+      "evaluated_triangles": 118,
+      "boundary_edges": 32,
+      "nonmanifold_edges": 32,
+      "parent": "21_redbull_2_psd _SUB1_086",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_109_001",
+      "vertices": 25,
+      "base_polygons": 32,
+      "evaluated_triangles": 32,
+      "boundary_edges": 16,
+      "nonmanifold_edges": 16,
+      "parent": "21_redbull_2_psd _SUB1_109",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_110_001",
+      "vertices": 54,
+      "base_polygons": 77,
+      "evaluated_triangles": 77,
+      "boundary_edges": 29,
+      "nonmanifold_edges": 29,
+      "parent": "21_redbull_2_psd _SUB1_110",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_111_001",
+      "vertices": 6,
+      "base_polygons": 4,
+      "evaluated_triangles": 4,
+      "boundary_edges": 6,
+      "nonmanifold_edges": 6,
+      "parent": "21_redbull_2_psd _SUB1_111",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_237_001",
+      "vertices": 32,
+      "base_polygons": 38,
+      "evaluated_triangles": 38,
+      "boundary_edges": 24,
+      "nonmanifold_edges": 24,
+      "parent": "21_redbull_2_psd _SUB1_237",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_264_001",
+      "vertices": 13,
+      "base_polygons": 12,
+      "evaluated_triangles": 12,
+      "boundary_edges": 12,
+      "nonmanifold_edges": 12,
+      "parent": "21_redbull_2_psd _SUB1_264",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_320_001",
+      "vertices": 28,
+      "base_polygons": 33,
+      "evaluated_triangles": 33,
+      "boundary_edges": 21,
+      "nonmanifold_edges": 21,
+      "parent": "21_redbull_2_psd _SUB1_320",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_321_001",
+      "vertices": 120,
+      "base_polygons": 182,
+      "evaluated_triangles": 182,
+      "boundary_edges": 56,
+      "nonmanifold_edges": 56,
+      "parent": "21_redbull_2_psd _SUB1_321",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_322_001",
+      "vertices": 8,
+      "base_polygons": 6,
+      "evaluated_triangles": 6,
+      "boundary_edges": 8,
+      "nonmanifold_edges": 8,
+      "parent": "21_redbull_2_psd _SUB1_322",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_323_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_323",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_324_001",
+      "vertices": 26,
+      "base_polygons": 24,
+      "evaluated_triangles": 24,
+      "boundary_edges": 26,
+      "nonmanifold_edges": 26,
+      "parent": "21_redbull_2_psd _SUB1_324",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_325_001",
+      "vertices": 29,
+      "base_polygons": 35,
+      "evaluated_triangles": 35,
+      "boundary_edges": 21,
+      "nonmanifold_edges": 21,
+      "parent": "21_redbull_2_psd _SUB1_325",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_326_001",
+      "vertices": 14,
+      "base_polygons": 12,
+      "evaluated_triangles": 12,
+      "boundary_edges": 14,
+      "nonmanifold_edges": 14,
+      "parent": "21_redbull_2_psd _SUB1_326",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_327_001",
+      "vertices": 32,
+      "base_polygons": 38,
+      "evaluated_triangles": 38,
+      "boundary_edges": 24,
+      "nonmanifold_edges": 24,
+      "parent": "21_redbull_2_psd _SUB1_327",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_328_001",
+      "vertices": 42,
+      "base_polygons": 52,
+      "evaluated_triangles": 52,
+      "boundary_edges": 30,
+      "nonmanifold_edges": 30,
+      "parent": "21_redbull_2_psd _SUB1_328",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_331_001",
+      "vertices": 26,
+      "base_polygons": 24,
+      "evaluated_triangles": 24,
+      "boundary_edges": 26,
+      "nonmanifold_edges": 26,
+      "parent": "21_redbull_2_psd _SUB1_331",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_332_001",
+      "vertices": 29,
+      "base_polygons": 35,
+      "evaluated_triangles": 35,
+      "boundary_edges": 21,
+      "nonmanifold_edges": 21,
+      "parent": "21_redbull_2_psd _SUB1_332",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_333_001",
+      "vertices": 14,
+      "base_polygons": 12,
+      "evaluated_triangles": 12,
+      "boundary_edges": 14,
+      "nonmanifold_edges": 14,
+      "parent": "21_redbull_2_psd _SUB1_333",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_334_001",
+      "vertices": 33,
+      "base_polygons": 39,
+      "evaluated_triangles": 39,
+      "boundary_edges": 25,
+      "nonmanifold_edges": 25,
+      "parent": "21_redbull_2_psd _SUB1_334",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_336_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_336",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_339_001",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "21_redbull_2_psd _SUB1_339",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_340_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_340",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_341_001",
+      "vertices": 5,
+      "base_polygons": 3,
+      "evaluated_triangles": 3,
+      "boundary_edges": 5,
+      "nonmanifold_edges": 5,
+      "parent": "21_redbull_2_psd _SUB1_341",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_342_001",
+      "vertices": 150,
+      "base_polygons": 192,
+      "evaluated_triangles": 192,
+      "boundary_edges": 106,
+      "nonmanifold_edges": 106,
+      "parent": "21_redbull_2_psd _SUB1_342",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_343_001",
+      "vertices": 51,
+      "base_polygons": 68,
+      "evaluated_triangles": 68,
+      "boundary_edges": 32,
+      "nonmanifold_edges": 32,
+      "parent": "21_redbull_2_psd _SUB1_343",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_344_001",
+      "vertices": 8,
+      "base_polygons": 6,
+      "evaluated_triangles": 6,
+      "boundary_edges": 8,
+      "nonmanifold_edges": 8,
+      "parent": "21_redbull_2_psd _SUB1_344",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_345_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_345",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_346_001",
+      "vertices": 7,
+      "base_polygons": 5,
+      "evaluated_triangles": 5,
+      "boundary_edges": 7,
+      "nonmanifold_edges": 7,
+      "parent": "21_redbull_2_psd _SUB1_346",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_347_001",
+      "vertices": 9,
+      "base_polygons": 7,
+      "evaluated_triangles": 7,
+      "boundary_edges": 9,
+      "nonmanifold_edges": 9,
+      "parent": "21_redbull_2_psd _SUB1_347",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_348_001",
+      "vertices": 8,
+      "base_polygons": 6,
+      "evaluated_triangles": 6,
+      "boundary_edges": 8,
+      "nonmanifold_edges": 8,
+      "parent": "21_redbull_2_psd _SUB1_348",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_349_001",
+      "vertices": 13,
+      "base_polygons": 12,
+      "evaluated_triangles": 12,
+      "boundary_edges": 12,
+      "nonmanifold_edges": 12,
+      "parent": "21_redbull_2_psd _SUB1_349",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_360_001",
+      "vertices": 44,
+      "base_polygons": 42,
+      "evaluated_triangles": 42,
+      "boundary_edges": 44,
+      "nonmanifold_edges": 44,
+      "parent": "21_redbull_2_psd _SUB1_360",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_361_001",
+      "vertices": 12,
+      "base_polygons": 10,
+      "evaluated_triangles": 10,
+      "boundary_edges": 12,
+      "nonmanifold_edges": 12,
+      "parent": "21_redbull_2_psd _SUB1_361",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_362_001",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "21_redbull_2_psd _SUB1_362",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_363_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_363",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_364_001",
+      "vertices": 17,
+      "base_polygons": 15,
+      "evaluated_triangles": 15,
+      "boundary_edges": 17,
+      "nonmanifold_edges": 17,
+      "parent": "21_redbull_2_psd _SUB1_364",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_365_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_365",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_366_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_366",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_367_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_367",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_368_001",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "21_redbull_2_psd _SUB1_368",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_369_001",
+      "vertices": 15,
+      "base_polygons": 13,
+      "evaluated_triangles": 13,
+      "boundary_edges": 15,
+      "nonmanifold_edges": 15,
+      "parent": "21_redbull_2_psd _SUB1_369",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_370_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_370",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_371_001",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "21_redbull_2_psd _SUB1_371",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_372_001",
+      "vertices": 8,
+      "base_polygons": 6,
+      "evaluated_triangles": 6,
+      "boundary_edges": 8,
+      "nonmanifold_edges": 8,
+      "parent": "21_redbull_2_psd _SUB1_372",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_373_001",
+      "vertices": 4,
+      "base_polygons": 2,
+      "evaluated_triangles": 2,
+      "boundary_edges": 4,
+      "nonmanifold_edges": 4,
+      "parent": "21_redbull_2_psd _SUB1_373",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_374_001",
+      "vertices": 27,
+      "base_polygons": 25,
+      "evaluated_triangles": 25,
+      "boundary_edges": 27,
+      "nonmanifold_edges": 27,
+      "parent": "21_redbull_2_psd _SUB1_374",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_375_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_375",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_376_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_376",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_377_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_377",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_378_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_378",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_379_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_379",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_382_001",
+      "vertices": 25,
+      "base_polygons": 32,
+      "evaluated_triangles": 32,
+      "boundary_edges": 16,
+      "nonmanifold_edges": 16,
+      "parent": "21_redbull_2_psd _SUB1_382",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_383_001",
+      "vertices": 61,
+      "base_polygons": 89,
+      "evaluated_triangles": 89,
+      "boundary_edges": 31,
+      "nonmanifold_edges": 31,
+      "parent": "21_redbull_2_psd _SUB1_383",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_384_001",
+      "vertices": 6,
+      "base_polygons": 4,
+      "evaluated_triangles": 4,
+      "boundary_edges": 6,
+      "nonmanifold_edges": 6,
+      "parent": "21_redbull_2_psd _SUB1_384",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_414_001",
+      "vertices": 32,
+      "base_polygons": 38,
+      "evaluated_triangles": 38,
+      "boundary_edges": 24,
+      "nonmanifold_edges": 24,
+      "parent": "21_redbull_2_psd _SUB1_414",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_422_001",
+      "vertices": 12,
+      "base_polygons": 10,
+      "evaluated_triangles": 10,
+      "boundary_edges": 12,
+      "nonmanifold_edges": 12,
+      "parent": "21_redbull_2_psd _SUB1_422",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_423_001",
+      "vertices": 20,
+      "base_polygons": 18,
+      "evaluated_triangles": 18,
+      "boundary_edges": 20,
+      "nonmanifold_edges": 20,
+      "parent": "21_redbull_2_psd _SUB1_423",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_424_001",
+      "vertices": 12,
+      "base_polygons": 10,
+      "evaluated_triangles": 10,
+      "boundary_edges": 12,
+      "nonmanifold_edges": 12,
+      "parent": "21_redbull_2_psd _SUB1_424",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_425_001",
+      "vertices": 40,
+      "base_polygons": 52,
+      "evaluated_triangles": 52,
+      "boundary_edges": 26,
+      "nonmanifold_edges": 26,
+      "parent": "21_redbull_2_psd _SUB1_425",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_427_001",
+      "vertices": 37,
+      "base_polygons": 42,
+      "evaluated_triangles": 42,
+      "boundary_edges": 30,
+      "nonmanifold_edges": 30,
+      "parent": "21_redbull_2_psd _SUB1_427",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_516_001",
+      "vertices": 21,
+      "base_polygons": 24,
+      "evaluated_triangles": 24,
+      "boundary_edges": 16,
+      "nonmanifold_edges": 16,
+      "parent": "21_redbull_2_psd _SUB1_516",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_517_001",
+      "vertices": 44,
+      "base_polygons": 60,
+      "evaluated_triangles": 60,
+      "boundary_edges": 26,
+      "nonmanifold_edges": 26,
+      "parent": "21_redbull_2_psd _SUB1_517",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_518_001",
+      "vertices": 6,
+      "base_polygons": 4,
+      "evaluated_triangles": 4,
+      "boundary_edges": 6,
+      "nonmanifold_edges": 6,
+      "parent": "21_redbull_2_psd _SUB1_518",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_519_001",
+      "vertices": 5,
+      "base_polygons": 3,
+      "evaluated_triangles": 3,
+      "boundary_edges": 5,
+      "nonmanifold_edges": 5,
+      "parent": "21_redbull_2_psd _SUB1_519",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_520_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_520",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_521_001",
+      "vertices": 74,
+      "base_polygons": 117,
+      "evaluated_triangles": 117,
+      "boundary_edges": 29,
+      "nonmanifold_edges": 29,
+      "parent": "21_redbull_2_psd _SUB1_521",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_530_001",
+      "vertices": 10,
+      "base_polygons": 8,
+      "evaluated_triangles": 8,
+      "boundary_edges": 10,
+      "nonmanifold_edges": 10,
+      "parent": "21_redbull_2_psd _SUB1_530",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_534_001",
+      "vertices": 747,
+      "base_polygons": 1360,
+      "evaluated_triangles": 1360,
+      "boundary_edges": 132,
+      "nonmanifold_edges": 132,
+      "parent": "21_redbull_2_psd _SUB1_534",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_535_001",
+      "vertices": 449,
+      "base_polygons": 768,
+      "evaluated_triangles": 768,
+      "boundary_edges": 128,
+      "nonmanifold_edges": 128,
+      "parent": "21_redbull_2_psd _SUB1_535",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_536_001",
+      "vertices": 9,
+      "base_polygons": 8,
+      "evaluated_triangles": 8,
+      "boundary_edges": 8,
+      "nonmanifold_edges": 8,
+      "parent": "21_redbull_2_psd _SUB1_536",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_537_001",
+      "vertices": 515,
+      "base_polygons": 912,
+      "evaluated_triangles": 912,
+      "boundary_edges": 116,
+      "nonmanifold_edges": 116,
+      "parent": "21_redbull_2_psd _SUB1_537",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_538_001",
+      "vertices": 493,
+      "base_polygons": 896,
+      "evaluated_triangles": 896,
+      "boundary_edges": 88,
+      "nonmanifold_edges": 88,
+      "parent": "21_redbull_2_psd _SUB1_538",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_539_001",
+      "vertices": 31,
+      "base_polygons": 38,
+      "evaluated_triangles": 38,
+      "boundary_edges": 22,
+      "nonmanifold_edges": 22,
+      "parent": "21_redbull_2_psd _SUB1_539",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_540_001",
+      "vertices": 545,
+      "base_polygons": 960,
+      "evaluated_triangles": 960,
+      "boundary_edges": 128,
+      "nonmanifold_edges": 128,
+      "parent": "21_redbull_2_psd _SUB1_540",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_542_001",
+      "vertices": 74,
+      "base_polygons": 109,
+      "evaluated_triangles": 109,
+      "boundary_edges": 37,
+      "nonmanifold_edges": 37,
+      "parent": "21_redbull_2_psd _SUB1_542",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_543_001",
+      "vertices": 89,
+      "base_polygons": 125,
+      "evaluated_triangles": 125,
+      "boundary_edges": 51,
+      "nonmanifold_edges": 51,
+      "parent": "21_redbull_2_psd _SUB1_543",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_544_001",
+      "vertices": 62,
+      "base_polygons": 63,
+      "evaluated_triangles": 63,
+      "boundary_edges": 59,
+      "nonmanifold_edges": 59,
+      "parent": "21_redbull_2_psd _SUB1_544",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_545_001",
+      "vertices": 37,
+      "base_polygons": 44,
+      "evaluated_triangles": 44,
+      "boundary_edges": 28,
+      "nonmanifold_edges": 28,
+      "parent": "21_redbull_2_psd _SUB1_545",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_546_001",
+      "vertices": 26,
+      "base_polygons": 30,
+      "evaluated_triangles": 30,
+      "boundary_edges": 20,
+      "nonmanifold_edges": 20,
+      "parent": "21_redbull_2_psd _SUB1_546",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_547_001",
+      "vertices": 13,
+      "base_polygons": 12,
+      "evaluated_triangles": 12,
+      "boundary_edges": 12,
+      "nonmanifold_edges": 12,
+      "parent": "21_redbull_2_psd _SUB1_547",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_548_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_548",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_549_001",
+      "vertices": 17,
+      "base_polygons": 18,
+      "evaluated_triangles": 18,
+      "boundary_edges": 14,
+      "nonmanifold_edges": 14,
+      "parent": "21_redbull_2_psd _SUB1_549",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_550_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_550",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_551_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_551",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_552_001",
+      "vertices": 19,
+      "base_polygons": 22,
+      "evaluated_triangles": 22,
+      "boundary_edges": 14,
+      "nonmanifold_edges": 14,
+      "parent": "21_redbull_2_psd _SUB1_552",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_553_001",
+      "vertices": 28,
+      "base_polygons": 26,
+      "evaluated_triangles": 26,
+      "boundary_edges": 28,
+      "nonmanifold_edges": 28,
+      "parent": "21_redbull_2_psd _SUB1_553",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_554_001",
+      "vertices": 28,
+      "base_polygons": 26,
+      "evaluated_triangles": 26,
+      "boundary_edges": 28,
+      "nonmanifold_edges": 28,
+      "parent": "21_redbull_2_psd _SUB1_554",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_555_001",
+      "vertices": 747,
+      "base_polygons": 1360,
+      "evaluated_triangles": 1360,
+      "boundary_edges": 132,
+      "nonmanifold_edges": 132,
+      "parent": "21_redbull_2_psd _SUB1_555",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_556_001",
+      "vertices": 449,
+      "base_polygons": 768,
+      "evaluated_triangles": 768,
+      "boundary_edges": 128,
+      "nonmanifold_edges": 128,
+      "parent": "21_redbull_2_psd _SUB1_556",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_557_001",
+      "vertices": 9,
+      "base_polygons": 8,
+      "evaluated_triangles": 8,
+      "boundary_edges": 8,
+      "nonmanifold_edges": 8,
+      "parent": "21_redbull_2_psd _SUB1_557",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_558_001",
+      "vertices": 515,
+      "base_polygons": 912,
+      "evaluated_triangles": 912,
+      "boundary_edges": 116,
+      "nonmanifold_edges": 116,
+      "parent": "21_redbull_2_psd _SUB1_558",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_559_001",
+      "vertices": 461,
+      "base_polygons": 832,
+      "evaluated_triangles": 832,
+      "boundary_edges": 88,
+      "nonmanifold_edges": 88,
+      "parent": "21_redbull_2_psd _SUB1_559",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_560_001",
+      "vertices": 30,
+      "base_polygons": 38,
+      "evaluated_triangles": 38,
+      "boundary_edges": 20,
+      "nonmanifold_edges": 20,
+      "parent": "21_redbull_2_psd _SUB1_560",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_561_001",
+      "vertices": 709,
+      "base_polygons": 1280,
+      "evaluated_triangles": 1280,
+      "boundary_edges": 136,
+      "nonmanifold_edges": 136,
+      "parent": "21_redbull_2_psd _SUB1_561",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_563_001",
+      "vertices": 74,
+      "base_polygons": 110,
+      "evaluated_triangles": 110,
+      "boundary_edges": 36,
+      "nonmanifold_edges": 36,
+      "parent": "21_redbull_2_psd _SUB1_563",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_564_001",
+      "vertices": 84,
+      "base_polygons": 118,
+      "evaluated_triangles": 118,
+      "boundary_edges": 48,
+      "nonmanifold_edges": 48,
+      "parent": "21_redbull_2_psd _SUB1_564",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_565_001",
+      "vertices": 33,
+      "base_polygons": 36,
+      "evaluated_triangles": 36,
+      "boundary_edges": 28,
+      "nonmanifold_edges": 28,
+      "parent": "21_redbull_2_psd _SUB1_565",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_566_001",
+      "vertices": 9,
+      "base_polygons": 8,
+      "evaluated_triangles": 8,
+      "boundary_edges": 8,
+      "nonmanifold_edges": 8,
+      "parent": "21_redbull_2_psd _SUB1_566",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_567_001",
+      "vertices": 6,
+      "base_polygons": 4,
+      "evaluated_triangles": 4,
+      "boundary_edges": 6,
+      "nonmanifold_edges": 6,
+      "parent": "21_redbull_2_psd _SUB1_567",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_568_001",
+      "vertices": 18,
+      "base_polygons": 19,
+      "evaluated_triangles": 19,
+      "boundary_edges": 15,
+      "nonmanifold_edges": 15,
+      "parent": "21_redbull_2_psd _SUB1_568",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_569_001",
+      "vertices": 5,
+      "base_polygons": 3,
+      "evaluated_triangles": 3,
+      "boundary_edges": 5,
+      "nonmanifold_edges": 5,
+      "parent": "21_redbull_2_psd _SUB1_569",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_570_001",
+      "vertices": 29,
+      "base_polygons": 28,
+      "evaluated_triangles": 28,
+      "boundary_edges": 28,
+      "nonmanifold_edges": 28,
+      "parent": "21_redbull_2_psd _SUB1_570",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_571_001",
+      "vertices": 27,
+      "base_polygons": 25,
+      "evaluated_triangles": 25,
+      "boundary_edges": 27,
+      "nonmanifold_edges": 27,
+      "parent": "21_redbull_2_psd _SUB1_571",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_572_001",
+      "vertices": 27,
+      "base_polygons": 25,
+      "evaluated_triangles": 25,
+      "boundary_edges": 27,
+      "nonmanifold_edges": 27,
+      "parent": "21_redbull_2_psd _SUB1_572",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_573_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_573",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_574_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_574",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_575_001",
+      "vertices": 12,
+      "base_polygons": 8,
+      "evaluated_triangles": 8,
+      "boundary_edges": 12,
+      "nonmanifold_edges": 12,
+      "parent": "21_redbull_2_psd _SUB1_575",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_576_001",
+      "vertices": 73,
+      "base_polygons": 106,
+      "evaluated_triangles": 106,
+      "boundary_edges": 38,
+      "nonmanifold_edges": 38,
+      "parent": "21_redbull_2_psd _SUB1_576",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_577_001",
+      "vertices": 18,
+      "base_polygons": 16,
+      "evaluated_triangles": 16,
+      "boundary_edges": 18,
+      "nonmanifold_edges": 18,
+      "parent": "21_redbull_2_psd _SUB1_577",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_578_001",
+      "vertices": 63,
+      "base_polygons": 89,
+      "evaluated_triangles": 89,
+      "boundary_edges": 35,
+      "nonmanifold_edges": 35,
+      "parent": "21_redbull_2_psd _SUB1_578",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_579_001",
+      "vertices": 78,
+      "base_polygons": 116,
+      "evaluated_triangles": 116,
+      "boundary_edges": 38,
+      "nonmanifold_edges": 38,
+      "parent": "21_redbull_2_psd _SUB1_579",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_580_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB1_580",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_581_001",
+      "vertices": 20,
+      "base_polygons": 18,
+      "evaluated_triangles": 18,
+      "boundary_edges": 20,
+      "nonmanifold_edges": 20,
+      "parent": "21_redbull_2_psd _SUB1_581",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_582_001",
+      "vertices": 62,
+      "base_polygons": 89,
+      "evaluated_triangles": 89,
+      "boundary_edges": 33,
+      "nonmanifold_edges": 33,
+      "parent": "21_redbull_2_psd _SUB1_582",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB2_308_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB2_308",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB2_398_001",
+      "vertices": 3,
+      "base_polygons": 1,
+      "evaluated_triangles": 1,
+      "boundary_edges": 3,
+      "nonmanifold_edges": 3,
+      "parent": "21_redbull_2_psd _SUB2_398",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_001_001",
+      "vertices": 76,
+      "base_polygons": 118,
+      "evaluated_triangles": 118,
+      "boundary_edges": 32,
+      "nonmanifold_edges": 32,
+      "parent": "21_redbull_2_psd _SUB1_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_002_001",
+      "vertices": 20,
+      "base_polygons": 18,
+      "evaluated_triangles": 18,
+      "boundary_edges": 20,
+      "nonmanifold_edges": 20,
+      "parent": "21_redbull_2_psd _SUB1_002",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd _SUB1_003_001",
+      "vertices": 14,
+      "base_polygons": 10,
+      "evaluated_triangles": 10,
+      "boundary_edges": 14,
+      "nonmanifold_edges": 14,
+      "parent": "21_redbull_2_psd _SUB1_003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd_009_001",
+      "vertices": 307,
+      "base_polygons": 153,
+      "evaluated_triangles": 153,
+      "boundary_edges": 307,
+      "nonmanifold_edges": 307,
+      "parent": "21_redbull_2_psd_009",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd_001_001",
+      "vertices": 702,
+      "base_polygons": 612,
+      "evaluated_triangles": 612,
+      "boundary_edges": 630,
+      "nonmanifold_edges": 630,
+      "parent": "21_redbull_2_psd_001",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd_003_001",
+      "vertices": 27,
+      "base_polygons": 17,
+      "evaluated_triangles": 17,
+      "boundary_edges": 27,
+      "nonmanifold_edges": 27,
+      "parent": "21_redbull_2_psd_003",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "21_redbull_2_psd_005_001",
+      "vertices": 31,
+      "base_polygons": 17,
+      "evaluated_triangles": 17,
+      "boundary_edges": 31,
+      "nonmanifold_edges": 31,
+      "parent": "21_redbull_2_psd_005",
+      "uv_layers": [
+        "UVChannel_1",
+        "UVChannel_2",
+        "UVChannel_3",
+        "UVChannel_4"
+      ],
+      "modifiers": []
+    }
+  ],
+  "notes": [
+    "Review presentation uses a uniform 5.5-unit length for lighting comparison only; this is not a verified real-car dimension.",
+    "Sources and original working copies are not overwritten.",
+    "Material values are an initial visual calibration, not measured physical properties."
+  ],
+  "evaluated_triangles": 256249,
+  "boundary_edges": 122255,
+  "nonmanifold_edges": 122255,
+  "armatures": 0,
+  "actions_in_file": [],
+  "drs_named_objects": [
+    "TAG_DRS_PRE_002",
+    "TAG_DRS_002",
+    "drs2_003",
+    "drs_003",
+    "drs2_001_001_002",
+    "drs_001_001_002"
+  ],
+  "floor_named_objects": [
+    "diffuser_bm_SUB2",
+    "diffuser_bm_SUB1",
+    "diffuser_bm_SUB0",
+    "floor_damage_r_004",
+    "floor_damage_l_004"
+  ],
+  "review_file": "assets/working/rb16b/rb16b-review.blend",
+  "previews": [
+    "assets/previews/review-2026-11-08/rb16b/clay-hero.png",
+    "assets/previews/review-2026-11-08/rb16b/material-baseline.png",
+    "assets/previews/review-2026-11-08/rb16b/clay-underfloor.png",
+    "assets/previews/review-2026-11-08/rb16b/material-corrected.png",
+    "assets/previews/review-2026-11-08/rb16b/clay-side.png",
+    "assets/previews/review-2026-11-08/rb16b/clay-rear.png",
+    "assets/previews/review-2026-11-08/rb16b/material-baseline.png",
+    "assets/previews/review-2026-11-08/rb16b/material-corrected.png"
+  ],
+  "hidden_static_preview_alternatives": [
+    "RIM_BLUR_LR_SUB1",
+    "RIM_BLUR_LR_SUB0",
+    "RIM_BLUR_RR_SUB1",
+    "RIM_BLUR_RR_SUB0",
+    "RIM_BLUR_RF_SUB1",
+    "RIM_BLUR_RF_SUB0",
+    "RIM_BLUR_LF_SUB1",
+    "RIM_BLUR_LF_SUB0"
+  ],
+  "global_import_corrections": "Principled weight 1; dielectric specular 0.5; non-metal categories metallic 0; decal alpha links preserved.",
+  "material_corrections": [
+    {
+      "material": "redbull_paint",
+      "diffuse": "redbull_paint_d.dds",
+      "normal": null,
+      "roughness": 0.5,
+      "metallic": 0.0
+    },
+    {
+      "material": "redbull_detail",
+      "diffuse": "redbull_detail_d.dds",
+      "normal": null,
+      "roughness": 0.5,
+      "metallic": 0.0
+    },
+    {
+      "material": "tread_medium",
+      "diffuse": "slick_diffuse.dds",
+      "normal": "slick_normal.dds",
+      "roughness": 0.85,
+      "metallic": 0.0
+    },
+    {
+      "material": "sidewall",
+      "diffuse": "sidewall_diffuse.dds",
+      "normal": "sidewall_n.dds",
+      "roughness": 0.8,
+      "metallic": 0.0
+    },
+    {
+      "material": "redbull_carbon1",
+      "diffuse": "carbon_fiber2.dds",
+      "normal": "carbon_fiber_nm2.dds",
+      "roughness": 0.5,
+      "metallic": 0.0
+    },
+    {
+      "material": "redbull_carbon2",
+      "diffuse": "carbon_fiber2.dds",
+      "normal": "carbon_fiber_nm2.dds",
+      "roughness": 0.5,
+      "metallic": 0.0
+    },
+    {
+      "material": "redbull_wheel_hub",
+      "diffuse": "redbull_wheel_d.dds",
+      "normal": null,
+      "roughness": 0.4,
+      "metallic": 0.7
+    }
+  ]
+}

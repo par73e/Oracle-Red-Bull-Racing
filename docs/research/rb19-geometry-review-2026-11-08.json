@@ -1,0 +1,57 @@
+{
+  "car": "rb19",
+  "source": "assets/working/rb19/rb19.blend",
+  "source_dimensions_in_blender_units": [
+    1.3867274522781372,
+    3.736844539642334,
+    0.8053922653198242
+  ],
+  "source_unit_scale": 1.0,
+  "source_unit_system": "METRIC",
+  "mesh_objects": 1,
+  "objects": [
+    {
+      "name": "Full Body_Baked",
+      "vertices": 22198,
+      "base_polygons": 20944,
+      "evaluated_triangles": 674992,
+      "boundary_edges": 1808,
+      "nonmanifold_edges": 1812,
+      "parent": null,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "modifiers": [
+        {
+          "name": "Subdivision",
+          "type": "SUBSURF"
+        },
+        {
+          "name": "Auto Smooth",
+          "type": "NODES"
+        }
+      ],
+      "loose_components": 123
+    }
+  ],
+  "notes": [
+    "Review presentation uses a uniform 5.5-unit length for lighting comparison only; this is not a verified real-car dimension.",
+    "Sources and original working copies are not overwritten."
+  ],
+  "evaluated_triangles": 674992,
+  "boundary_edges": 1808,
+  "nonmanifold_edges": 1812,
+  "armatures": 0,
+  "actions_in_file": [],
+  "drs_named_objects": [],
+  "floor_named_objects": [],
+  "review_file": "assets/working/rb19/rb19-review.blend",
+  "previews": [
+    "assets/previews/review-2026-11-08/rb19/clay-hero.png",
+    "assets/previews/review-2026-11-08/rb19/material-baseline.png",
+    "assets/previews/review-2026-11-08/rb19/clay-underfloor.png",
+    "assets/previews/review-2026-11-08/rb19/clay-side.png",
+    "assets/previews/review-2026-11-08/rb19/clay-rear.png",
+    "assets/previews/review-2026-11-08/rb19/material-baseline.png"
+  ]
+}

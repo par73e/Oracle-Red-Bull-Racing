@@ -1,0 +1,58 @@
+[
+  {
+    "car": "rb19",
+    "revision": "2026-11-09-continuity1",
+    "steeringSamples": 146,
+    "drsSamples": 82,
+    "maxTrackRodLengthError": 3.3576795732681575e-7,
+    "maxTrackRodEndpointError": 5.984637462978522e-7,
+    "maxKingpinJointMovement": 1.797253162058238e-8,
+    "maxPistonTipError": 2.0658801409477063e-15,
+    "minPistonInsertion": 0.01800009442754437,
+    "minCylinderBackClearance": 0.07991981432248492,
+    "exterior": {
+      "FL": {
+        "maxCamberChangeDegrees": 1.218258816722952,
+        "maxTreadBottomHeightChange": 0.004411353766157311,
+        "minRootCapAxialMargin": 0.017999916804199087,
+        "maxRootCapBoreEllipse": 0.9245557860322675,
+        "fixedFairingMaxMovement": 0
+      },
+      "FR": {
+        "maxCamberChangeDegrees": 1.218258816722952,
+        "maxTreadBottomHeightChange": 0.0043989672033154514,
+        "minRootCapAxialMargin": 0.01800001009765549,
+        "maxRootCapBoreEllipse": 0.9245524477534193,
+        "fixedFairingMaxMovement": 0
+      }
+    }
+  },
+  {
+    "car": "rb16b",
+    "revision": "2026-11-09-continuity1",
+    "steeringSamples": 146,
+    "drsSamples": 82,
+    "maxTrackRodLengthError": 1.5631191285780943e-8,
+    "maxTrackRodEndpointError": 1.2210046675489158e-7,
+    "maxKingpinJointMovement": 0,
+    "maxPistonTipError": 2.8267115440514558e-15,
+    "minPistonInsertion": 0.017999894830765098,
+    "minCylinderBackClearance": 0.013185057722902793,
+    "exterior": {
+      "FL": {
+        "maxCamberChangeDegrees": 7.951386703658792e-16,
+        "maxTreadBottomHeightChange": 0,
+        "minRootCapAxialMargin": 0.0179999166603148,
+        "maxRootCapBoreEllipse": 0.9062174791255729,
+        "fixedFairingMaxMovement": 0
+      },
+      "FR": {
+        "maxCamberChangeDegrees": 7.951386703658792e-16,
+        "maxTreadBottomHeightChange": 0,
+        "minRootCapAxialMargin": 0.017999999114428157,
+        "maxRootCapBoreEllipse": 0.9062134926532739,
+        "fixedFairingMaxMovement": 0
+      }
+    }
+  }
+]

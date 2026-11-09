@@ -1,0 +1,17 @@
+{
+  "name": "aero-model-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "pack:assets": "node scripts/pack-web-assets.mjs",
+    "validate:assets": "node scripts/validate-assets.mjs",
+    "validate:motion": "node scripts/check-moving-geometry.mjs",
+    "validate:mechanisms": "node scripts/check-mechanisms.mjs"
+  },
+  "dependencies": {"three": "0.187.0"},
+  "devDependencies": {"vite": "7.2.2", "gltf-validator": "2.0.0-dev.3.10"}
+}

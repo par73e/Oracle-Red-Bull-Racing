@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#e7e8e7" />
+  <title>AERO / 01 — Red Bull Model Studio</title>
+</head>
+<body>
+  <main id="app">
+    <div id="viewport" aria-label="可旋转缩放的红牛赛车三维模型"></div>
+    <header class="masthead">
+      <a class="wordmark" href="/" aria-label="AERO 01 首页">AERO<span>/ 01</span></a>
+      <p>RED BULL RACING <span>MODEL STUDIO</span></p>
+      <button id="credits-button" class="text-button" aria-haspopup="dialog">模型来源 <span>↗</span></button>
+    </header>
+    <section class="model-intro" aria-live="polite">
+      <p class="eyebrow" id="era">2023 / GROUND EFFECT</p>
+      <h1 id="model-name">RB19<span>.</span></h1>
+      <p class="model-note">形态、材质，以及机械运动。</p>
+      <div class="model-switch" aria-label="选择车型">
+        <button data-model="rb16b" aria-pressed="false">RB16B <span>2021</span></button>
+        <button data-model="rb19" aria-pressed="true">RB19 <span>2023</span></button>
+      </div>
+    </section>
+    <aside class="controls" aria-label="赛车控制">
+      <div class="control-heading"><span class="status-dot"></span><span>机械控制</span><span class="section-number">01—03</span></div>
+      <section class="control-group">
+        <div class="label-row"><label for="drs">DRS 尾翼</label><button id="drs-toggle" aria-pressed="false">打开 <span>↗</span></button></div>
+        <input id="drs" type="range" min="0" max="100" step="1" value="0" aria-label="DRS 开合程度" />
+        <div class="range-labels"><span>闭合</span><output id="drs-value" for="drs">0%</output><span>打开</span></div>
+      </section>
+      <section class="control-group">
+        <div class="label-row"><label for="speed">车轮自转</label><output id="speed-value" for="speed">静止</output></div>
+        <input id="speed" type="range" min="0" max="180" step="5" value="0" aria-label="车轮自转对应速度" />
+        <div class="range-labels"><span>0</span><span>km/h</span><span>180</span></div>
+      </section>
+      <section class="control-group">
+        <div class="label-row"><label for="steer">前轮转向</label><output id="steer-value" for="steer">0°</output></div>
+        <input id="steer" type="range" min="-18" max="18" step="1" value="0" aria-label="前轮转向角" />
+        <div class="range-labels"><span>向右</span><button id="center-steering">回正</button><span>向左</span></div>
+      </section>
+      <div class="control-footer"><span>后轮朝向固定</span><button id="reset">全部复位 ↺</button></div>
+    </aside>
+    <footer class="bottom-bar">
+      <div class="view-switch" aria-label="观察角度">
+        <button data-view="hero" aria-pressed="true">整车</button>
+        <button data-view="side" aria-pressed="false">侧面</button>
+        <button data-view="drs" aria-pressed="false">尾翼机构</button>
+        <button data-view="floor" aria-pressed="false">底板</button>
+      </div>
+      <p class="orbit-hint">拖动旋转 <span>·</span> 滚轮缩放</p>
+      <span class="studio-label">STUDIO / SOFT LIGHT</span>
+    </footer>
+    <div id="loading" role="status" aria-live="polite"><span class="loading-line"></span><p id="loading-text">正在准备模型…</p></div>
+    <div id="error" role="alert" hidden><p id="error-message"></p><button id="retry">重新加载</button></div>
+    <dialog id="credits">
+      <div class="dialog-top"><p class="eyebrow">ASSET CREDITS</p><button id="close-credits" aria-label="关闭模型来源">×</button></div>
+      <h2>模型与制作说明</h2>
+      <p>本项目为车迷展示项目，与车队及 F1 官方无隶属关系。</p>
+      <p><a href="https://skfb.ly/oR7sq" target="_blank" rel="noreferrer">Oracle Red Bull F1 Car RB19 2023</a> · Redgrund</p>
+      <p><a href="https://skfb.ly/py9Uu" target="_blank" rel="noreferrer">Redbull rb16b</a> · MattDoesBlender</p>
+      <p>两份原模型均标注为 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">Creative Commons Attribution 4.0</a>。</p>
+      <p>本地修改：材质调整、统一展示尺度、四轮与前轮转向绑定、近似 DRS 液压机构；RB19 另补简化底板通道。机构与底板为展示用近似，不是车队 CAD。车轮速度仅用于驱动转动，当前页面未运行气流仿真。</p>
+    </dialog>
+  </main>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

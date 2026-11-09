@@ -1,0 +1,282 @@
+{
+  "fl": {
+    "axis": [
+      0.9974909038378595,
+      3.0439915660036537e-05,
+      0.07079474439633114
+    ],
+    "center": [
+      0.8152328248234492,
+      -1.554797415746719,
+      0.33205213419517776
+    ],
+    "pca_values": [
+      0.01765876610963586,
+      0.04825744627948948,
+      0.049058105640212346
+    ],
+    "old_center": [
+      0.8152323067188263,
+      -1.5547869205474854,
+      0.33209950959597023
+    ]
+  },
+  "fr": {
+    "axis": [
+      0.9974909123933453,
+      6.964270627115403e-07,
+      -0.07079463039105793
+    ],
+    "center": [
+      -0.8152338384726343,
+      -1.5547976138840975,
+      0.33205188967618954
+    ],
+    "pca_values": [
+      0.017658765837061066,
+      0.04825754407182739,
+      0.0490579956814178
+    ],
+    "old_center": [
+      -0.8152332901954651,
+      -1.5547870993614197,
+      0.33209937888750574
+    ]
+  },
+  "bl": {
+    "axis": [
+      0.9999999999995846,
+      7.320451665143013e-07,
+      -5.431554638822617e-07
+    ],
+    "center": [
+      0.7863107016454306,
+      1.9879180169726123,
+      0.3316884381982594
+    ],
+    "pca_values": [
+      0.031041212209473406,
+      0.04679875945763795,
+      0.04757235095953547
+    ],
+    "old_center": [
+      0.7863106727600098,
+      1.9879261255264282,
+      0.3316788811935112
+    ]
+  },
+  "br": {
+    "axis": [
+      0.9999999999995951,
+      -7.170926347837636e-07,
+      5.437141539790426e-07
+    ],
+    "center": [
+      -0.787286907644626,
+      1.9879176215349523,
+      0.33168856836149574
+    ],
+    "pca_values": [
+      0.031041212558716752,
+      0.04679879064320128,
+      0.04757238493065132
+    ],
+    "old_center": [
+      -0.7872868776321411,
+      1.9879258275032043,
+      0.33167897316161543
+    ]
+  },
+  "materials": {
+    "discs": {
+      "links": [
+        [
+          "BSDF_PRINCIPLED",
+          "BSDF",
+          "Surface"
+        ],
+        [
+          "NORMAL_MAP",
+          "Normal",
+          "Normal"
+        ],
+        [
+          "//../../source/rb16b/source/Redbull rb16b/disc_d.dds",
+          "Color",
+          "Base Color"
+        ],
+        [
+          "//../../source/rb16b/source/Redbull rb16b/disc_d.dds",
+          "Alpha",
+          "Alpha"
+        ]
+      ],
+      "images": [
+        [
+          "Image Texture",
+          "//../../source/rb16b/source/Redbull rb16b/disc_d.dds"
+        ],
+        [
+          "Image Texture.001",
+          "//../../source/rb16b/source/Redbull rb16b/disc_d.dds"
+        ]
+      ]
+    },
+    "redbull_wheel_hub": {
+      "links": [
+        [
+          "BSDF_PRINCIPLED",
+          "BSDF",
+          "Surface"
+        ],
+        [
+          "//../../source/rb16b/source/Redbull rb16b/flat_nm.dds",
+          "Color",
+          "Color"
+        ],
+        [
+          "/Users/louis/Suep/Project/AERO/assets/source/rb16b/source/Redbull rb16b/redbull_wheel_d.dds",
+          "Color",
+          "Base Color"
+        ]
+      ],
+      "images": [
+        [
+          "Image Texture",
+          "//../../source/rb16b/source/Redbull rb16b/ac_black.dds"
+        ],
+        [
+          "Image Texture.001",
+          "//../../source/rb16b/source/Redbull rb16b/flat_nm.dds"
+        ],
+        [
+          "Image Texture.002",
+          "//../../source/rb16b/source/Redbull rb16b/ac_black.dds"
+        ],
+        [
+          "Image Texture.003",
+          "/Users/louis/Suep/Project/AERO/assets/source/rb16b/source/Redbull rb16b/redbull_wheel_d.dds"
+        ]
+      ]
+    },
+    "generics": {
+      "links": [
+        [
+          "BSDF_PRINCIPLED",
+          "BSDF",
+          "Surface"
+        ],
+        [
+          "NORMAL_MAP",
+          "Normal",
+          "Normal"
+        ],
+        [
+          "//../../source/rb16b/source/Redbull rb16b/generic_main_d.dds",
+          "Color",
+          "Base Color"
+        ],
+        [
+          "//../../source/rb16b/source/Redbull rb16b/generic_main_d.dds",
+          "Alpha",
+          "Alpha"
+        ]
+      ],
+      "images": [
+        [
+          "Image Texture",
+          "//../../source/rb16b/source/Redbull rb16b/generic_main_d.dds"
+        ],
+        [
+          "Image Texture.001",
+          "//../../source/rb16b/source/Redbull rb16b/generic_main_d.dds"
+        ]
+      ]
+    },
+    "rb_paint": {
+      "links": [
+        [
+          "BSDF_PRINCIPLED",
+          "BSDF",
+          "Surface"
+        ],
+        [
+          "NORMAL_MAP",
+          "Normal",
+          "Normal"
+        ],
+        [
+          "//../../source/rb16b/source/Redbull rb16b/rb_decal_20005.png",
+          "Color",
+          "Base Color"
+        ],
+        [
+          "//../../source/rb16b/source/Redbull rb16b/rb_decal_20005.png",
+          "Alpha",
+          "Alpha"
+        ]
+      ],
+      "images": [
+        [
+          "Image Texture",
+          "//../../source/rb16b/source/Redbull rb16b/rb_decal_20005.png"
+        ],
+        [
+          "Image Texture.001",
+          "//../../source/rb16b/source/Redbull rb16b/rb_decal_20005.png"
+        ]
+      ]
+    },
+    "sidewall": {
+      "links": [
+        [
+          "BSDF_PRINCIPLED",
+          "BSDF",
+          "Surface"
+        ],
+        [
+          "//../../source/rb16b/source/Redbull rb16b/sidewall_n.dds",
+          "Color",
+          "Color"
+        ],
+        [
+          "/Users/louis/Suep/Project/AERO/assets/source/rb16b/source/Redbull rb16b/sidewall_diffuse.dds",
+          "Color",
+          "Base Color"
+        ],
+        [
+          "//../../source/rb16b/source/Redbull rb16b/sidewall_n.dds",
+          "Color",
+          "Color"
+        ],
+        [
+          "NORMAL_MAP",
+          "Normal",
+          "Normal"
+        ]
+      ],
+      "images": [
+        [
+          "Image Texture",
+          "//../../source/rb16b/source/Redbull rb16b/tyre_blur_nm.dds"
+        ],
+        [
+          "Image Texture.001",
+          "//../../source/rb16b/source/Redbull rb16b/sidewall_n.dds"
+        ],
+        [
+          "Image Texture.002",
+          "//../../source/rb16b/source/Redbull rb16b/tyre_blur_nm.dds"
+        ],
+        [
+          "Image Texture.003",
+          "/Users/louis/Suep/Project/AERO/assets/source/rb16b/source/Redbull rb16b/sidewall_diffuse.dds"
+        ],
+        [
+          "Image Texture.004",
+          "//../../source/rb16b/source/Redbull rb16b/sidewall_n.dds"
+        ]
+      ]
+    }
+  }
+}

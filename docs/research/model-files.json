@@ -1,0 +1,38 @@
+{
+  "archived_on": "2026-11-07",
+  "files": [
+    {
+      "car": "rb19",
+      "role": "original_blend_archive",
+      "path": "assets/archives/rb19/oracle-red-bull-f1-car-rb19-2023.zip",
+      "bytes": 129360789,
+      "sha256": "bb0e001af39a792b9fa761af54206b5c2b998aedfcf6e3616d56f2ef0fdc9888"
+    },
+    {
+      "car": "rb19",
+      "role": "downloaded_glb_4k",
+      "path": "assets/archives/rb19/oracle_red_bull_f1_car_rb19_2023.glb",
+      "bytes": 54470372,
+      "sha256": "87b1ad9c36f302fc5439413422f6fc3ce7c1e9f0c6a28f80e8a381a0ae4c02ae"
+    },
+    {
+      "car": "rb16b",
+      "role": "original_fbx_archive",
+      "path": "assets/archives/rb16b/redbull-rb16b.zip",
+      "bytes": 17414721,
+      "sha256": "b0df89777eb1323a032abc78e076cd047a7be14463643b6e7e6a6162eaa5c88a"
+    },
+    {
+      "car": "rb16b",
+      "role": "downloaded_glb_4k",
+      "path": "assets/archives/rb16b/redbull_rb16b.glb",
+      "bytes": 17138360,
+      "sha256": "0fe1fb6e5efe5fe5de5503e0f7b6788f5891eaa7e171800d088d6fdc1d34e864"
+    }
+  ],
+  "working_copies": {
+    "rb19": "assets/working/rb19/rb19.blend",
+    "rb16b": "assets/working/rb16b/rb16b.blend"
+  },
+  "attributions": "docs/research/model-attributions.md"
+}

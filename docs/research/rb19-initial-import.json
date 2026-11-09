@@ -1,0 +1,23 @@
+{
+  "car": "rb19",
+  "source": "/Users/louis/Suep/Project/AERO/assets/source/rb19/source/Sketchfab_2024_02_21_19_13_35.blend",
+  "working_copy": "/Users/louis/Suep/Project/AERO/assets/working/rb19/rb19.blend",
+  "blender_version": "5.2.3 LTS",
+  "mesh_objects": 1,
+  "vertices": 22198,
+  "polygons_before_modifiers": 20944,
+  "bounds_in_blender_units": [
+    1.3867274522781372,
+    3.736844539642334,
+    0.8053922653198242
+  ],
+  "unit_system": "METRIC",
+  "unit_scale": 1.0,
+  "geometry_modified": false,
+  "objects": [
+    {
+      "name": "Full Body_Baked",
+      "polygons": 20944
+    }
+  ]
+}

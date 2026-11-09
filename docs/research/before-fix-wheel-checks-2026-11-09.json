@@ -1,0 +1,25 @@
+[
+  {
+    "car": "rb16b",
+    "wheels": {
+      "FL": {
+        "maxGeometricAxisDriftDegrees": 8.119272731732169,
+        "samples": 25
+      },
+      "FR": {
+        "maxGeometricAxisDriftDegrees": 8.119258872550327,
+        "samples": 25
+      },
+      "RL": {
+        "maxGeometricAxisDriftDegrees": 0.00010445389338583826,
+        "samples": 25
+      },
+      "RR": {
+        "maxGeometricAxisDriftDegrees": 0.00010313359479036513,
+        "samples": 25
+      }
+    },
+    "fixedWing": [],
+    "flapDecals": []
+  }
+]

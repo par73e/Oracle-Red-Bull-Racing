@@ -1,0 +1,33 @@
+[
+  {
+    "model": "rb19",
+    "bytes": 24159828,
+    "triangles": 186112,
+    "nodes": 184,
+    "images": 2,
+    "errors": 0,
+    "warnings": 0,
+    "missingRigNodes": [],
+    "informationalCounts": {
+      "NODE_EMPTY": 6,
+      "UNUSED_OBJECT": 51
+    },
+    "messages": []
+  },
+  {
+    "model": "rb16b",
+    "bytes": 31783824,
+    "triangles": 260481,
+    "nodes": 353,
+    "images": 31,
+    "errors": 0,
+    "warnings": 0,
+    "missingRigNodes": [],
+    "informationalCounts": {
+      "NODE_EMPTY": 6,
+      "UNUSED_OBJECT": 1174,
+      "IMAGE_NPOT_DIMENSIONS": 2
+    },
+    "messages": []
+  }
+]

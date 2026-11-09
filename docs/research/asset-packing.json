@@ -1,0 +1,18 @@
+[
+  {
+    "car": "rb19",
+    "sourceBytes": 74212792,
+    "webBytes": 24159828,
+    "convertedPngImages": 2,
+    "repairedTangents": 0,
+    "resolutionChanged": false
+  },
+  {
+    "car": "rb16b",
+    "sourceBytes": 31803740,
+    "webBytes": 31783824,
+    "convertedPngImages": 0,
+    "repairedTangents": 0,
+    "resolutionChanged": false
+  }
+]

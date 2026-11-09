@@ -1,0 +1,22 @@
+.DS_Store
+node_modules/
+.pnpm-store/
+dist/
+coverage/
+__pycache__/
+*.py[cod]
+*.log
+.env
+.env.*
+!.env.example
+
+# Large third-party originals and local Blender working files.
+assets/source/
+assets/working/
+assets/archives/
+assets/exports/
+assets/previews/
+assets/textures/processed/
+web/public/models/*.glb
+*.blend1
+*.blend2

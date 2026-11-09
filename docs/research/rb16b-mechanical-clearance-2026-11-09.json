@@ -1,0 +1,497 @@
+{
+  "car": "rb16b",
+  "revision": "2026-11-09-continuity1",
+  "steering": [
+    {
+      "input": -18,
+      "wheels": {
+        "FL": {
+          "angle": -0.32141733169555664,
+          "length_error": 3.197326536863443e-08,
+          "link_endpoint_error": 5.960464477539063e-08,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": -0.31775155663490295,
+          "length_error": 6.867315605063595e-09,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": -16,
+      "wheels": {
+        "FL": {
+          "angle": -0.28449979424476624,
+          "length_error": 1.2963986273373251e-08,
+          "link_endpoint_error": 5.960464477539063e-08,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": -0.28155288100242615,
+          "length_error": 1.5858190649531423e-08,
+          "link_endpoint_error": 5.960464477539063e-08,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": -14,
+      "wheels": {
+        "FL": {
+          "angle": -0.24799738824367523,
+          "length_error": 3.2213024525606926e-08,
+          "link_endpoint_error": 5.960464477539063e-08,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": -0.24570871889591217,
+          "length_error": 6.70462418916884e-08,
+          "link_endpoint_error": 5.960464477539063e-08,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": -12,
+      "wheels": {
+        "FL": {
+          "angle": -0.2118576020002365,
+          "length_error": 2.657874204059496e-08,
+          "link_endpoint_error": 5.960464477539063e-08,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": -0.21015630662441254,
+          "length_error": 3.253840530348384e-10,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": -10,
+      "wheels": {
+        "FL": {
+          "angle": -0.1760309487581253,
+          "length_error": 1.3083864658369748e-08,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": -0.17483828961849213,
+          "length_error": 2.3342023758310404e-08,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": -8,
+      "wheels": {
+        "FL": {
+          "angle": -0.14047029614448547,
+          "length_error": 1.1405567879041456e-08,
+          "link_endpoint_error": 5.960464477539063e-08,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": -0.13970132172107697,
+          "length_error": 3.3446054981123297e-08,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": -6,
+      "wheels": {
+        "FL": {
+          "angle": -0.1051303893327713,
+          "length_error": 1.640620717058283e-08,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": -0.10469543933868408,
+          "length_error": 9.110753096397417e-09,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": -4,
+      "wheels": {
+        "FL": {
+          "angle": -0.06996732205152512,
+          "length_error": 1.301536267650505e-09,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": -0.06977328658103943,
+          "length_error": 7.192699769120736e-10,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": -2,
+      "wheels": {
+        "FL": {
+          "angle": -0.03493806719779968,
+          "length_error": 3.675127324687111e-08,
+          "link_endpoint_error": 5.960464477539063e-08,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": -0.03488950431346893,
+          "length_error": 3.1168365666189857e-09,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": 0,
+      "wheels": {
+        "FL": {
+          "angle": -3.559098615824041e-08,
+          "length_error": 0.0,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": -1.3050028258021484e-07,
+          "length_error": 0.0,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": 2,
+      "wheels": {
+        "FL": {
+          "angle": 0.0348893404006958,
+          "length_error": 7.67221403075169e-09,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": 0.03493790328502655,
+          "length_error": 1.5858190649531423e-08,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": 4,
+      "wheels": {
+        "FL": {
+          "angle": 0.0697731301188469,
+          "length_error": 6.507681615808281e-10,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": 0.06996716558933258,
+          "length_error": 1.6303453032051607e-08,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": 6,
+      "wheels": {
+        "FL": {
+          "angle": 0.10469526797533035,
+          "length_error": 1.3426374623204396e-08,
+          "link_endpoint_error": 5.960464477539063e-08,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": 0.10513025522232056,
+          "length_error": 1.8803772539044417e-08,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": 8,
+      "wheels": {
+        "FL": {
+          "angle": 0.13970117270946503,
+          "length_error": 2.4660687936162162e-09,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": 0.14047017693519592,
+          "length_error": 5.9014392705947216e-08,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": 10,
+      "wheels": {
+        "FL": {
+          "angle": 0.1748381406068802,
+          "length_error": 5.411650960684966e-09,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": 0.17603084444999695,
+          "length_error": 2.657873882094819e-08,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": 12,
+      "wheels": {
+        "FL": {
+          "angle": 0.21015618741512299,
+          "length_error": 1.7776245309075733e-08,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": 0.21185752749443054,
+          "length_error": 1.3631878736930503e-08,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": 14,
+      "wheels": {
+        "FL": {
+          "angle": 0.24570856988430023,
+          "length_error": 2.1406846406613056e-08,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": 0.24799734354019165,
+          "length_error": 1.5498555605564235e-08,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": 16,
+      "wheels": {
+        "FL": {
+          "angle": 0.281552791595459,
+          "length_error": 3.419957728123535e-08,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": 0.28449976444244385,
+          "length_error": 4.423510552298282e-08,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        }
+      }
+    },
+    {
+      "input": 18,
+      "wheels": {
+        "FL": {
+          "angle": 0.31775152683258057,
+          "length_error": 1.2655728132138222e-08,
+          "link_endpoint_error": 0.0,
+          "wheel_intersections": {}
+        },
+        "FR": {
+          "angle": 0.32141733169555664,
+          "length_error": 2.5225826205677038e-08,
+          "link_endpoint_error": 5.960464477539063e-08,
+          "wheel_intersections": {}
+        }
+      }
+    }
+  ],
+  "drs": [
+    {
+      "amount": 0.0,
+      "intersections": {}
+    },
+    {
+      "amount": 0.025,
+      "intersections": {}
+    },
+    {
+      "amount": 0.05,
+      "intersections": {}
+    },
+    {
+      "amount": 0.075,
+      "intersections": {}
+    },
+    {
+      "amount": 0.1,
+      "intersections": {}
+    },
+    {
+      "amount": 0.125,
+      "intersections": {}
+    },
+    {
+      "amount": 0.15,
+      "intersections": {}
+    },
+    {
+      "amount": 0.175,
+      "intersections": {}
+    },
+    {
+      "amount": 0.2,
+      "intersections": {}
+    },
+    {
+      "amount": 0.225,
+      "intersections": {}
+    },
+    {
+      "amount": 0.25,
+      "intersections": {}
+    },
+    {
+      "amount": 0.275,
+      "intersections": {}
+    },
+    {
+      "amount": 0.3,
+      "intersections": {}
+    },
+    {
+      "amount": 0.325,
+      "intersections": {}
+    },
+    {
+      "amount": 0.35,
+      "intersections": {}
+    },
+    {
+      "amount": 0.375,
+      "intersections": {}
+    },
+    {
+      "amount": 0.4,
+      "intersections": {}
+    },
+    {
+      "amount": 0.425,
+      "intersections": {}
+    },
+    {
+      "amount": 0.45,
+      "intersections": {}
+    },
+    {
+      "amount": 0.475,
+      "intersections": {}
+    },
+    {
+      "amount": 0.5,
+      "intersections": {}
+    },
+    {
+      "amount": 0.525,
+      "intersections": {}
+    },
+    {
+      "amount": 0.55,
+      "intersections": {}
+    },
+    {
+      "amount": 0.575,
+      "intersections": {}
+    },
+    {
+      "amount": 0.6,
+      "intersections": {}
+    },
+    {
+      "amount": 0.625,
+      "intersections": {}
+    },
+    {
+      "amount": 0.65,
+      "intersections": {}
+    },
+    {
+      "amount": 0.675,
+      "intersections": {}
+    },
+    {
+      "amount": 0.7,
+      "intersections": {}
+    },
+    {
+      "amount": 0.725,
+      "intersections": {}
+    },
+    {
+      "amount": 0.75,
+      "intersections": {}
+    },
+    {
+      "amount": 0.775,
+      "intersections": {}
+    },
+    {
+      "amount": 0.8,
+      "intersections": {}
+    },
+    {
+      "amount": 0.825,
+      "intersections": {}
+    },
+    {
+      "amount": 0.85,
+      "intersections": {}
+    },
+    {
+      "amount": 0.875,
+      "intersections": {}
+    },
+    {
+      "amount": 0.9,
+      "intersections": {}
+    },
+    {
+      "amount": 0.925,
+      "intersections": {}
+    },
+    {
+      "amount": 0.95,
+      "intersections": {}
+    },
+    {
+      "amount": 0.975,
+      "intersections": {}
+    },
+    {
+      "amount": 1.0,
+      "intersections": {}
+    }
+  ],
+  "scope": "Triangle surface intersections against wheel meshes and rear-wing surfaces; joint/mount contact is intentional, not a full vehicle clearance certification.",
+  "blender_driver_tolerance": 5e-05
+}

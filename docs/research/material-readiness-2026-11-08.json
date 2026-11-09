@@ -1,0 +1,62 @@
+{
+  "checked_on": "2026-11-08",
+  "method": "Read-only background Blender inspection through official MCP CLI tools; no files modified",
+  "live_connection": "Not reachable at check time; background tools succeeded",
+  "models": {
+    "rb19": {
+      "used_material_count": 1,
+      "used_images": [
+        {
+          "name": "Full Body_Bake1_PBR_Diffuse",
+          "size": [
+            4096,
+            4096
+          ],
+          "packed": true,
+          "has_data": true,
+          "exists_on_disk": false
+        },
+        {
+          "name": "Full Body_Bake1_PBR_Metalness",
+          "size": [
+            4096,
+            4096
+          ],
+          "packed": true,
+          "has_data": true,
+          "exists_on_disk": false
+        },
+        {
+          "name": "Full Body_Bake1_PBR_Normal",
+          "size": [
+            4096,
+            4096
+          ],
+          "packed": true,
+          "has_data": true,
+          "exists_on_disk": false
+        },
+        {
+          "name": "Full Body_Bake1_PBR_Roughness",
+          "size": [
+            4096,
+            4096
+          ],
+          "packed": true,
+          "has_data": true,
+          "exists_on_disk": false
+        }
+      ],
+      "mesh_objects_with_uv": 1,
+      "missing_external_references_total": 40,
+      "interpretation": "The four images used by the scene material are packed and readable. Missing external references also exist in retained image data; these do not establish missing active car-body textures."
+    },
+    "rb16b": {
+      "used_material_count": 33,
+      "used_image_count": 61,
+      "readable_image_count": 61,
+      "images_available_on_disk": 61,
+      "mesh_objects_with_uv": 315
+    }
+  }
+}

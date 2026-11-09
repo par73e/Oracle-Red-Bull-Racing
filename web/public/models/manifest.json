@@ -1,0 +1,596 @@
+[
+  {
+    "id": "rb19",
+    "revision": "2026-11-09-continuity1",
+    "name": "RB19",
+    "year": 2023,
+    "file": "/models/rb19.glb",
+    "display_length": 5.5,
+    "units": "metre-scale presentation; approximate",
+    "coordinate_system": "glTF Y-up, +Z forward, +X vehicle left",
+    "wheels": {
+      "FL": {
+        "steer": "STEER_FL",
+        "axle": "AXLE_FL",
+        "spin": "SPIN_FL",
+        "radius": 0.36901673045940697,
+        "rest_axis": [
+          1,
+          0,
+          0
+        ],
+        "center": [
+          0.796093225479126,
+          0.37302151322364807,
+          1.4720463752746582
+        ],
+        "spin_meshes": [
+          "RB19_Part_1284"
+        ],
+        "steer_only_meshes": [
+          "RB19_Part_10797",
+          "RB19_Part_10887",
+          "RB19_Part_10813",
+          "RB19_Part_10829"
+        ]
+      },
+      "FR": {
+        "steer": "STEER_FR",
+        "axle": "AXLE_FR",
+        "spin": "SPIN_FR",
+        "radius": 0.3690167006570846,
+        "rest_axis": [
+          1,
+          0,
+          0
+        ],
+        "center": [
+          -0.7954937219619751,
+          0.3730214834213257,
+          1.4720463752746582
+        ],
+        "spin_meshes": [
+          "RB19_Part_2671"
+        ],
+        "steer_only_meshes": [
+          "RB19_Part_11859",
+          "RB19_Part_11949",
+          "RB19_Part_11875",
+          "RB19_Part_11891"
+        ]
+      },
+      "RL": {
+        "steer": "STEER_RL",
+        "axle": "AXLE_RL",
+        "spin": "SPIN_RL",
+        "radius": 0.37289206526475027,
+        "rest_axis": [
+          1,
+          0,
+          0
+        ],
+        "center": [
+          0.7892087697982788,
+          0.37481728196144104,
+          -2.0478739738464355
+        ],
+        "spin_meshes": [
+          "RB19_Part_3489"
+        ],
+        "steer_only_meshes": []
+      },
+      "RR": {
+        "steer": "STEER_RR",
+        "axle": "AXLE_RR",
+        "spin": "SPIN_RR",
+        "radius": 0.37289206514833495,
+        "rest_axis": [
+          1,
+          0,
+          0
+        ],
+        "center": [
+          -0.7892087697982788,
+          0.37481728196144104,
+          -2.0478742122650146
+        ],
+        "spin_meshes": [
+          "RB19_Part_5108"
+        ],
+        "steer_only_meshes": []
+      }
+    },
+    "wheelbase": 3.5199203491210938,
+    "front_track": 1.591586947441101,
+    "suspension": {
+      "rack": "STEERING_RACK",
+      "travel_per_degree": -0.0026936567468026393,
+      "wheels": {
+        "FL": {
+          "upper": [
+            0.602692186832428,
+            0.6030129194259644,
+            1.5543311834335327
+          ],
+          "lower": [
+            0.6014894247055054,
+            0.3193342685699463,
+            1.5731037855148315
+          ],
+          "inner": [
+            0.11621709167957306,
+            0.49280571937561035,
+            1.584027647972107
+          ],
+          "outer": [
+            0.5400000214576721,
+            0.4232223629951477,
+            1.4342129230499268
+          ],
+          "length": 0.45483873890036486,
+          "tie_mesh": "RB19_Part_10088",
+          "link": "TRACK_ROD_LINK_FL",
+          "inner_node": "TRACK_ROD_INNER_FL",
+          "outer_node": "TRACK_ROD_OUTER_FL",
+          "pickup_refitted": true,
+          "port": {
+            "mesh": "STEERING_PORT_FL",
+            "shank": "STEERING_HIDDEN_SHANK_FL",
+            "begin": -0.05536015409231186,
+            "end": 0.0881940148472786,
+            "bore_rx": 0.03322139641951033,
+            "bore_rz": 0.05739216975483693,
+            "cap_limit": 0.025,
+            "covered_root": true,
+            "native_fairing": true
+          },
+          "axis_mode": "Source-derived kingpin; unchanged",
+          "fixed_fairing": "RB19_Part_10088_Fixed_Fairing",
+          "fixed_meshes": [
+            "RB19_Part_10057",
+            "RB19_Part_9992",
+            "RB19_Part_10092"
+          ]
+        },
+        "FR": {
+          "upper": [
+            -0.602692186832428,
+            0.6030129194259644,
+            1.5543311834335327
+          ],
+          "lower": [
+            -0.6014894247055054,
+            0.3193342685699463,
+            1.5731037855148315
+          ],
+          "inner": [
+            -0.11621709167957306,
+            0.49280571937561035,
+            1.584027647972107
+          ],
+          "outer": [
+            -0.5400000214576721,
+            0.4232223629951477,
+            1.4342129230499268
+          ],
+          "length": 0.45483873890036486,
+          "tie_mesh": "RB19_Part_11150",
+          "link": "TRACK_ROD_LINK_FR",
+          "inner_node": "TRACK_ROD_INNER_FR",
+          "outer_node": "TRACK_ROD_OUTER_FR",
+          "pickup_refitted": true,
+          "port": {
+            "mesh": "STEERING_PORT_FR",
+            "shank": "STEERING_HIDDEN_SHANK_FR",
+            "begin": -0.05536013919115067,
+            "end": 0.0881940148472786,
+            "bore_rx": 0.033221407799153134,
+            "bore_rz": 0.0573921436366002,
+            "cap_limit": 0.025,
+            "covered_root": true,
+            "native_fairing": true
+          },
+          "axis_mode": "Source-derived kingpin; unchanged",
+          "fixed_fairing": "RB19_Part_11150_Fixed_Fairing",
+          "fixed_meshes": [
+            "RB19_Part_11119",
+            "RB19_Part_11054",
+            "RB19_Part_11154"
+          ]
+        }
+      },
+      "note": "Constant-length track rods and kingpin axes derived from mesh joints; no heave or team alignment claim."
+    },
+    "drs": {
+      "pivot": "DRS_PIVOT",
+      "max_angle_radians": 0.9075712110370514,
+      "hinge": [
+        0,
+        1.0190000534057617,
+        -2.5899999141693115
+      ],
+      "base": [
+        0,
+        1.0269999504089355,
+        -2.4000000953674316
+      ],
+      "closed_attachment": [
+        0,
+        1.0399999618530273,
+        -2.569999933242798
+      ],
+      "attachment": "DRS_ATTACH",
+      "cylinder": "DRS_CYLINDER",
+      "rod": "DRS_ROD",
+      "cylinder_length": 0.12275724584456815,
+      "rod_length": 0.09057635916887914,
+      "piston_frame": "DRS_PISTON_FRAME",
+      "distance_min": 0.17049617478412243,
+      "distance_max": 0.1953336050134473,
+      "rod_radius": 0.0025,
+      "barrel_radius": 0.007,
+      "fixed_meshes": [
+        "RB19_Part_9016",
+        "DRS_Fixed_Mainplane_Lip",
+        "RB19_Part_8352",
+        "RB19_Part_9060"
+      ],
+      "flap_meshes": [
+        "DRS_Flap_Surface"
+      ]
+    },
+    "floor": {
+      "mode": "approximate twin venturi tunnels",
+      "removed_shallow_faces": 644
+    },
+    "hidden_source_alternatives": [],
+    "quality_fixes": {
+      "drs_sheet_split": {
+        "candidate_sheets": 2,
+        "moving_vertices": 376,
+        "fixed_lip_vertices": 117,
+        "fixed_lip_mesh": "DRS_Fixed_Mainplane_Lip"
+      },
+      "drs_region": "Only connected inboard ORACLE flap; mainplane trailing lip, mainplane, endplates and outboard rear extensions fixed.",
+      "floor_outer_vertices_preserved": 1416,
+      "mechanisms": "Kingpin steering, constant-length track rods, rigid piston with bored body and clevis pins.",
+      "exhaust": {
+        "material": "heat-tinted metal outside, soot-dark inside",
+        "inner_faces": 24
+      }
+    },
+    "license": {
+      "title": "Creative Commons Attribution 4.0",
+      "url": "https://creativecommons.org/licenses/by/4.0/",
+      "author": "Redgrund",
+      "source": "https://skfb.ly/oR7sq",
+      "modifications": "Materials, articulated wheels and DRS hydraulic approximation, uniform scale; RB19 floor reconstruction"
+    },
+    "glb_bytes": 24159828,
+    "texture_encoding": "PNG 8-bit; source resolution retained"
+  },
+  {
+    "id": "rb16b",
+    "revision": "2026-11-09-continuity1",
+    "name": "RB16B",
+    "year": 2021,
+    "file": "/models/rb16b.glb",
+    "display_length": 5.5,
+    "units": "metre-scale presentation; approximate",
+    "coordinate_system": "glTF Y-up, +Z forward, +X vehicle left",
+    "wheels": {
+      "FL": {
+        "steer": "STEER_FL",
+        "axle": "AXLE_FL",
+        "spin": "SPIN_FL",
+        "radius": 0.33209948503645137,
+        "rest_axis": [
+          0.9974908828735352,
+          0.07079474627971649,
+          -0.000030439818146987818
+        ],
+        "center": [
+          0.8152328133583069,
+          0.3320521414279938,
+          1.5547974109649658
+        ],
+        "spin_meshes": [
+          "x0_tyre_fl_SUB1",
+          "x0_tyre_fl_SUB0",
+          "wheel_fl",
+          "disc_fl_SUB1",
+          "disc_fl_SUB0",
+          "DISK_LF"
+        ],
+        "steer_only_meshes": [
+          "hub_caliper_fl_SUB0",
+          "hub_caliper_fl_SUB1"
+        ]
+      },
+      "FR": {
+        "steer": "STEER_FR",
+        "axle": "AXLE_FR",
+        "spin": "SPIN_FR",
+        "radius": 0.3320900193939451,
+        "rest_axis": [
+          0.9974908828735352,
+          -0.07079462707042694,
+          -6.965269108150096e-7
+        ],
+        "center": [
+          -0.8152338266372681,
+          0.3320519030094147,
+          1.554797649383545
+        ],
+        "spin_meshes": [
+          "x0_tyre_fr_SUB1",
+          "x0_tyre_fr_SUB0",
+          "disc_fr_SUB1",
+          "disc_fr_SUB0",
+          "wheel_fr",
+          "DISK_RF"
+        ],
+        "steer_only_meshes": [
+          "hub_caliper_fr_SUB0",
+          "hub_caliper_fr_SUB1"
+        ]
+      },
+      "RL": {
+        "steer": "STEER_RL",
+        "axle": "AXLE_RL",
+        "spin": "SPIN_RL",
+        "radius": 0.3286973695503548,
+        "rest_axis": [
+          1,
+          -5.431234058050904e-7,
+          -7.320459189941175e-7
+        ],
+        "center": [
+          0.7863106727600098,
+          0.33168843388557434,
+          -1.9879180192947388
+        ],
+        "spin_meshes": [
+          "x0_tyre_bl_SUB1",
+          "x0_tyre_bl_SUB0",
+          "disc_bl_SUB1",
+          "disc_bl_SUB0",
+          "wheel_bl",
+          "DISK_LR"
+        ],
+        "steer_only_meshes": [
+          "hub_caliper_bl_SUB0",
+          "hub_caliper_bl_SUB1"
+        ]
+      },
+      "RR": {
+        "steer": "STEER_RR",
+        "axle": "AXLE_RR",
+        "spin": "SPIN_RR",
+        "radius": 0.328757657087408,
+        "rest_axis": [
+          1,
+          5.43868054592167e-7,
+          7.170889944063674e-7
+        ],
+        "center": [
+          -0.7872869372367859,
+          0.3316885828971863,
+          -1.9879176616668701
+        ],
+        "spin_meshes": [
+          "x0_tyre_br_SUB1",
+          "x0_tyre_br_SUB0",
+          "disc_br_SUB1",
+          "disc_br_SUB0",
+          "wheel_br",
+          "DISK_RR"
+        ],
+        "steer_only_meshes": [
+          "hub_caliper_br_SUB0",
+          "hub_caliper_br_SUB1"
+        ]
+      }
+    },
+    "wheelbase": 3.5427154302597046,
+    "front_track": 1.630466639995575,
+    "suspension": {
+      "rack": "STEERING_RACK",
+      "travel_per_degree": -0.0016227996524041468,
+      "wheels": {
+        "FL": {
+          "upper": [
+            0.6062053442001343,
+            0.4645732641220093,
+            1.4941208362579346
+          ],
+          "lower": [
+            0.6062053442001343,
+            0.3233545124530792,
+            1.4941208362579346
+          ],
+          "inner": [
+            0.18417149782180786,
+            0.42066675424575806,
+            1.4174864292144775
+          ],
+          "outer": [
+            0.6063185930252075,
+            0.3755902647972107,
+            1.401136875152588
+          ],
+          "length": 0.4248615894765977,
+          "tie_mesh": "suspension_steeringarm_fl",
+          "link": "TRACK_ROD_LINK_FL",
+          "inner_node": "TRACK_ROD_INNER_FL",
+          "outer_node": "TRACK_ROD_OUTER_FL",
+          "pickup_refitted": false,
+          "port": {
+            "mesh": "STEERING_PORT_FL",
+            "shank": "STEERING_HIDDEN_SHANK_FL",
+            "begin": -0.05100489112734795,
+            "end": 0.06657518666982651,
+            "bore_rx": 0.013437648404240608,
+            "bore_rz": 0.027594662371873857,
+            "cap_limit": 0.025,
+            "covered_root": true
+          },
+          "axis_mode": "Vertical yaw, source static camber retained; wheel-end tips blended to the simplified joint.",
+          "fixed_meshes": [
+            "suspension2_fl",
+            "suspension3_fl",
+            "suspension_fl"
+          ]
+        },
+        "FR": {
+          "upper": [
+            -0.6067718267440796,
+            0.46457329392433167,
+            1.4941208362579346
+          ],
+          "lower": [
+            -0.6067718267440796,
+            0.32335472106933594,
+            1.4941208362579346
+          ],
+          "inner": [
+            -0.18473823368549347,
+            0.42066699266433716,
+            1.417486548423767
+          ],
+          "outer": [
+            -0.6068853735923767,
+            0.37559056282043457,
+            1.401136875152588
+          ],
+          "length": 0.4248616403735139,
+          "tie_mesh": "suspension_steeringarm_fr",
+          "link": "TRACK_ROD_LINK_FR",
+          "inner_node": "TRACK_ROD_INNER_FR",
+          "outer_node": "TRACK_ROD_OUTER_FR",
+          "pickup_refitted": false,
+          "port": {
+            "mesh": "STEERING_PORT_FR",
+            "shank": "STEERING_HIDDEN_SHANK_FR",
+            "begin": -0.05100488740205765,
+            "end": 0.0665752090215683,
+            "bore_rx": 0.013437670681476594,
+            "bore_rz": 0.02759467205762863,
+            "cap_limit": 0.025,
+            "covered_root": true
+          },
+          "axis_mode": "Vertical yaw, source static camber retained; wheel-end tips blended to the simplified joint.",
+          "fixed_meshes": [
+            "suspension2_fr",
+            "suspension3_fr",
+            "suspension_fr"
+          ]
+        }
+      },
+      "note": "Constant-length track rods and kingpin axes derived from mesh joints; no heave or team alignment claim."
+    },
+    "drs": {
+      "pivot": "DRS_PIVOT",
+      "max_angle_radians": 0.7330382858376184,
+      "hinge": [
+        0,
+        1.0230000019073486,
+        -2.4860000610351562
+      ],
+      "base": [
+        0,
+        1.0399999618530273,
+        -2.3499999046325684
+      ],
+      "closed_attachment": [
+        0,
+        1.0499999523162842,
+        -2.440000057220459
+      ],
+      "attachment": "DRS_ATTACH",
+      "cylinder": "DRS_CYLINDER",
+      "rod": "DRS_ROD",
+      "cylinder_length": 0.06519888044032923,
+      "rod_length": 0.07736894425994068,
+      "piston_frame": "DRS_PISTON_FRAME",
+      "distance_min": 0.09055400061156837,
+      "distance_max": 0.1245678247002699,
+      "rod_radius": 0.0025,
+      "barrel_radius": 0.007,
+      "fixed_meshes": [
+        "rearwing_top_SUB2",
+        "rearwing_top_SUB1",
+        "rearwing_br_SUB2",
+        "rearwing_br_SUB1",
+        "rearwing_br_SUB0",
+        "rearwing_bl_SUB2",
+        "rearwing_bl_SUB1",
+        "rearwing_bl_SUB0"
+      ],
+      "flap_meshes": [
+        "rearwingmoving_top_SUB3",
+        "rearwingmoving_top_SUB2",
+        "21_redbull_2_psd _SUB1_337_001",
+        "21_redbull_2_psd _SUB1_338_001",
+        "21_redbull_2_psd _SUB1_339_001",
+        "21_redbull_2_psd _SUB1_340_001",
+        "21_redbull_2_psd _SUB1_341_001"
+      ]
+    },
+    "floor": {
+      "mode": "original period floor and diffuser",
+      "removed_shallow_faces": 0
+    },
+    "hidden_source_alternatives": [
+      "RIM_BLUR_LR_SUB1",
+      "RIM_BLUR_LR_SUB0",
+      "RIM_BLUR_RR_SUB1",
+      "RIM_BLUR_RR_SUB0",
+      "RIM_BLUR_RF_SUB1",
+      "RIM_BLUR_RF_SUB0",
+      "RIM_BLUR_LF_SUB1",
+      "RIM_BLUR_LF_SUB0",
+      "rearwing_top_SUB0",
+      "rearwingmoving_top_SUB0",
+      "rearwingmoving_top_SUB1",
+      "rearwingmoving_top_2_SUB1",
+      "rearwingmoving_top_2_SUB0"
+    ],
+    "quality_fixes": {
+      "removed_legacy_drs_bar": {
+        "object": "safetycell_SUB1",
+        "removed_vertices": 124,
+        "reason": "Disconnected original gray DRS linkage, not the carbon pylon."
+      },
+      "flap_decal_meshes": [
+        "21_redbull_2_psd _SUB1_337_001",
+        "21_redbull_2_psd _SUB1_338_001",
+        "21_redbull_2_psd _SUB1_339_001",
+        "21_redbull_2_psd _SUB1_340_001",
+        "21_redbull_2_psd _SUB1_341_001"
+      ],
+      "mechanisms": "Kingpin steering, constant-length track rods, rigid piston with bored body and clevis pins.",
+      "brake_disc": {
+        "color": "brake_disc_d.dds",
+        "normal": "brake_disc_n.dds",
+        "metallic": 0,
+        "roughness": 0.8
+      },
+      "visible_disc_meshes": [
+        "DISK_LF",
+        "DISK_RF",
+        "DISK_LR",
+        "DISK_RR"
+      ]
+    },
+    "license": {
+      "title": "Creative Commons Attribution 4.0",
+      "url": "https://creativecommons.org/licenses/by/4.0/",
+      "author": "MattDoesBlender",
+      "source": "https://skfb.ly/py9Uu",
+      "modifications": "Materials, articulated wheels and DRS hydraulic approximation, uniform scale; RB19 floor reconstruction"
+    },
+    "glb_bytes": 31783824,
+    "texture_encoding": "PNG 8-bit; source resolution retained"
+  }
+]
