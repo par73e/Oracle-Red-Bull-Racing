@@ -274,7 +274,6 @@ def make_actuator(base,attach,pivot,root,empty,parent_keep,basic_material,body,c
     gland=basic_material('AERO_DRS_Machined_Gland',(.25,.28,.31),.27,1)
     chrome=basic_material('AERO_DRS_Polished_Piston',(.56,.59,.62),.17,1)
     seal=basic_material('AERO_DRS_Black_Seal',(.008,.009,.011),.75,0)
-    carbon=basic_material('AERO_DRS_Mount_Carbon',(.018,.021,.026),.43,0)
     anchor=empty('DRS_BASE',base,root);tip=empty('DRS_ATTACH',attach,pivot)
     def lathe(name,profile,materials,sections=None):
         n=32;verts=[];faces=[]
@@ -330,84 +329,8 @@ def make_actuator(base,attach,pivot,root,empty,parent_keep,basic_material,body,c
     for label,point,parent in [('BASE',base,barrel),('TIP',attach,rod)]:
         eye=lathe(f'DRS_{label}_BEARING_EYE',[(.008,-.003),(.008,.003),(.0052,.003),(.0052,-.003)],[gland])
         eye.location=point;eye.rotation_euler.y=math.pi/2;parent_keep(eye,parent)
-    def surface_foot(point,objects):
-        bpy.context.view_layer.update();dg=bpy.context.evaluated_depsgraph_get()
-        # Closest surface, rather than a vertical ray that can miss the narrow
-        # gooseneck and fall all the way to the lower mainplane.
-        hits=[]
-        for source in objects:
-            obj=source.evaluated_get(dg);data=obj.to_mesh()
-            vertices=[obj.matrix_world@v.co for v in data.vertices]
-            tree=BVHTree.FromPolygons(vertices,[tuple(p.vertices) for p in data.polygons])
-            nearest=tree.find_nearest(point)
-            if nearest[0] is not None:hits.append(nearest[0].copy())
-            obj.to_mesh_clear()
-        assert hits,('No carbon mounting surface',car,list(point))
-        return min(hits,key=lambda p:(p-point).length_squared)
-    def molded_mount(name,foot,point,parent):
-        # Shared source material plus a flared, smoothly lofted shell makes the
-        # bearing support read as a continuation of the original carbon pylon.
-        source_carbon=bpy.data.materials['redbull_carbon1']
-        n=24;vertices=[];faces=[];top=point-Vector((0,0,.006))
-        axis=(top-foot).normalized();q=Vector((0,0,1)).rotation_difference(axis)
-        stations=[(-.10,.018,.023),(0,.018,.023),(.25,.015,.018),(.70,.010,.012),(1,.008,.010)]
-        if 'TIP' in name:stations=[(t,rx*(.70 if t<.7 else 1),ry) for t,rx,ry in stations]
-        length=(top-foot).length
-        for t,rx,ry in stations:
-            center=foot+(top-foot)*t
-            for i in range(n):
-                a=i*math.tau/n;vertices.append(center+q@Vector((rx*math.cos(a),ry*math.sin(a),0)))
-        for j in range(len(stations)-1):
-            for i in range(n):faces.append((j*n+i,j*n+(i+1)%n,(j+1)*n+(i+1)%n,(j+1)*n+i))
-        faces.extend([tuple(reversed(range(n))),tuple((len(stations)-1)*n+i for i in range(n))])
-        mesh=bpy.data.meshes.new(name);mesh.from_pydata(vertices,[],faces);mesh.update()
-        mount=bpy.data.objects.new(name,mesh);scene.collection.objects.link(mount);mesh.materials.append(source_carbon)
-        uv=mesh.uv_layers.new(name='UVMap')
-        for face in mesh.polygons:
-            face.use_smooth=len(face.vertices)==4
-            for index in face.loop_indices:
-                j,i=divmod(mesh.loops[index].vertex_index,n)
-                t,rx,ry=stations[j]
-                perimeter=math.pi*(3*(rx+ry)-math.sqrt((3*rx+ry)*(rx+3*ry)))
-                uv.data[index].uv=(i/n*perimeter*87.5,t*length*87.5)
-        sub=mount.modifiers.new('Molded carbon fillet','SUBSURF');sub.levels=2;sub.render_levels=2
-        parent_keep(mount,parent)
-    for label,point,parent in [('BASE',base,root),('TIP',attach,pivot)]:
-        # Transverse clevis pin, two fork cheeks and a pad on the carbon surface.
-        bpy.ops.mesh.primitive_cylinder_add(vertices=24,radius=.005,depth=.022,location=point)
-        pin=bpy.context.object;pin.name=f'DRS_{label}_PIN';pin.rotation_euler.y=math.pi/2
-        pin.data.materials.append(gland);parent_keep(pin,parent)
-        if car=='rb16b':
-            foot=surface_foot(point,fixed_surfaces if label=='BASE' else moving_surfaces)
-            molded_mount(f'DRS_{label}_MOLDED_CARBON',foot,point,parent)
-            for sign in [-1,1]:
-                cheek=lathe(f'DRS_{label}_CARBON_EAR_{sign}',[(.010,-.0018),(.010,.0018),(.0052,.0018),(.0052,-.0018)],
-                            [bpy.data.materials['redbull_carbon1']])
-                cheek.location=point+Vector((sign*.009,0,0));cheek.rotation_euler.y=math.pi/2;parent_keep(cheek,parent)
-            continue
-        for sign in [-1,1]:
-            bpy.ops.mesh.primitive_cube_add(size=1,location=point+Vector((sign*.008,0,-.010)))
-            cheek=bpy.context.object;cheek.name=f'DRS_{label}_CLEVIS_{sign}'
-            cheek.scale=(.003,.018,.026)
-            bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
-            cheek.data.materials.append(alloy)
-            bevel=cheek.modifiers.new('Rounded machined edges','BEVEL');bevel.width=.002;bevel.segments=3
-            parent_keep(cheek,parent)
-        bpy.ops.mesh.primitive_cube_add(size=1,location=point+Vector((0,0,-.026)))
-        pad=bpy.context.object;pad.name=f'DRS_{label}_MOUNT_PAD';pad.scale=(.027,.031,.008)
-        bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
-        pad.data.materials.append(carbon);parent_keep(pad,parent)
-        foot=surface_foot(point,fixed_surfaces if label=='BASE' else moving_surfaces)
-        top=point-Vector((0,0,.027));direction=top-foot
-        if direction.length>.004:
-            bpy.ops.mesh.primitive_cone_add(vertices=24,radius1=1,radius2=.72,depth=1,location=(foot+top)/2)
-            horn=bpy.context.object;horn.name=f'DRS_{label}_CARBON_HORN'
-            horn.rotation_mode='QUATERNION';horn.rotation_quaternion=Vector((0,0,1)).rotation_difference(direction.normalized())
-            horn.scale=(.011,.016,direction.length+.008)
-            bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
-            horn.data.materials.append(carbon)
-            for face in horn.data.polygons:face.use_smooth=len(face.vertices)==4
-            bevel=horn.modifiers.new('Rounded carbon support','BEVEL');bevel.width=.002;bevel.segments=3
-            parent_keep(horn,parent)
+    from detailed_drs_mounts import make_detailed_mounts, make_detailed_pins
+    make_detailed_mounts(base,attach,pivot,root,car,fixed_surfaces,moving_surfaces,parent_keep)
+    make_detailed_pins(base,attach,pivot,root,gland,parent_keep)
     return anchor,tip,barrel,rod,{'cylinder_length':length,'rod_length':rod_length,'piston_frame':frame.name,
                                 'distance_min':low,'distance_max':high,'rod_radius':.0025,'barrel_radius':.007}

@@ -1,0 +1,21 @@
+{
+  "method": "proxy body.contains grid, x=-0.65..2.3m, abs(y)=0.3..1.15m, z=0.15..0.55m; 0.05m spacing, 6-neighbour adjacency; box includes external free air. Does not prove true undercut openness, small passages or raw mesh fidelity.",
+  "sides": {
+    "-1": {
+      "grid_points": 9720,
+      "spacing_m": 0.05,
+      "free_points": 8763,
+      "free_components": 1,
+      "through_components": 1,
+      "through_grid_points": 8763
+    },
+    "1": {
+      "grid_points": 9720,
+      "spacing_m": 0.05,
+      "free_points": 8781,
+      "free_components": 1,
+      "through_components": 1,
+      "through_grid_points": 8781
+    }
+  }
+}

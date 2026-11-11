@@ -1,0 +1,172 @@
+{
+  "car": "rb19",
+  "revision": "2026-11-10-tail-detail1",
+  "samples": [
+    {
+      "drs": 0.0,
+      "intersections": {}
+    },
+    {
+      "drs": 0.025,
+      "intersections": {}
+    },
+    {
+      "drs": 0.05,
+      "intersections": {}
+    },
+    {
+      "drs": 0.075,
+      "intersections": {}
+    },
+    {
+      "drs": 0.1,
+      "intersections": {}
+    },
+    {
+      "drs": 0.125,
+      "intersections": {}
+    },
+    {
+      "drs": 0.15,
+      "intersections": {}
+    },
+    {
+      "drs": 0.175,
+      "intersections": {}
+    },
+    {
+      "drs": 0.2,
+      "intersections": {}
+    },
+    {
+      "drs": 0.225,
+      "intersections": {}
+    },
+    {
+      "drs": 0.25,
+      "intersections": {}
+    },
+    {
+      "drs": 0.275,
+      "intersections": {}
+    },
+    {
+      "drs": 0.3,
+      "intersections": {}
+    },
+    {
+      "drs": 0.325,
+      "intersections": {}
+    },
+    {
+      "drs": 0.35,
+      "intersections": {}
+    },
+    {
+      "drs": 0.375,
+      "intersections": {}
+    },
+    {
+      "drs": 0.4,
+      "intersections": {}
+    },
+    {
+      "drs": 0.425,
+      "intersections": {}
+    },
+    {
+      "drs": 0.45,
+      "intersections": {}
+    },
+    {
+      "drs": 0.475,
+      "intersections": {}
+    },
+    {
+      "drs": 0.5,
+      "intersections": {}
+    },
+    {
+      "drs": 0.525,
+      "intersections": {}
+    },
+    {
+      "drs": 0.55,
+      "intersections": {}
+    },
+    {
+      "drs": 0.575,
+      "intersections": {}
+    },
+    {
+      "drs": 0.6,
+      "intersections": {}
+    },
+    {
+      "drs": 0.625,
+      "intersections": {}
+    },
+    {
+      "drs": 0.65,
+      "intersections": {}
+    },
+    {
+      "drs": 0.675,
+      "intersections": {}
+    },
+    {
+      "drs": 0.7,
+      "intersections": {}
+    },
+    {
+      "drs": 0.725,
+      "intersections": {}
+    },
+    {
+      "drs": 0.75,
+      "intersections": {}
+    },
+    {
+      "drs": 0.775,
+      "intersections": {}
+    },
+    {
+      "drs": 0.8,
+      "intersections": {}
+    },
+    {
+      "drs": 0.825,
+      "intersections": {}
+    },
+    {
+      "drs": 0.85,
+      "intersections": {}
+    },
+    {
+      "drs": 0.875,
+      "intersections": {}
+    },
+    {
+      "drs": 0.9,
+      "intersections": {}
+    },
+    {
+      "drs": 0.925,
+      "intersections": {}
+    },
+    {
+      "drs": 0.95,
+      "intersections": {}
+    },
+    {
+      "drs": 0.975,
+      "intersections": {}
+    },
+    {
+      "drs": 1.0,
+      "intersections": {}
+    }
+  ],
+  "joint_exclusion_radius": 0.014,
+  "scope": "Triangle surface overlap at 41 positions, mount/wing installation contact excluded; no load or continuous collision certification."
+}

@@ -75,7 +75,7 @@
         "maxMovement": 0.0936835824267235
       }
     ],
-    "revision": "2026-11-09-continuity1",
+    "revision": "2026-11-10-tail-detail1",
     "brakeDiscs": [
       {
         "name": "DISK_LF",
@@ -129,7 +129,7 @@
       }
     ],
     "flapDecals": [],
-    "revision": "2026-11-09-continuity1",
+    "revision": "2026-11-10-tail-detail1",
     "flapConnectedSheets": [
       {
         "name": "DRS_Flap_Surface",

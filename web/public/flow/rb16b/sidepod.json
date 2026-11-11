@@ -1,0 +1,33 @@
+{
+  "case": "rb16b-sidepod-suspension-l5-20261111",
+  "time": "1150",
+  "shape": [
+    105,
+    105,
+    47
+  ],
+  "min": [
+    -2.4,
+    -1.3,
+    0.05
+  ],
+  "max": [
+    2.8,
+    1.3,
+    1.2
+  ],
+  "scale": 0.0019287862,
+  "located": 463691,
+  "excludedNumericalSamples": 0,
+  "sha256": "d4c75c940de643f570fbcd1d3f9972ebdb34a3d3f035a2660943bf136829ce9b",
+  "sourceSampleSha256": "f86fb9adc56eeeafbbd9d2de66b615bc4fe6ae26d4e4a8642ac0bba423b637b2",
+  "proxySha256": {
+    "body": "c022920f24f7c71327abebd51a18c2003e26c85b78052fa3843d7dcd99e1b2e0",
+    "FL": "0d9e53395e2cfa8bcac29e3e0cbdab4f69acb42d462eabcd4e34a96a3c838e6b",
+    "FR": "5e910bb7fcb52ab7fe6eb14e68970c1b7a3b6d351b0e484307427eff0e163ca3",
+    "RL": "5948141628b8f6cac0cd5d6586184a8c1cb6d051bb3f843878b59eacf3007ef2",
+    "RR": "18493d634f7e440b40026ad542d6c985df90beebfb108bdef353d460972b26a1"
+  },
+  "status": "exploratory; only 180 km/h neutral straight DRS closed rolling wheels; not validated real-car CFD",
+  "source": "OpenFOAM cellPoint samples, locally refined sidepod/suspension baseline; no boundary layers"
+}

@@ -1,0 +1,20 @@
+{
+  "region": "x [-1,2] m, |y| <= .6 m, z [0.02,0.10] m",
+  "cases": [
+    "rb16b-base",
+    "rb16b-underbody-l5-stable1"
+  ],
+  "located_in_both": 11755,
+  "left_only": 76,
+  "right_only": 480,
+  "median_speed_mps": [
+    29.17938124497151,
+    40.28222541918885
+  ],
+  "velocity_vector_difference_mps_median_p90": [
+    10.044133749113,
+    19.694453461217616
+  ],
+  "kinematic_pressure_difference_m2_s2_median": 69.44161,
+  "limitations": "Common located points only; wall/solid sampling ambiguity, proxy geometry, local mesh and convergence remain material. Differences are not a proven error bound."
+}

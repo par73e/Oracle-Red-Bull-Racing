@@ -1,0 +1,21 @@
+FoamFile {version 2.0; format ascii; class dictionary; object postProcessDict;}
+ slices
+ {
+  type surfaces;
+  libs ("libsampling.so");
+  writeControl writeTime;
+  surfaceFormat vtk;
+  fields (p U);
+  interpolationScheme cellPoint;
+  surfaces
+  {
+   centerPlane {type cutPlane; point (0 0 0); normal (0 1 0); interpolate true;}
+   frontWheelPlane {type cutPlane; point (0 -0.796 0); normal (0 1 0); interpolate true;}
+   horizontalPlane {type cutPlane; point (0 0 0.30); normal (0 0 1); interpolate true;}
+  }
+ }
+ #includeFunc streamlinesLine(name=streamlinesCenter,start=(-4 0 0.04),end=(-4 0 1.6),nPoints=24,fields=(p U))
+ #includeFunc streamlinesLine(name=streamlinesWheels,start=(-4 -0.796 0.04),end=(-4 -0.796 1.2),nPoints=20,fields=(p U))
+ #includeFunc patchFlowRate(name=inletFlow,patch=inlet)
+ #includeFunc patchFlowRate(name=outletFlow,patch=outlet)
+

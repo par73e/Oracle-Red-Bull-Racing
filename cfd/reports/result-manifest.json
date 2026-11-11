@@ -1,0 +1,33 @@
+{
+  "car": "rb19",
+  "displayGeometryHash": "906a4dc37518fe5cce3f4be8fd5bbfa0950ec9bced879e86547c610c64e2ecef",
+  "displayRevision": "2026-11-10-tail-detail1",
+  "speedMps": 50,
+  "drs": 0,
+  "steerDeg": 0,
+  "yawDeg": 0,
+  "solver": "OpenFOAM Foundation 14 incompressibleFluid",
+  "turbulence": "kOmegaSST",
+  "cells": 373214,
+  "iterations": 800,
+  "validationStatus": "coarse_proxy_numerically_stable_not_engineering_validated",
+  "coordinates": "X downstream, Y vehicle right, Z up; transform (-glTF.Z,-glTF.X,glTF.Y)",
+  "files": {
+    "rb19-streamlines.json": {
+      "bytes": 251778,
+      "sha256": "2ae05370fc4f4269d75995f672b87beecdcb526c7d4d3dbd8bbbd0f513153d19"
+    },
+    "rb19-convergence.png": {
+      "bytes": 151689,
+      "sha256": "3c78bcd85f3d92b40f8abfdbc565f9767337c5e393814fdb3f998efa6f41f259"
+    },
+    "rb19-flow-slices.png": {
+      "bytes": 235610,
+      "sha256": "60f05388d0c197c13a06c19bb3b53afad2e8f5f14b6dace9379a1876f2f7b586"
+    },
+    "rb19-wheel-flow.png": {
+      "bytes": 317082,
+      "sha256": "13b920a937fae18e5aecfe10462f9631e0eae11b2c91cf7512914e337d681956"
+    }
+  }
+}

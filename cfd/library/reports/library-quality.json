@@ -1,0 +1,437 @@
+{
+  "records": [
+    {
+      "car": "rb19",
+      "anchor": "base",
+      "cells": 179105,
+      "residuals": {
+        "Ux": 3.6387313e-08,
+        "Uy": 1.5967248e-06,
+        "Uz": 1.3945863e-07,
+        "p": 3.4529201e-05,
+        "omega": 9.1341752e-08,
+        "k": 1.0064934e-07
+      },
+      "lastLocalContinuity": 2.0734087e-08,
+      "lastGlobalContinuity": -1.9206412e-10,
+      "forceRelativeRangeLast100": [
+        4.4305888025811655e-05,
+        0.017897468907296994,
+        0.00016558180903627096
+      ],
+      "excludedNumericalSamples": 0,
+      "rawFieldMax": 56.879983519965805,
+      "displayFieldMax": 56.879981994628906,
+      "strictResidualTargetMet": true
+    },
+    {
+      "car": "rb19",
+      "anchor": "low",
+      "cells": 179105,
+      "residuals": {
+        "Ux": 3.1020254e-08,
+        "Uy": 1.4493738e-06,
+        "Uz": 1.2650034e-07,
+        "p": 3.2836756e-05,
+        "omega": 9.5896406e-08,
+        "k": 9.8651079e-08
+      },
+      "lastLocalContinuity": 5.3302404e-09,
+      "lastGlobalContinuity": 8.261439e-11,
+      "forceRelativeRangeLast100": [
+        4.050794240320488e-05,
+        0.00391003208000007,
+        8.60061507764599e-05
+      ],
+      "excludedNumericalSamples": 0,
+      "rawFieldMax": 15.745405366241027,
+      "displayFieldMax": 15.745406150817871,
+      "strictResidualTargetMet": true
+    },
+    {
+      "car": "rb19",
+      "anchor": "high",
+      "cells": 179105,
+      "residuals": {
+        "Ux": 4.8128134e-08,
+        "Uy": 2.3362497e-06,
+        "Uz": 1.9730553e-07,
+        "p": 3.9503727e-05,
+        "omega": 9.4180688e-08,
+        "k": 9.9173145e-08
+      },
+      "lastLocalContinuity": 3.3202278e-08,
+      "lastGlobalContinuity": -7.7139069e-10,
+      "forceRelativeRangeLast100": [
+        4.9145501883744224e-05,
+        0.043779828741885435,
+        0.0006076144521699453
+      ],
+      "excludedNumericalSamples": 0,
+      "rawFieldMax": 110.74828141621892,
+      "displayFieldMax": 110.74828338623047,
+      "strictResidualTargetMet": true
+    },
+    {
+      "car": "rb19",
+      "anchor": "open",
+      "cells": 179451,
+      "residuals": {
+        "Ux": 4.72849e-08,
+        "Uy": 2.4721093e-06,
+        "Uz": 1.7657879e-07,
+        "p": 7.0450688e-05,
+        "omega": 9.8124929e-08,
+        "k": 1.0052455e-07
+      },
+      "lastLocalContinuity": 3.475777e-08,
+      "lastGlobalContinuity": -5.793516e-10,
+      "forceRelativeRangeLast100": [
+        4.209316789446687e-05,
+        0.021830622038959708,
+        0.0003261664398657944
+      ],
+      "excludedNumericalSamples": 0,
+      "rawFieldMax": 56.90758178997679,
+      "displayFieldMax": 56.9075813293457,
+      "strictResidualTargetMet": true
+    },
+    {
+      "car": "rb19",
+      "anchor": "left",
+      "cells": 178989,
+      "residuals": {
+        "Ux": 6.9909352e-08,
+        "Uy": 1.498154e-06,
+        "Uz": 3.7955509e-07,
+        "p": 5.9724821e-05,
+        "omega": 8.9793823e-08,
+        "k": 1.0027109e-07
+      },
+      "lastLocalContinuity": 3.6882774e-08,
+      "lastGlobalContinuity": -5.0116579e-10,
+      "forceRelativeRangeLast100": [
+        0.00011388572308884562,
+        0.0016070631083808958,
+        0.0004929965751701227
+      ],
+      "excludedNumericalSamples": 0,
+      "rawFieldMax": 57.91199276537761,
+      "displayFieldMax": 57.911991119384766,
+      "strictResidualTargetMet": true
+    },
+    {
+      "car": "rb19",
+      "anchor": "right",
+      "cells": 179063,
+      "residuals": {
+        "Ux": 1.6219092e-08,
+        "Uy": 2.2073931e-07,
+        "Uz": 6.8818585e-08,
+        "p": 7.377501e-06,
+        "omega": 9.946385e-08,
+        "k": 9.9642345e-08
+      },
+      "lastLocalContinuity": 6.350395e-09,
+      "lastGlobalContinuity": -1.4229379e-10,
+      "forceRelativeRangeLast100": [
+        2.4250000208312337e-05,
+        0.0003260583901425027,
+        3.520673329557856e-05
+      ],
+      "excludedNumericalSamples": 0,
+      "rawFieldMax": 57.52895387871448,
+      "displayFieldMax": 57.528953552246094,
+      "strictResidualTargetMet": true
+    },
+    {
+      "car": "rb19",
+      "anchor": "locked",
+      "cells": 179105,
+      "residuals": {
+        "Ux": 9.6488025e-08,
+        "Uy": 7.1317582e-06,
+        "Uz": 5.2700929e-07,
+        "p": 8.2756385e-05,
+        "omega": 9.9795033e-08,
+        "k": 1.949404e-07
+      },
+      "lastLocalContinuity": 4.1770203e-08,
+      "lastGlobalContinuity": -5.4503205e-10,
+      "forceRelativeRangeLast100": [
+        0.0003622935919388595,
+        0.2966052333161413,
+        0.0015406227467078969
+      ],
+      "excludedNumericalSamples": 0,
+      "rawFieldMax": 57.354646139898776,
+      "displayFieldMax": 57.354644775390625,
+      "strictResidualTargetMet": true
+    },
+    {
+      "car": "rb19",
+      "anchor": "fast",
+      "cells": 179105,
+      "residuals": {
+        "Ux": 2.5778618e-08,
+        "Uy": 1.2563999e-06,
+        "Uz": 9.7909478e-08,
+        "p": 4.1232286e-05,
+        "omega": 9.6026401e-08,
+        "k": 9.6136955e-08
+      },
+      "lastLocalContinuity": 2.4128421e-08,
+      "lastGlobalContinuity": 1.7871808e-10,
+      "forceRelativeRangeLast100": [
+        1.9225902035480608e-05,
+        0.008179353344940805,
+        6.985480507055258e-05
+      ],
+      "excludedNumericalSamples": 0,
+      "rawFieldMax": 98.89636217978007,
+      "displayFieldMax": 98.8963623046875,
+      "strictResidualTargetMet": true
+    },
+    {
+      "car": "rb19",
+      "anchor": "spin",
+      "cells": 179105,
+      "residuals": {
+        "Ux": 0.00010026377,
+        "Uy": 0.0005219964,
+        "Uz": 0.00032871763,
+        "p": 0.00015737593,
+        "omega": 1.061998e-05,
+        "k": 7.1222256e-06
+      },
+      "lastLocalContinuity": 1.2957938e-08,
+      "lastGlobalContinuity": -7.5596991e-10,
+      "forceRelativeRangeLast100": [
+        0.0055369880249855384,
+        0.0038730814999999967,
+        0.023466741854861715
+      ],
+      "excludedNumericalSamples": 0,
+      "rawFieldMax": 49.457464124808595,
+      "displayFieldMax": 49.45746612548828,
+      "strictResidualTargetMet": false
+    },
+    {
+      "car": "rb16b",
+      "anchor": "base",
+      "cells": 167565,
+      "residuals": {
+        "Ux": 9.6730138e-06,
+        "Uy": 0.0016358027,
+        "Uz": 0.00012400313,
+        "p": 0.016670978,
+        "omega": 7.4777902e-06,
+        "k": 9.9329516e-05
+      },
+      "lastLocalContinuity": 3.6313674e-06,
+      "lastGlobalContinuity": 1.7907835e-08,
+      "forceRelativeRangeLast100": [
+        1.573327497324167,
+        82.65914343837787,
+        3.163270926424107
+      ],
+      "excludedNumericalSamples": 1,
+      "rawFieldMax": 275.17664693222406,
+      "displayFieldMax": 65.0704574584961,
+      "strictResidualTargetMet": false
+    },
+    {
+      "car": "rb16b",
+      "anchor": "low",
+      "cells": 167565,
+      "residuals": {
+        "Ux": 2.3439935e-06,
+        "Uy": 0.00011153406,
+        "Uz": 1.1306853e-05,
+        "p": 0.0018819504,
+        "omega": 3.2172512e-07,
+        "k": 5.332646e-06
+      },
+      "lastLocalContinuity": 1.3816283e-07,
+      "lastGlobalContinuity": 4.5453359e-10,
+      "forceRelativeRangeLast100": [
+        0.06546820572920165,
+        1.230867079653479,
+        0.051751068918142684
+      ],
+      "excludedNumericalSamples": 0,
+      "rawFieldMax": 18.064344069036817,
+      "displayFieldMax": 18.064346313476562,
+      "strictResidualTargetMet": false
+    },
+    {
+      "car": "rb16b",
+      "anchor": "high",
+      "cells": 167565,
+      "residuals": {
+        "Ux": 2.7172977e-06,
+        "Uy": 0.000123217,
+        "Uz": 1.4720947e-05,
+        "p": 0.0079757589,
+        "omega": 3.4574491e-07,
+        "k": 6.4627227e-06
+      },
+      "lastLocalContinuity": 3.9007832e-06,
+      "lastGlobalContinuity": -8.1812553e-09,
+      "forceRelativeRangeLast100": [
+        0.08436353866471324,
+        0.719215830269379,
+        0.07911634659957296
+      ],
+      "excludedNumericalSamples": 0,
+      "rawFieldMax": 126.55300396414556,
+      "displayFieldMax": 126.5530014038086,
+      "strictResidualTargetMet": false
+    },
+    {
+      "car": "rb16b",
+      "anchor": "open",
+      "cells": 167768,
+      "residuals": {
+        "Ux": 2.530521e-06,
+        "Uy": 0.0001008507,
+        "Uz": 9.9514205e-06,
+        "p": 0.0016831374,
+        "omega": 3.3419579e-07,
+        "k": 5.370686e-06
+      },
+      "lastLocalContinuity": 3.3490966e-07,
+      "lastGlobalContinuity": 1.3716917e-10,
+      "forceRelativeRangeLast100": [
+        0.03443568015895114,
+        0.5830685864423747,
+        0.027184721116145748
+      ],
+      "excludedNumericalSamples": 0,
+      "rawFieldMax": 65.07654416356355,
+      "displayFieldMax": 65.0765380859375,
+      "strictResidualTargetMet": false
+    },
+    {
+      "car": "rb16b",
+      "anchor": "left",
+      "cells": 167668,
+      "residuals": {
+        "Ux": 5.007177e-06,
+        "Uy": 0.00017338006,
+        "Uz": 3.5927173e-05,
+        "p": 0.0037407204,
+        "omega": 1.1915282e-06,
+        "k": 8.6312125e-06
+      },
+      "lastLocalContinuity": 5.9217561e-08,
+      "lastGlobalContinuity": 5.4248631e-09,
+      "forceRelativeRangeLast100": [
+        0.05907618556821196,
+        0.14073670195815283,
+        0.06349663992672525
+      ],
+      "excludedNumericalSamples": 0,
+      "rawFieldMax": 63.14874937287582,
+      "displayFieldMax": 63.14875030517578,
+      "strictResidualTargetMet": false
+    },
+    {
+      "car": "rb16b",
+      "anchor": "right",
+      "cells": 167739,
+      "residuals": {
+        "Ux": 5.1808246e-06,
+        "Uy": 0.00017002864,
+        "Uz": 4.0234383e-05,
+        "p": 0.0035726846,
+        "omega": 1.1016747e-06,
+        "k": 8.2251093e-06
+      },
+      "lastLocalContinuity": 5.6842562e-08,
+      "lastGlobalContinuity": 4.1741516e-09,
+      "forceRelativeRangeLast100": [
+        0.05389207213259305,
+        0.05444566493689002,
+        0.04599268119068223
+      ],
+      "excludedNumericalSamples": 0,
+      "rawFieldMax": 63.643234906333774,
+      "displayFieldMax": 63.64323425292969,
+      "strictResidualTargetMet": false
+    },
+    {
+      "car": "rb16b",
+      "anchor": "locked",
+      "cells": 167565,
+      "residuals": {
+        "Ux": 4.6958954e-06,
+        "Uy": 0.00025287851,
+        "Uz": 3.0547513e-05,
+        "p": 0.0030015801,
+        "omega": 1.1012987e-06,
+        "k": 8.7717411e-06
+      },
+      "lastLocalContinuity": 5.986765e-08,
+      "lastGlobalContinuity": 2.3203856e-09,
+      "forceRelativeRangeLast100": [
+        0.05452067487565357,
+        0.18610801257001822,
+        0.0511350974214081
+      ],
+      "excludedNumericalSamples": 0,
+      "rawFieldMax": 63.90879809814345,
+      "displayFieldMax": 63.90879821777344,
+      "strictResidualTargetMet": false
+    },
+    {
+      "car": "rb16b",
+      "anchor": "fast",
+      "cells": 167565,
+      "residuals": {
+        "Ux": 4.6435459e-06,
+        "Uy": 0.00025373734,
+        "Uz": 2.9951115e-05,
+        "p": 0.0028525064,
+        "omega": 9.4002148e-07,
+        "k": 6.0217959e-06
+      },
+      "lastLocalContinuity": 3.3569641e-08,
+      "lastGlobalContinuity": 1.9326328e-09,
+      "forceRelativeRangeLast100": [
+        0.053488895836252874,
+        0.1314828248567882,
+        0.05235652928745786
+      ],
+      "excludedNumericalSamples": 0,
+      "rawFieldMax": 100.09534802977628,
+      "displayFieldMax": 100.09534454345703,
+      "strictResidualTargetMet": false
+    },
+    {
+      "car": "rb16b",
+      "anchor": "spin",
+      "cells": 167565,
+      "residuals": {
+        "Ux": 9.4617427e-05,
+        "Uy": 0.00056782417,
+        "Uz": 0.00038449265,
+        "p": 0.00027283486,
+        "omega": 1.5477218e-05,
+        "k": 1.5504413e-05
+      },
+      "lastLocalContinuity": 1.5259975e-08,
+      "lastGlobalContinuity": 7.9838536e-10,
+      "forceRelativeRangeLast100": [
+        0.026631527296342612,
+        0.007109086039999997,
+        0.10509625302134026
+      ],
+      "excludedNumericalSamples": 0,
+      "rawFieldMax": 50.148598831452965,
+      "displayFieldMax": 50.14860153198242,
+      "strictResidualTargetMet": false
+    }
+  ],
+  "scope": "Exploratory steady coarse RANS only; no grid independence, experimental validation, transient turbulence, or validated multi-factor surrogate."
+}

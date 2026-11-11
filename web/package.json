@@ -10,8 +10,19 @@
     "pack:assets": "node scripts/pack-web-assets.mjs",
     "validate:assets": "node scripts/validate-assets.mjs",
     "validate:motion": "node scripts/check-moving-geometry.mjs",
-    "validate:mechanisms": "node scripts/check-mechanisms.mjs"
+    "validate:mechanisms": "node scripts/check-mechanisms.mjs",
+    "validate:fairing": "node scripts/check-fairing-continuity.mjs",
+    "validate:airflow": "node scripts/check-airflow.mjs",
+    "validate:flow-geometry": "node scripts/check-flow-geometry.mjs",
+    "validate:underbody": "node scripts/check-underbody.mjs && node scripts/check-underbody-geometry.mjs",
+    "validate:sidepod": "node scripts/check-sidepod-assets.mjs && node scripts/check-sidepod.mjs rb19 public/flow/rb19/sidepod.bin && node scripts/check-sidepod.mjs rb16b public/flow/rb16b/sidepod.bin"
   },
-  "dependencies": {"three": "0.187.0"},
-  "devDependencies": {"vite": "7.2.2", "gltf-validator": "2.0.0-dev.3.10"}
+  "dependencies": {
+    "three": "0.187.0",
+    "three-mesh-bvh": "^0.9.18"
+  },
+  "devDependencies": {
+    "gltf-validator": "2.0.0-dev.3.10",
+    "vite": "7.2.2"
+  }
 }

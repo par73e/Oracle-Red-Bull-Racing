@@ -1,0 +1,8 @@
+{
+  "case": "OpenFOAM Foundation 14 official pitzDailySteady",
+  "architecture": "Ubuntu 24.04 ARM64 on OrbStack aero-cfd",
+  "mesh_ok": true,
+  "converged_iterations": 287,
+  "normal_end": true,
+  "scope": "Installation and numerical smoke test. No experimental or analytical validation of RB19."
+}

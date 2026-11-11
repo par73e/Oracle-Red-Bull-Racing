@@ -122,8 +122,42 @@ for(const car of ['rb19','rb16b']){
     assert(!gltf.nodes.some(n=>n.name==='DRS_BASE_MOUNT_PAD'),'Old block mount remains');
     for(const name of ['DRS_BASE_MOLDED_CARBON','DRS_TIP_MOLDED_CARBON']){
       const node=gltf.nodes.find(n=>n.name===name);assert(node);
-      for(const primitive of gltf.meshes[node.mesh].primitives)assert.equal(gltf.materials[primitive.material].name,'redbull_carbon1');
+      for(const primitive of gltf.meshes[node.mesh].primitives)assert.equal(gltf.materials[primitive.material].name,'AERO_DRS_Woven_Carbon');
     }
+  }
+  report.drsMounts={};
+  model.position.set(0,0,0);model.rotation.set(0,0,0);model.scale.setScalar(1);
+  applyRig(rig,{steer:0,drs:0,spin:0});
+  for(const label of ['BASE','TIP']){
+    const name=`DRS_${label}_MOLDED_CARBON`,node=gltf.nodes.find(n=>n.name===name);
+    assert(node,`${car}: missing molded support`);
+    for(const primitive of gltf.meshes[node.mesh].primitives){
+      const mat=gltf.materials[primitive.material];
+      assert.equal(mat.name,'AERO_DRS_Woven_Carbon');
+      assert(mat.pbrMetallicRoughness.baseColorTexture && mat.normalTexture,'Carbon needs exported color and normal textures');
+      assert(primitive.attributes.TEXCOORD_0!==undefined,'Carbon needs UVs');
+    }
+    const points=worldPoints(name);
+    // glTF duplicates vertices at UV seams, so an arithmetic vertex mean is
+    // biased toward the seam. Use the spatial extent and mirrored surface set.
+    const centerX=(Math.min(...points.map(p=>p.x))+Math.max(...points.map(p=>p.x)))/2;
+    const cell=p=>[p.x,p.y,p.z].map(v=>Math.floor(v/1e-5));
+    const buckets=new Map();
+    for(const p of points){const k=cell(p).join(',');if(!buckets.has(k))buckets.set(k,[]);buckets.get(k).push(p);}
+    let mirrorError=0;
+    for(const p of points){
+      const target=new Vector3(-p.x,p.y,p.z),[x,y,z]=cell(target);let nearest=Infinity;
+      for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++)
+        for(const q of buckets.get([x+dx,y+dy,z+dz].join(','))||[])nearest=Math.min(nearest,target.distanceTo(q));
+      mirrorError=Math.max(mirrorError,nearest);
+    }
+    assert(Math.abs(centerX)<1e-6,`${car} ${label}: support leans sideways`);
+    // Subdivision at world coordinates near 2.5 uses float32; allow its
+    // measured micron-scale rounding while rejecting a visible lateral lean.
+    assert(mirrorError<2e-6,`${car} ${label}: asymmetric support surface (${mirrorError}, center ${centerX})`);
+    report.drsMounts[label]={centerX,mirrorError,vertices:points.length};
+    assert(!gltf.nodes.some(n=>n.name===`DRS_${label}_MOUNT_PAD`),'Old block pad remains');
+    assert(!gltf.nodes.some(n=>n.name===`DRS_${label}_CARBON_HORN`),'Old conical horn remains');
   }
   for(const [name,rough] of [['AERO_DRS_Anodized_Alloy',.32],['AERO_DRS_Polished_Piston',.17]]){
     const material=gltf.materials.find(m=>m.name===name);assert(material,`${car}: missing ${name}`);

@@ -1,0 +1,64 @@
+{
+  "car": "rb19",
+  "method": "500 uniformly sampled triangle centroids per coordinate region on raw display surface, nearest distance to CFD proxy; regions overlap other parts; not area weighted, not a connectivity audit or engineering CAD.",
+  "sha256": {
+    "body-raw.stl": "a91d619f7ccead6e0f20fbf8acde855aa505dc992531f810241279a02f8ed785",
+    "body.stl": "de871783b28319192807bb464ea11dc3996082ba1adc0552466138ba52b5f8bd"
+  },
+  "regions": {
+    "side_undercut": {
+      "candidate_triangles": 2747,
+      "sampled_centroids": 500,
+      "distance_mm_p50_p90_p99": [
+        5.72242961380278,
+        13.72609326852691,
+        37.98641557180215
+      ],
+      "over_12_5mm": 56,
+      "region_cfd_m": [
+        -0.4,
+        1.8,
+        0.25,
+        1.05,
+        0.18,
+        0.55
+      ]
+    },
+    "side_upper": {
+      "candidate_triangles": 9356,
+      "sampled_centroids": 500,
+      "distance_mm_p50_p90_p99": [
+        6.367413847761487,
+        15.318903222605677,
+        24.1788109322674
+      ],
+      "over_12_5mm": 71,
+      "region_cfd_m": [
+        -0.4,
+        1.8,
+        0.25,
+        1.05,
+        0.55,
+        1.1
+      ]
+    },
+    "front_suspension": {
+      "candidate_triangles": 28505,
+      "sampled_centroids": 500,
+      "distance_mm_p50_p90_p99": [
+        7.357800526591574,
+        15.979418546919373,
+        28.609692959702766
+      ],
+      "over_12_5mm": 89,
+      "region_cfd_m": [
+        -2.2,
+        -0.6,
+        0.2,
+        1.05,
+        0.15,
+        0.8
+      ]
+    }
+  }
+}

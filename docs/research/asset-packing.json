@@ -1,18 +1,18 @@
 [
   {
     "car": "rb19",
-    "sourceBytes": 74212792,
-    "webBytes": 24159828,
+    "sourceBytes": 75835796,
+    "webBytes": 25792736,
     "convertedPngImages": 2,
     "repairedTangents": 0,
     "resolutionChanged": false
   },
   {
     "car": "rb16b",
-    "sourceBytes": 31803740,
-    "webBytes": 31783824,
+    "sourceBytes": 33228368,
+    "webBytes": 33208412,
     "convertedPngImages": 0,
-    "repairedTangents": 0,
+    "repairedTangents": 4,
     "resolutionChanged": false
   }
 ]

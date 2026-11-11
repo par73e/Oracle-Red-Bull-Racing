@@ -1,7 +1,7 @@
 [
   {
     "car": "rb19",
-    "revision": "2026-11-09-continuity1",
+    "revision": "2026-11-10-tail-detail1",
     "steeringSamples": 146,
     "drsSamples": 82,
     "maxTrackRodLengthError": 3.3576795732681575e-7,
@@ -25,11 +25,23 @@
         "maxRootCapBoreEllipse": 0.9245524477534193,
         "fixedFairingMaxMovement": 0
       }
+    },
+    "drsMounts": {
+      "BASE": {
+        "centerX": 0,
+        "mirrorError": 0.0000011246181883879427,
+        "vertices": 10278
+      },
+      "TIP": {
+        "centerX": 0,
+        "mirrorError": 0.0000014354699347963686,
+        "vertices": 10323
+      }
     }
   },
   {
     "car": "rb16b",
-    "revision": "2026-11-09-continuity1",
+    "revision": "2026-11-10-tail-detail1",
     "steeringSamples": 146,
     "drsSamples": 82,
     "maxTrackRodLengthError": 1.5631191285780943e-8,
@@ -52,6 +64,18 @@
         "minRootCapAxialMargin": 0.017999999114428157,
         "maxRootCapBoreEllipse": 0.9062134926532739,
         "fixedFairingMaxMovement": 0
+      }
+    },
+    "drsMounts": {
+      "BASE": {
+        "centerX": -4.656612873077393e-10,
+        "mirrorError": 0.0000012894457020437383,
+        "vertices": 10408
+      },
+      "TIP": {
+        "centerX": -4.656612873077393e-10,
+        "mirrorError": 0.0000017068172778609145,
+        "vertices": 10344
       }
     }
   }

@@ -510,7 +510,7 @@ bpy.ops.export_scene.gltf(filepath=str(glb),export_format='GLB',use_selection=Tr
                          export_unused_images=False,export_copyright='See model-attributions.md; modified for AERO')
 
 def gltf_vec(v):return [float(v.x),float(v.z),float(-v.y)]
-manifest={'id':CAR,'revision':'2026-11-09-continuity1','name':'RB19' if CAR=='rb19' else 'RB16B','year':2023 if CAR=='rb19' else 2021,
+manifest={'id':CAR,'revision':'2026-11-10-tail-detail1','name':'RB19' if CAR=='rb19' else 'RB16B','year':2023 if CAR=='rb19' else 2021,
           'file':f'/models/{CAR}.glb','display_length':5.5,'units':'metre-scale presentation; approximate',
           'coordinate_system':'glTF Y-up, +Z forward, +X vehicle left',
           'wheels':wheel_manifest,'wheelbase':abs(wheel_specs['FL']['center'].y-wheel_specs['RL']['center'].y),

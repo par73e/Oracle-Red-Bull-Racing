@@ -1,0 +1,79 @@
+{
+  "kind": "coarse full-car numerical trial, not mesh-independent or validated RB19 aerodynamics",
+  "solver": "OpenFOAM Foundation 14 incompressibleFluid",
+  "speed_mps": 50,
+  "drs": 0,
+  "steer_deg": 0,
+  "cells": 373214,
+  "mesh_ok": true,
+  "last_iteration": 800,
+  "solver_reached_end": true,
+  "last_initial_residuals": {
+    "Ux": 9.3872062e-08,
+    "Uy": 7.5318865e-06,
+    "Uz": 5.1794617e-07,
+    "p": 9.1562161e-05,
+    "omega": 9.3551947e-08,
+    "k": 4.4589592e-07
+  },
+  "last_continuity": {
+    "local": 5.847865e-08,
+    "global": 5.9975175e-10,
+    "cumulative": -0.00089013849
+  },
+  "last_100_force_mean_N": {
+    "drag": 2365.3767805870007,
+    "side": -9.189314269966996,
+    "downforce": 733.7085134058002
+  },
+  "last_100_force_peak_to_peak_relative": {
+    "drag": 0.0002149606794880001,
+    "downforce": 0.0019512627342354566
+  },
+  "geometry_proxy": "10 mm voxel union; rear hub caps; 5 mm downward placement; tyre intersection/contact approximate",
+  "limitations": [
+    "first-order upwind on coarse grid",
+    "no prism boundary layers; wall-function y+ requires review",
+    "no grid or domain independence study",
+    "display-model floor and vehicle geometry are approximations",
+    "only RB19 straight-line DRS-closed baseline; no RB16B or cornering case"
+  ],
+  "boundary_flux_m3_s": {
+    "inlet": -19200.0,
+    "outlet": 19200.0
+  },
+  "boundary_flux_relative_imbalance_at_output_precision": 0.0,
+  "last_100_numerically_stable": true,
+  "yPlus_at_800": {
+    "ground": {
+      "min": 289.632876,
+      "max": 14755.5047,
+      "mean": 2859.21187
+    },
+    "body": {
+      "min": 1.12171976e-06,
+      "max": 4036.0877,
+      "mean": 608.964474
+    },
+    "FL": {
+      "min": 299.408299,
+      "max": 3472.86703,
+      "mean": 1315.09931
+    },
+    "FR": {
+      "min": 280.233525,
+      "max": 3651.35706,
+      "mean": 1314.40746
+    },
+    "RL": {
+      "min": 314.351777,
+      "max": 4979.11447,
+      "mean": 1606.04648
+    },
+    "RR": {
+      "min": 314.25955,
+      "max": 5238.11925,
+      "mean": 1599.66174
+    }
+  }
+}

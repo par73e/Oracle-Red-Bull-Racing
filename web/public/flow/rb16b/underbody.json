@@ -1,0 +1,32 @@
+{
+  "case": "rb16b-underbody-l6-retry1",
+  "time": "1150",
+  "shape": [
+    117,
+    57,
+    45
+  ],
+  "min": [
+    -1.8,
+    -1.4,
+    0.01
+  ],
+  "max": [
+    4.0,
+    1.4,
+    0.45
+  ],
+  "scale": 0.0018127221333333334,
+  "located": 258663,
+  "sha256": "93e2cd609b0b64ebf45aa40fe34bb1d8b15f478ced508aa147a11838f59a18d9",
+  "status": "exploratory candidate; no engineering validation; only 180 km/h, straight, DRS closed, rolling wheels",
+  "source": "OpenFOAM cellPoint samples; separate from whole-car coarse field",
+  "sourceSampleSha256": "dcd8b273ecf2ecc88f9df5f2862dcab678ff927653ae40c3f8629046a519c8c9",
+  "proxySha256": {
+    "body": "c022920f24f7c71327abebd51a18c2003e26c85b78052fa3843d7dcd99e1b2e0",
+    "FL": "0d9e53395e2cfa8bcac29e3e0cbdab4f69acb42d462eabcd4e34a96a3c838e6b",
+    "FR": "5e910bb7fcb52ab7fe6eb14e68970c1b7a3b6d351b0e484307427eff0e163ca3",
+    "RL": "5948141628b8f6cac0cd5d6586184a8c1cb6d051bb3f843878b59eacf3007ef2",
+    "RR": "18493d634f7e440b40026ad542d6c985df90beebfb108bdef353d460972b26a1"
+  }
+}

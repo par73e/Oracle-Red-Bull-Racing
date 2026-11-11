@@ -1,0 +1,12 @@
+{
+  "error": {
+    "ready": false,
+    "text": "气流暂不可用 · Failed to fetch",
+    "retryVisible": true
+  },
+  "recovered": true,
+  "drag": {
+    "speed": 348,
+    "ready": true
+  }
+}

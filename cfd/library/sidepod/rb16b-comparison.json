@@ -1,0 +1,46 @@
+{
+  "cases": [
+    "rb16b-underbody-l6-retry1",
+    "rb16b-sidepod-suspension-l5-20261111"
+  ],
+  "times": [
+    "1150",
+    "1150"
+  ],
+  "regions": {
+    "side_undercut": {
+      "common_points": 33745,
+      "median_speed_mps": [
+        16.83197784423828,
+        16.357486724853516
+      ],
+      "vector_difference_mps_p50_p90": [
+        3.8209009170532227,
+        9.605608940124513
+      ]
+    },
+    "side_upper": {
+      "common_points": 61616,
+      "median_speed_mps": [
+        41.60318374633789,
+        40.016815185546875
+      ],
+      "vector_difference_mps_p50_p90": [
+        3.4735273122787476,
+        9.943181037902832
+      ]
+    },
+    "front_suspension": {
+      "common_points": 51819,
+      "median_speed_mps": [
+        36.23845672607422,
+        37.24837112426758
+      ],
+      "vector_difference_mps_p50_p90": [
+        3.5420873165130615,
+        12.25616950988771
+      ]
+    }
+  },
+  "limitations": "Common located points in coordinate boxes, including exterior flow; source grids and iteration counts differ, and changes are not a proven error bound or evidence of convergence."
+}

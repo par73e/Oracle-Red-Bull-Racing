@@ -1,0 +1,112 @@
+{
+  "car": "rb19",
+  "pose": "left",
+  "steer": -18,
+  "drs": 0,
+  "wheels": {
+    "FL": {
+      "center": [
+        -1.536566118808764,
+        -0.8166213188960665,
+        0.37220414856909184
+      ],
+      "axis": [
+        -0.3076064164400394,
+        -0.9512914766375108,
+        0.020562564084785864
+      ],
+      "radius": 0.36901673045940697
+    },
+    "FR": {
+      "center": [
+        -1.414398909581519,
+        0.7532797544411848,
+        0.3643856450017985
+      ],
+      "axis": [
+        -0.32477008307169636,
+        -0.9455539974633014,
+        0.02126102120721431
+      ],
+      "radius": 0.3690167006570846
+    },
+    "RL": {
+      "center": [
+        2.0478739738464355,
+        -0.7892087697982788,
+        0.36981728196144104
+      ],
+      "axis": [
+        0,
+        -1,
+        0
+      ],
+      "radius": 0.37289206526475027
+    },
+    "RR": {
+      "center": [
+        2.0478742122650146,
+        0.7892087697982788,
+        0.36981728196144104
+      ],
+      "axis": [
+        0,
+        -1,
+        0
+      ],
+      "radius": 0.37289206514833495
+    }
+  },
+  "speedMps": 50,
+  "wheelSpeedMps": 50,
+  "anchor": "left",
+  "sourceGlbSha256": "906a4dc37518fe5cce3f4be8fd5bbfa0950ec9bced879e86547c610c64e2ecef",
+  "modelRevision": "2026-11-10-tail-detail1",
+  "proxySha256": {
+    "body": "b74b7b14855d1d21d4be7d944ffaeda4dc442bc07c5fc0e6e36f042e3cd0741c",
+    "FL": "b023562c6ebe3186c7fd9504424f7dff742037c26d3985e850fadf0bfde8e3e1",
+    "FR": "29334ff04ea6754f7b29e16938285d9da0ea3abe22877577f586135e1abaae20",
+    "RL": "d48ac84e1fccb1d4c2294d040272459f4f0097e13ec1be28d4f65d7dfb07fc70",
+    "RR": "955cd8c6f304342a49a95fafc4ba08123f48ea1364ff59237d81fb9aa1dde805"
+  },
+  "grid": {
+    "shape": [
+      88,
+      34,
+      32
+    ],
+    "min": [
+      -4.0,
+      -1.65,
+      0.025
+    ],
+    "max": [
+      9.0,
+      1.65,
+      1.65
+    ]
+  },
+  "file": "/flow/rb19/left.bin",
+  "scale": 0.0017374981890667927,
+  "sampledPoints": 94145,
+  "unlocatedOrSolidGridPoints": 1599,
+  "excludedNumericalSamples": 0,
+  "rawFieldMax": 57.91199276537761,
+  "exclusionThresholdMps": 150,
+  "sampling": "cellPoint; isolated >3x max(inlet,wheel) samples excluded, never clipped",
+  "fieldMax": 57.911991119384766,
+  "cells": 178989,
+  "lastIteration": 650.0,
+  "residuals": {
+    "Ux": 6.9909352e-08,
+    "Uy": 1.498154e-06,
+    "Uz": 3.7955509e-07,
+    "p": 5.9724821e-05,
+    "omega": 8.9793823e-08,
+    "k": 1.0027109e-07
+  },
+  "meshOk": true,
+  "solver": "OpenFOAM Foundation 14 kOmegaSST RANS",
+  "quality": "coarse voxel proxy; sparse factorised interpolation is approximate",
+  "sha256": "86c536e2896d9d30f19798ec935394d56934e5229227df69e4b678913176a5db"
+}

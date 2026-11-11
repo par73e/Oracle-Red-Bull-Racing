@@ -1,0 +1,50 @@
+{
+  "revision": "2026-11-10-tail-detail1",
+  "mounts": {
+    "BASE": {
+      "surface_foot": [
+        0.0,
+        2.326108455657959,
+        1.0229908227920532
+      ],
+      "joint": [
+        0.0,
+        2.3499999046325684,
+        1.0399999618530273
+      ],
+      "centerline_error": 0.0,
+      "material": "AERO_DRS_Woven_Carbon",
+      "tow_width_metres": 0.0008
+    },
+    "TIP": {
+      "surface_foot": [
+        0.0,
+        2.473750114440918,
+        1.003319501876831
+      ],
+      "joint": [
+        0.0,
+        2.440000057220459,
+        1.0499999523162842
+      ],
+      "centerline_error": 0.0,
+      "material": "AERO_DRS_Woven_Carbon",
+      "tow_width_metres": 0.0008
+    }
+  },
+  "removed": [
+    "DRS_BASE_MOLDED_CARBON",
+    "DRS_BASE_CARBON_EAR_-1",
+    "DRS_BASE_CARBON_EAR_1",
+    "DRS_TIP_MOLDED_CARBON",
+    "DRS_TIP_CARBON_EAR_-1",
+    "DRS_TIP_CARBON_EAR_1",
+    "DRS_BASE_PIN_RETAINER_-1",
+    "DRS_BASE_PIN_RETAINER_1",
+    "DRS_TIP_PIN_RETAINER_-1",
+    "DRS_TIP_PIN_RETAINER_1",
+    "DRS_BASE_PIN",
+    "DRS_TIP_PIN"
+  ],
+  "scope": "Symmetric molded presentation mounts, fine woven carbon and detailed metal pin retainers; not team CAD."
+}

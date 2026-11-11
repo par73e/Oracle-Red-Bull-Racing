@@ -4,64 +4,95 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#e7e8e7" />
+  <link rel="preload" href="/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin />
   <title>AERO / 01 — Red Bull Model Studio</title>
 </head>
 <body>
   <main id="app">
     <div id="viewport" aria-label="可旋转缩放的红牛赛车三维模型"></div>
+    <button id="interface-toggle" class="interface-toggle" type="button" aria-pressed="false">隐藏界面</button>
     <header class="masthead">
       <a class="wordmark" href="/" aria-label="AERO 01 首页">AERO<span>/ 01</span></a>
       <p>RED BULL RACING <span>MODEL STUDIO</span></p>
-      <button id="credits-button" class="text-button" aria-haspopup="dialog">模型来源 <span>↗</span></button>
+      <button id="credits-button" class="text-button" aria-haspopup="dialog">模型来源 <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12 12 4M4 4h8v8"/></svg></button>
     </header>
     <section class="model-intro" aria-live="polite">
-      <p class="eyebrow" id="era">2023 / GROUND EFFECT</p>
       <h1 id="model-name">RB19<span>.</span></h1>
-      <p class="model-note">形态、材质，以及机械运动。</p>
+      <p class="model-era" id="era">2023 / GROUND EFFECT</p>
+      <p class="model-note">风，绕过每一处细节。</p>
       <div class="model-switch" aria-label="选择车型">
         <button data-model="rb16b" aria-pressed="false">RB16B <span>2021</span></button>
         <button data-model="rb19" aria-pressed="true">RB19 <span>2023</span></button>
       </div>
     </section>
     <aside class="controls" aria-label="赛车控制">
-      <div class="control-heading"><span class="status-dot"></span><span>机械控制</span><span class="section-number">01—03</span></div>
+      <div class="control-heading"><span class="status-dot"></span><span>风与车辆</span><button id="flow-toggle" aria-pressed="true">显示气流</button></div>
       <section class="control-group">
-        <div class="label-row"><label for="drs">DRS 尾翼</label><button id="drs-toggle" aria-pressed="false">打开 <span>↗</span></button></div>
+        <div class="label-row"><label for="flow-density">气流密度</label><output id="flow-density-value" for="flow-density">100%</output></div>
+        <input id="flow-density" type="range" min="0" max="150" step="5" value="100" />
+        <div class="range-labels"><span>0</span><span>显示密度</span><span>150%</span></div>
+        <p id="underbody-status" class="underbody-status" aria-live="polite"></p>
+        <p id="sidepod-status" class="underbody-status" aria-live="polite"></p>
+      </section>
+      <section class="control-group">
+        <div class="label-row"><label for="drs">DRS 尾翼</label><button id="drs-toggle" aria-pressed="false">打开 <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12 12 4M4 4h8v8"/></svg></button></div>
         <input id="drs" type="range" min="0" max="100" step="1" value="0" aria-label="DRS 开合程度" />
         <div class="range-labels"><span>闭合</span><output id="drs-value" for="drs">0%</output><span>打开</span></div>
       </section>
       <section class="control-group">
-        <div class="label-row"><label for="speed">车轮自转</label><output id="speed-value" for="speed">静止</output></div>
-        <input id="speed" type="range" min="0" max="180" step="5" value="0" aria-label="车轮自转对应速度" />
-        <div class="range-labels"><span>0</span><span>km/h</span><span>180</span></div>
+        <div class="label-row"><label for="speed">车速与来流</label><output id="speed-value" for="speed">静止</output></div>
+        <input id="speed" type="range" min="0" max="350" step="1" value="180" aria-label="车速与来流速度" />
+        <div class="range-labels"><span>0</span><span>km/h</span><span>350</span></div>
       </section>
       <section class="control-group">
         <div class="label-row"><label for="steer">前轮转向</label><output id="steer-value" for="steer">0°</output></div>
         <input id="steer" type="range" min="-18" max="18" step="1" value="0" aria-label="前轮转向角" />
         <div class="range-labels"><span>向右</span><button id="center-steering">回正</button><span>向左</span></div>
       </section>
-      <div class="control-footer"><span>后轮朝向固定</span><button id="reset">全部复位 ↺</button></div>
+      <section class="control-group wheel-control">
+        <div class="label-row"><label for="wheel-rpm">车轮转速</label><output id="wheel-value" for="wheel-rpm">0 rpm</output></div>
+        <input id="wheel-rpm" type="range" min="0" max="3000" step="10" value="0" aria-label="前轮参考转速" />
+        <div class="range-labels"><span>0</span><span>前轮参考 rpm</span><span id="wheel-max">3000</span></div>
+        <label class="auto-wheel"><input id="wheel-auto" type="checkbox" checked />随车速同步</label>
+      </section>
+      <div class="control-footer"><span>后轮朝向固定 · <span id="wind-speed">50.0 m/s</span></span><button id="reset">全部复位 <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M13 5V2m0 3h-3M13 5A5.5 5.5 0 1 0 13.5 9"/></svg></button></div>
     </aside>
+    <nav class="environment-switch" aria-label="选择环境">
+      <button data-environment="wind" aria-pressed="true">风洞<span>WIND TUNNEL</span></button>
+      <button data-environment="eau-rouge" aria-pressed="false">Eau Rouge<span>谷底入弯</span></button>
+      <button data-environment="raidillon" aria-pressed="false">Raidillon<span>上坡与坡顶</span></button>
+      <button data-environment="studio" aria-pressed="false">模型检视<span>STUDIO</span></button>
+    </nav>
+    <section class="scene-caption" aria-label="当前场景及气流状态">
+      <p id="scene-label">风洞试验段</p>
+      <p id="scene-detail">原创全尺寸风洞场景</p>
+      <p class="flow-state"><span class="status-dot"></span><span id="flow-status" role="status">正在准备气流…</span><button id="flow-retry" aria-label="重新加载气流数据">重试</button></p>
+      <div class="flow-legend"><span>气流速度</span><i aria-hidden="true"></i><span>0—120+ m/s</span></div>
+    </section>
     <footer class="bottom-bar">
       <div class="view-switch" aria-label="观察角度">
         <button data-view="hero" aria-pressed="true">整车</button>
         <button data-view="side" aria-pressed="false">侧面</button>
         <button data-view="drs" aria-pressed="false">尾翼机构</button>
         <button data-view="floor" aria-pressed="false">底板</button>
+        <button id="free-camera" aria-pressed="false">自由观察</button>
       </div>
-      <p class="orbit-hint">拖动旋转 <span>·</span> 滚轮缩放</p>
+      <p class="orbit-hint" id="camera-hint">拖动旋转 <span>·</span> 滚轮缩放</p>
       <span class="studio-label">STUDIO / SOFT LIGHT</span>
     </footer>
     <div id="loading" role="status" aria-live="polite"><span class="loading-line"></span><p id="loading-text">正在准备模型…</p></div>
     <div id="error" role="alert" hidden><p id="error-message"></p><button id="retry">重新加载</button></div>
-    <dialog id="credits">
-      <div class="dialog-top"><p class="eyebrow">ASSET CREDITS</p><button id="close-credits" aria-label="关闭模型来源">×</button></div>
-      <h2>模型与制作说明</h2>
+    <dialog id="credits" aria-labelledby="credits-title">
+      <div class="dialog-top"><h2 id="credits-title">模型与制作说明</h2><button id="close-credits" aria-label="关闭模型来源"><svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m4 4 8 8m0-8-8 8"/></svg></button></div>
       <p>本项目为车迷展示项目，与车队及 F1 官方无隶属关系。</p>
       <p><a href="https://skfb.ly/oR7sq" target="_blank" rel="noreferrer">Oracle Red Bull F1 Car RB19 2023</a> · Redgrund</p>
       <p><a href="https://skfb.ly/py9Uu" target="_blank" rel="noreferrer">Redbull rb16b</a> · MattDoesBlender</p>
       <p>两份原模型均标注为 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">Creative Commons Attribution 4.0</a>。</p>
-      <p>本地修改：材质调整、统一展示尺度、四轮与前轮转向绑定、近似 DRS 液压机构；RB19 另补简化底板通道。机构与底板为展示用近似，不是车队 CAD。车轮速度仅用于驱动转动，当前页面未运行气流仿真。</p>
+      <p>本地修改：材质调整、统一展示尺度、四轮与前轮转向绑定、近似 DRS 液压机构；RB19 另补简化底板通道。机构与底板为展示用近似，不是车队 CAD。气流基于两车型分别求解的 OpenFOAM 粗网格关键工况，网页对速度矢量场做稀疏组合近似并积分流线。中间状态、多个参数同时变化、低速及高速缩放不等于完整工程求解，也不模拟瞬态湍流。孤立的数值异常采样点会被排除并留有记录；这些预览不用于气动性能判断。静止车辆的转向轮边场采用局部坐标变形近似。车轮使用旋转壁面近似，独立调节轮速代表滑移工况。</p>
+      <p>底盘流线在 180 km/h、直行、DRS 关闭且轮速匹配时使用单独的加密 CFD 基线；其他工况在基线速度缩放上叠加相应粗网格整车场相对基线的变化，是探索性代理近似，不是对应工况的底盘加密重算。车辆几何为体素代理，近壁没有边界层网格，两档网格仍有明显差异，RB19 结果尚未充分收敛，结果仅供探索，不能用于气动性能判断。</p>
+      <p>侧箱下方、侧箱上沿及前悬挂附近的流线来自各车单独的局部加密基线；其他工况叠加整车粗网格差分。粗场无有效数据的位置沿用速度缩放的基线，不包含该处的工况响应。两车局部计算仍有收敛、网格和几何限制，不用于赛车性能判断。</p>
+      <p>风洞为原创场景，显示的 CFD 来自自由外流域，并未计算该房间的壁面影响。斯帕按 Eau Rouge 左弯、Raidillon 右转上坡及坡顶左转的公开实景关系重建；地形、建筑和植被为展示近似（林木透明素材由 AI 生成），非测绘模型。2021 与 2023 的缓冲区和看台布置分开处理。</p>
+      <p><a href="https://www.spa-francorchamps.be/en/news/275_the-spa-francorchamps-track-is-decked-out-in-new-colours" target="_blank" rel="noreferrer">赛道官方：2022 年场地变化</a> · 阴天干地，远景按深度虚化。赛道背景不代表已求解真实过弯载荷。</p>
     </dialog>
   </main>
   <script type="module" src="/src/main.js"></script>

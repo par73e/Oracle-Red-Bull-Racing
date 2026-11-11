@@ -1,0 +1,90 @@
+[
+  {
+    "car": "rb19",
+    "speed": 180,
+    "wheelSpeedMps": 50,
+    "steer": 0,
+    "drsCurrent": 0,
+    "lines": 134,
+    "segments": 18381,
+    "collisions": 0,
+    "buildMs": 20.206249999999955
+  },
+  {
+    "car": "rb19",
+    "speed": 180,
+    "wheelSpeedMps": 50,
+    "steer": 18,
+    "drsCurrent": 1,
+    "lines": 134,
+    "segments": 19263,
+    "collisions": 0,
+    "buildMs": 12.272458000000029
+  },
+  {
+    "car": "rb19",
+    "speed": 350,
+    "wheelSpeedMps": 0,
+    "steer": -18,
+    "drsCurrent": 0.5,
+    "lines": 134,
+    "segments": 19332,
+    "collisions": 0,
+    "buildMs": 39.15770799999996
+  },
+  {
+    "car": "rb19",
+    "speed": 0,
+    "wheelSpeedMps": 50,
+    "steer": 18,
+    "drsCurrent": 0,
+    "lines": 31,
+    "segments": 907,
+    "collisions": 0,
+    "buildMs": 22.02150000000006
+  },
+  {
+    "car": "rb16b",
+    "speed": 180,
+    "wheelSpeedMps": 50,
+    "steer": 0,
+    "drsCurrent": 0,
+    "lines": 134,
+    "segments": 20818,
+    "collisions": 0,
+    "buildMs": 20.523916999999983
+  },
+  {
+    "car": "rb16b",
+    "speed": 180,
+    "wheelSpeedMps": 50,
+    "steer": 18,
+    "drsCurrent": 1,
+    "lines": 133,
+    "segments": 20368,
+    "collisions": 0,
+    "buildMs": 11.021832999999788
+  },
+  {
+    "car": "rb16b",
+    "speed": 350,
+    "wheelSpeedMps": 0,
+    "steer": -18,
+    "drsCurrent": 0.5,
+    "lines": 133,
+    "segments": 20153,
+    "collisions": 0,
+    "buildMs": 13.26208299999962
+  },
+  {
+    "car": "rb16b",
+    "speed": 0,
+    "wheelSpeedMps": 50,
+    "steer": 18,
+    "drsCurrent": 0,
+    "lines": 28,
+    "segments": 828,
+    "collisions": 0,
+    "buildMs": 13.487500000000182
+  }
+]

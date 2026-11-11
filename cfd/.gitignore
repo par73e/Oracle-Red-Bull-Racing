@@ -1,0 +1,6 @@
+.venv/
+cases/
+geometry/
+results/
+*.log
+.mplcache/

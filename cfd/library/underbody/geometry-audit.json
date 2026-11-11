@@ -1,0 +1,45 @@
+{
+  "method": "Vertical first positive body-surface intersection for 169 rays over x=-1..2 m, y=-0.6..0.6 m. This is not a full channel connectivity or minimum-clearance proof.",
+  "results": {
+    "rb19": {
+      "body-raw.stl": {
+        "sha256": "a91d619f7ccead6e0f20fbf8acde855aa505dc992531f810241279a02f8ed785",
+        "total_rays": 169,
+        "hits": 155,
+        "min_m": 0.0776397302437703,
+        "median_m": 0.14249300701421444,
+        "max_m": 0.33664525629310427,
+        "at_or_below_50mm": 0
+      },
+      "body.stl": {
+        "sha256": "de871783b28319192807bb464ea11dc3996082ba1adc0552466138ba52b5f8bd",
+        "total_rays": 169,
+        "hits": 155,
+        "min_m": 0.0637499988079071,
+        "median_m": 0.1262499988079071,
+        "max_m": 0.32624998688697815,
+        "at_or_below_50mm": 0
+      }
+    },
+    "rb16b": {
+      "body-raw.stl": {
+        "sha256": "5c8292bd88eb91d4aa1b1f8d262a61b03f87e6621e74591def474a6dc79b454f",
+        "total_rays": 169,
+        "hits": 157,
+        "min_m": 0.03304489906896127,
+        "median_m": 0.13845269457510825,
+        "max_m": 0.7190316007666463,
+        "at_or_below_50mm": 9
+      },
+      "body.stl": {
+        "sha256": "c022920f24f7c71327abebd51a18c2003e26c85b78052fa3843d7dcd99e1b2e0",
+        "total_rays": 169,
+        "hits": 159,
+        "min_m": 0.026249999180436134,
+        "median_m": 0.12624998539686202,
+        "max_m": 0.5012500286102295,
+        "at_or_below_50mm": 9
+      }
+    }
+  }
+}

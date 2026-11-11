@@ -1,7 +1,7 @@
 [
   {
     "id": "rb19",
-    "revision": "2026-11-09-continuity1",
+    "revision": "2026-11-10-tail-detail1",
     "name": "RB19",
     "year": 2023,
     "file": "/models/rb19.glb",
@@ -257,6 +257,56 @@
       "exhaust": {
         "material": "heat-tinted metal outside, soot-dark inside",
         "inner_faces": 24
+      },
+      "drs_mounts": {
+        "revision": "2026-11-10-tail-detail1",
+        "mounts": {
+          "BASE": {
+            "surface_foot": [
+              0,
+              2.3747951984405518,
+              0.989481508731842
+            ],
+            "joint": [
+              0,
+              2.4000000953674316,
+              1.0269999504089355
+            ],
+            "centerline_error": 0,
+            "material": "AERO_DRS_Woven_Carbon",
+            "tow_width_metres": 0.0008
+          },
+          "TIP": {
+            "surface_foot": [
+              0,
+              2.5788626670837402,
+              1.002508521080017
+            ],
+            "joint": [
+              0,
+              2.569999933242798,
+              1.0399999618530273
+            ],
+            "centerline_error": 0,
+            "material": "AERO_DRS_Woven_Carbon",
+            "tow_width_metres": 0.0008
+          }
+        },
+        "removed": [
+          "DRS_BASE_MOLDED_CARBON",
+          "DRS_BASE_CARBON_EAR_-1",
+          "DRS_BASE_CARBON_EAR_1",
+          "DRS_TIP_MOLDED_CARBON",
+          "DRS_TIP_CARBON_EAR_-1",
+          "DRS_TIP_CARBON_EAR_1",
+          "DRS_BASE_PIN",
+          "DRS_BASE_PIN_RETAINER_-1",
+          "DRS_BASE_PIN_RETAINER_1",
+          "DRS_TIP_PIN",
+          "DRS_TIP_PIN_RETAINER_-1",
+          "DRS_TIP_PIN_RETAINER_1"
+        ],
+        "scope": "Symmetric molded presentation mounts, fine woven carbon and detailed metal pin retainers; not team CAD."
       }
     },
     "license": {
@@ -266,12 +316,12 @@
       "source": "https://skfb.ly/oR7sq",
       "modifications": "Materials, articulated wheels and DRS hydraulic approximation, uniform scale; RB19 floor reconstruction"
     },
-    "glb_bytes": 24159828,
+    "glb_bytes": 25792736,
     "texture_encoding": "PNG 8-bit; source resolution retained"
   },
   {
     "id": "rb16b",
-    "revision": "2026-11-09-continuity1",
+    "revision": "2026-11-10-tail-detail1",
     "name": "RB16B",
     "year": 2021,
     "file": "/models/rb16b.glb",
@@ -581,7 +631,57 @@
         "DISK_RF",
         "DISK_LR",
         "DISK_RR"
-      ]
+      ],
+      "drs_mounts": {
+        "revision": "2026-11-10-tail-detail1",
+        "mounts": {
+          "BASE": {
+            "surface_foot": [
+              0,
+              2.326108455657959,
+              1.0229908227920532
+            ],
+            "joint": [
+              0,
+              2.3499999046325684,
+              1.0399999618530273
+            ],
+            "centerline_error": 0,
+            "material": "AERO_DRS_Woven_Carbon",
+            "tow_width_metres": 0.0008
+          },
+          "TIP": {
+            "surface_foot": [
+              0,
+              2.473750114440918,
+              1.003319501876831
+            ],
+            "joint": [
+              0,
+              2.440000057220459,
+              1.0499999523162842
+            ],
+            "centerline_error": 0,
+            "material": "AERO_DRS_Woven_Carbon",
+            "tow_width_metres": 0.0008
+          }
+        },
+        "removed": [
+          "DRS_BASE_MOLDED_CARBON",
+          "DRS_BASE_CARBON_EAR_-1",
+          "DRS_BASE_CARBON_EAR_1",
+          "DRS_TIP_MOLDED_CARBON",
+          "DRS_TIP_CARBON_EAR_-1",
+          "DRS_TIP_CARBON_EAR_1",
+          "DRS_BASE_PIN_RETAINER_-1",
+          "DRS_BASE_PIN_RETAINER_1",
+          "DRS_TIP_PIN_RETAINER_-1",
+          "DRS_TIP_PIN_RETAINER_1",
+          "DRS_BASE_PIN",
+          "DRS_TIP_PIN"
+        ],
+        "scope": "Symmetric molded presentation mounts, fine woven carbon and detailed metal pin retainers; not team CAD."
+      }
     },
     "license": {
       "title": "Creative Commons Attribution 4.0",
@@ -590,7 +690,7 @@
       "source": "https://skfb.ly/py9Uu",
       "modifications": "Materials, articulated wheels and DRS hydraulic approximation, uniform scale; RB19 floor reconstruction"
     },
-    "glb_bytes": 31783824,
+    "glb_bytes": 33208412,
     "texture_encoding": "PNG 8-bit; source resolution retained"
   }
 ]

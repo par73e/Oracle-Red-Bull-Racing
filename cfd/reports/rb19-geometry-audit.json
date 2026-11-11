@@ -1,0 +1,982 @@
+{
+  "source": "web/public/models/rb19.glb",
+  "sha256": "906a4dc37518fe5cce3f4be8fd5bbfa0950ec9bced879e86547c610c64e2ecef",
+  "frame": "X downstream, Y vehicle right, Z up; transform (-glTF.Z,-glTF.X,glTF.Y)",
+  "pose": {
+    "drs": 0,
+    "steer": 0
+  },
+  "groups": {
+    "body": {
+      "triangles": 192246,
+      "vertices": 98221,
+      "bounds": [
+        [
+          -2.75,
+          -0.9627000093460083,
+          0.07312989979982376
+        ],
+        [
+          2.75,
+          0.9626999497413635,
+          1.1854006052017212
+        ]
+      ],
+      "watertight": false,
+      "boundaryEdges": 4138,
+      "nonManifoldEdges": 82
+    },
+    "FL": {
+      "triangles": 10988,
+      "vertices": 5496,
+      "bounds": [
+        [
+          -1.8411036956620543,
+          -1.0046057796239305,
+          0.004004805555233083
+        ],
+        [
+          -1.1029885042023981,
+          -0.5875809882403059,
+          0.742038266474047
+        ]
+      ],
+      "watertight": true,
+      "boundaryEdges": 0,
+      "nonManifoldEdges": 0
+    },
+    "FR": {
+      "triangles": 10988,
+      "vertices": 5496,
+      "bounds": [
+        [
+          -1.841103766455117,
+          0.5869814643187774,
+          0.004004809335166166
+        ],
+        [
+          -1.102988574995461,
+          1.0040062556971063,
+          0.742038210649338
+        ]
+      ],
+      "watertight": true,
+      "boundaryEdges": 0,
+      "nonManifoldEdges": 0
+    },
+    "RL": {
+      "triangles": 9996,
+      "vertices": 5013,
+      "bounds": [
+        [
+          1.6750231981277466,
+          -1.020513653755188,
+          0.0019252033671364188
+        ],
+        [
+          2.420724868774414,
+          -0.5579038858413696,
+          0.747709333896637
+        ]
+      ],
+      "watertight": false,
+      "boundaryEdges": 28,
+      "nonManifoldEdges": 0
+    },
+    "RR": {
+      "triangles": 9996,
+      "vertices": 5013,
+      "bounds": [
+        [
+          1.6750231981277466,
+          0.5579038262367249,
+          0.0019252035999670625
+        ],
+        [
+          2.420725107192993,
+          1.020513653755188,
+          0.747709333896637
+        ]
+      ],
+      "watertight": false,
+      "boundaryEdges": 28,
+      "nonManifoldEdges": 0
+    }
+  },
+  "inventory": [
+    {
+      "name": "STEERING_HIDDEN_SHANK_FR",
+      "group": "body",
+      "triangles": 76
+    },
+    {
+      "name": "RB19_Part_11150",
+      "group": "body",
+      "triangles": 280
+    },
+    {
+      "name": "STEERING_HIDDEN_SHANK_FL",
+      "group": "body",
+      "triangles": 76
+    },
+    {
+      "name": "RB19_Part_10088",
+      "group": "body",
+      "triangles": 280
+    },
+    {
+      "name": "RB19_Part_11150_Fixed_Fairing",
+      "group": "body",
+      "triangles": 200
+    },
+    {
+      "name": "RB19_Part_10088_Fixed_Fairing",
+      "group": "body",
+      "triangles": 200
+    },
+    {
+      "name": "STEERING_JOINT_FR_UPPER",
+      "group": "body",
+      "triangles": 224
+    },
+    {
+      "name": "STEERING_JOINT_FR_LOWER",
+      "group": "body",
+      "triangles": 224
+    },
+    {
+      "name": "STEERING_JOINT_FL_UPPER",
+      "group": "body",
+      "triangles": 224
+    },
+    {
+      "name": "STEERING_JOINT_FL_LOWER",
+      "group": "body",
+      "triangles": 224
+    },
+    {
+      "name": "RB19_Part_5108_e5777e",
+      "group": "RR",
+      "triangles": 1584
+    },
+    {
+      "name": "RB19_Part_5108_92ff34",
+      "group": "RR",
+      "triangles": 8412
+    },
+    {
+      "name": "RB19_Part_3489_5de51a",
+      "group": "RL",
+      "triangles": 1584
+    },
+    {
+      "name": "RB19_Part_3489_52f1c8",
+      "group": "RL",
+      "triangles": 8412
+    },
+    {
+      "name": "STEERING_JOINT_FR_TRACK",
+      "group": "body",
+      "triangles": 224
+    },
+    {
+      "name": "STEERING_ARM_FR",
+      "group": "body",
+      "triangles": 188
+    },
+    {
+      "name": "RB19_Part_11949",
+      "group": "body",
+      "triangles": 1716
+    },
+    {
+      "name": "RB19_Part_11891",
+      "group": "body",
+      "triangles": 176
+    },
+    {
+      "name": "RB19_Part_11875",
+      "group": "body",
+      "triangles": 176
+    },
+    {
+      "name": "RB19_Part_11859",
+      "group": "body",
+      "triangles": 3652
+    },
+    {
+      "name": "RB19_Part_2671_619444",
+      "group": "FR",
+      "triangles": 1232
+    },
+    {
+      "name": "RB19_Part_2671_887ed3",
+      "group": "FR",
+      "triangles": 9756
+    },
+    {
+      "name": "STEERING_JOINT_FL_TRACK",
+      "group": "body",
+      "triangles": 224
+    },
+    {
+      "name": "STEERING_ARM_FL",
+      "group": "body",
+      "triangles": 188
+    },
+    {
+      "name": "RB19_Part_10887",
+      "group": "body",
+      "triangles": 1716
+    },
+    {
+      "name": "RB19_Part_10829",
+      "group": "body",
+      "triangles": 176
+    },
+    {
+      "name": "RB19_Part_10813",
+      "group": "body",
+      "triangles": 176
+    },
+    {
+      "name": "RB19_Part_10797",
+      "group": "body",
+      "triangles": 3652
+    },
+    {
+      "name": "RB19_Part_1284_d505fd",
+      "group": "FL",
+      "triangles": 1232
+    },
+    {
+      "name": "RB19_Part_1284_e4ada0",
+      "group": "FL",
+      "triangles": 9756
+    },
+    {
+      "name": "DRS_TIP_PIN_RETAINER_-1",
+      "group": "body",
+      "triangles": 658
+    },
+    {
+      "name": "DRS_TIP_PIN_RETAINER_1",
+      "group": "body",
+      "triangles": 658
+    },
+    {
+      "name": "DRS_TIP_PIN",
+      "group": "body",
+      "triangles": 1020
+    },
+    {
+      "name": "DRS_TIP_MOLDED_CARBON",
+      "group": "body",
+      "triangles": 17408
+    },
+    {
+      "name": "DRS_TIP_CARBON_EAR_-1",
+      "group": "body",
+      "triangles": 2048
+    },
+    {
+      "name": "DRS_TIP_CARBON_EAR_1",
+      "group": "body",
+      "triangles": 2048
+    },
+    {
+      "name": "DRS_Flap_Surface",
+      "group": "body",
+      "triangles": 748
+    },
+    {
+      "name": "DRS_ROD",
+      "group": "body",
+      "triangles": 124
+    },
+    {
+      "name": "DRS_TIP_BEARING_EYE",
+      "group": "body",
+      "triangles": 1744
+    },
+    {
+      "name": "DRS_CYLINDER_8145bf",
+      "group": "body",
+      "triangles": 256
+    },
+    {
+      "name": "DRS_CYLINDER_1409a0",
+      "group": "body",
+      "triangles": 256
+    },
+    {
+      "name": "DRS_CYLINDER_233eb9",
+      "group": "body",
+      "triangles": 64
+    },
+    {
+      "name": "DRS_BASE_BEARING_EYE",
+      "group": "body",
+      "triangles": 1744
+    },
+    {
+      "name": "DRS_BASE_PIN_RETAINER_-1",
+      "group": "body",
+      "triangles": 658
+    },
+    {
+      "name": "DRS_BASE_PIN_RETAINER_1",
+      "group": "body",
+      "triangles": 658
+    },
+    {
+      "name": "DRS_BASE_PIN",
+      "group": "body",
+      "triangles": 1020
+    },
+    {
+      "name": "DRS_BASE_MOLDED_CARBON",
+      "group": "body",
+      "triangles": 17408
+    },
+    {
+      "name": "DRS_BASE_CARBON_EAR_-1",
+      "group": "body",
+      "triangles": 2048
+    },
+    {
+      "name": "DRS_BASE_CARBON_EAR_1",
+      "group": "body",
+      "triangles": 2048
+    },
+    {
+      "name": "RB19_Part_22196",
+      "group": "body",
+      "triangles": 144
+    },
+    {
+      "name": "RB19_Part_22172",
+      "group": "body",
+      "triangles": 144
+    },
+    {
+      "name": "RB19_Part_22148",
+      "group": "body",
+      "triangles": 144
+    },
+    {
+      "name": "RB19_Part_22124",
+      "group": "body",
+      "triangles": 144
+    },
+    {
+      "name": "RB19_Part_22101",
+      "group": "body",
+      "triangles": 144
+    },
+    {
+      "name": "RB19_Part_22076",
+      "group": "body",
+      "triangles": 144
+    },
+    {
+      "name": "RB19_Part_22052",
+      "group": "body",
+      "triangles": 144
+    },
+    {
+      "name": "RB19_Part_22028",
+      "group": "body",
+      "triangles": 144
+    },
+    {
+      "name": "RB19_Part_22004",
+      "group": "body",
+      "triangles": 144
+    },
+    {
+      "name": "RB19_Part_21981",
+      "group": "body",
+      "triangles": 144
+    },
+    {
+      "name": "RB19_Part_21951",
+      "group": "body",
+      "triangles": 1168
+    },
+    {
+      "name": "RB19_Part_21889",
+      "group": "body",
+      "triangles": 544
+    },
+    {
+      "name": "RB19_Part_21733",
+      "group": "body",
+      "triangles": 1168
+    },
+    {
+      "name": "RB19_Part_21671",
+      "group": "body",
+      "triangles": 544
+    },
+    {
+      "name": "RB19_Part_21444",
+      "group": "body",
+      "triangles": 608
+    },
+    {
+      "name": "RB19_Part_21366",
+      "group": "body",
+      "triangles": 608
+    },
+    {
+      "name": "RB19_Part_21288",
+      "group": "body",
+      "triangles": 608
+    },
+    {
+      "name": "RB19_Part_21210",
+      "group": "body",
+      "triangles": 608
+    },
+    {
+      "name": "RB19_Part_21132",
+      "group": "body",
+      "triangles": 608
+    },
+    {
+      "name": "RB19_Part_21054",
+      "group": "body",
+      "triangles": 608
+    },
+    {
+      "name": "RB19_Part_20976",
+      "group": "body",
+      "triangles": 608
+    },
+    {
+      "name": "RB19_Part_20898",
+      "group": "body",
+      "triangles": 608
+    },
+    {
+      "name": "RB19_Part_20820",
+      "group": "body",
+      "triangles": 608
+    },
+    {
+      "name": "RB19_Part_20742",
+      "group": "body",
+      "triangles": 608
+    },
+    {
+      "name": "RB19_Part_20664",
+      "group": "body",
+      "triangles": 608
+    },
+    {
+      "name": "RB19_Part_20586",
+      "group": "body",
+      "triangles": 608
+    },
+    {
+      "name": "RB19_Part_20558",
+      "group": "body",
+      "triangles": 304
+    },
+    {
+      "name": "RB19_Part_20459",
+      "group": "body",
+      "triangles": 664
+    },
+    {
+      "name": "RB19_Part_20401",
+      "group": "body",
+      "triangles": 640
+    },
+    {
+      "name": "RB19_Part_20363",
+      "group": "body",
+      "triangles": 640
+    },
+    {
+      "name": "RB19_Part_20275",
+      "group": "body",
+      "triangles": 640
+    },
+    {
+      "name": "RB19_Part_20185",
+      "group": "body",
+      "triangles": 640
+    },
+    {
+      "name": "RB19_Part_20014",
+      "group": "body",
+      "triangles": 640
+    },
+    {
+      "name": "RB19_Part_19921",
+      "group": "body",
+      "triangles": 640
+    },
+    {
+      "name": "RB19_Part_19899",
+      "group": "body",
+      "triangles": 640
+    },
+    {
+      "name": "RB19_Part_19798",
+      "group": "body",
+      "triangles": 304
+    },
+    {
+      "name": "RB19_Part_19699",
+      "group": "body",
+      "triangles": 664
+    },
+    {
+      "name": "RB19_Part_19641",
+      "group": "body",
+      "triangles": 640
+    },
+    {
+      "name": "RB19_Part_19603",
+      "group": "body",
+      "triangles": 640
+    },
+    {
+      "name": "RB19_Part_19515",
+      "group": "body",
+      "triangles": 640
+    },
+    {
+      "name": "RB19_Part_19425",
+      "group": "body",
+      "triangles": 640
+    },
+    {
+      "name": "RB19_Part_19254",
+      "group": "body",
+      "triangles": 640
+    },
+    {
+      "name": "RB19_Part_19161",
+      "group": "body",
+      "triangles": 640
+    },
+    {
+      "name": "RB19_Part_19139",
+      "group": "body",
+      "triangles": 640
+    },
+    {
+      "name": "RB19_Part_18944",
+      "group": "body",
+      "triangles": 400
+    },
+    {
+      "name": "RB19_Part_18556",
+      "group": "body",
+      "triangles": 9024
+    },
+    {
+      "name": "RB19_Part_18322",
+      "group": "body",
+      "triangles": 400
+    },
+    {
+      "name": "RB19_Part_17776",
+      "group": "body",
+      "triangles": 1408
+    },
+    {
+      "name": "RB19_Part_17414",
+      "group": "body",
+      "triangles": 1792
+    },
+    {
+      "name": "RB19_Part_17262",
+      "group": "body",
+      "triangles": 1012
+    },
+    {
+      "name": "RB19_Part_17185_8cf2e9",
+      "group": "body",
+      "triangles": 12992
+    },
+    {
+      "name": "RB19_Part_17185_370e0f",
+      "group": "body",
+      "triangles": 3612
+    },
+    {
+      "name": "RB19_Part_16918",
+      "group": "body",
+      "triangles": 700
+    },
+    {
+      "name": "RB19_Part_16649",
+      "group": "body",
+      "triangles": 2796
+    },
+    {
+      "name": "RB19_Part_15825",
+      "group": "body",
+      "triangles": 1012
+    },
+    {
+      "name": "RB19_Part_15437",
+      "group": "body",
+      "triangles": 700
+    },
+    {
+      "name": "RB19_Part_14207_582121",
+      "group": "body",
+      "triangles": 960
+    },
+    {
+      "name": "RB19_Part_14207_aafc98",
+      "group": "body",
+      "triangles": 192
+    },
+    {
+      "name": "RB19_Part_14207_1f5757",
+      "group": "body",
+      "triangles": 192
+    },
+    {
+      "name": "RB19_Part_14048",
+      "group": "body",
+      "triangles": 976
+    },
+    {
+      "name": "RB19_Part_13917",
+      "group": "body",
+      "triangles": 960
+    },
+    {
+      "name": "RB19_Part_13782",
+      "group": "body",
+      "triangles": 976
+    },
+    {
+      "name": "RB19_Part_13651",
+      "group": "body",
+      "triangles": 960
+    },
+    {
+      "name": "RB19_Part_13504",
+      "group": "body",
+      "triangles": 96
+    },
+    {
+      "name": "RB19_Part_13424",
+      "group": "body",
+      "triangles": 1180
+    },
+    {
+      "name": "RB19_Part_13330",
+      "group": "body",
+      "triangles": 1296
+    },
+    {
+      "name": "RB19_Part_13164",
+      "group": "body",
+      "triangles": 336
+    },
+    {
+      "name": "RB19_Part_13104",
+      "group": "body",
+      "triangles": 192
+    },
+    {
+      "name": "RB19_Part_13092",
+      "group": "body",
+      "triangles": 232
+    },
+    {
+      "name": "RB19_Part_13088",
+      "group": "body",
+      "triangles": 96
+    },
+    {
+      "name": "RB19_Part_13084",
+      "group": "body",
+      "triangles": 96
+    },
+    {
+      "name": "RB19_Part_13015",
+      "group": "body",
+      "triangles": 96
+    },
+    {
+      "name": "RB19_Part_12935",
+      "group": "body",
+      "triangles": 1180
+    },
+    {
+      "name": "RB19_Part_12841",
+      "group": "body",
+      "triangles": 1296
+    },
+    {
+      "name": "RB19_Part_12675",
+      "group": "body",
+      "triangles": 336
+    },
+    {
+      "name": "RB19_Part_12615",
+      "group": "body",
+      "triangles": 192
+    },
+    {
+      "name": "RB19_Part_12603",
+      "group": "body",
+      "triangles": 232
+    },
+    {
+      "name": "RB19_Part_12599",
+      "group": "body",
+      "triangles": 96
+    },
+    {
+      "name": "RB19_Part_12595",
+      "group": "body",
+      "triangles": 96
+    },
+    {
+      "name": "RB19_Part_12492",
+      "group": "body",
+      "triangles": 892
+    },
+    {
+      "name": "RB19_Part_12473",
+      "group": "body",
+      "triangles": 488
+    },
+    {
+      "name": "RB19_Part_12301",
+      "group": "body",
+      "triangles": 900
+    },
+    {
+      "name": "RB19_Part_12200",
+      "group": "body",
+      "triangles": 892
+    },
+    {
+      "name": "RB19_Part_12181",
+      "group": "body",
+      "triangles": 488
+    },
+    {
+      "name": "RB19_Part_12009",
+      "group": "body",
+      "triangles": 900
+    },
+    {
+      "name": "RB19_Part_11154",
+      "group": "body",
+      "triangles": 480
+    },
+    {
+      "name": "RB19_Part_11119",
+      "group": "body",
+      "triangles": 720
+    },
+    {
+      "name": "RB19_Part_11054",
+      "group": "body",
+      "triangles": 800
+    },
+    {
+      "name": "RB19_Part_10092",
+      "group": "body",
+      "triangles": 480
+    },
+    {
+      "name": "RB19_Part_10057",
+      "group": "body",
+      "triangles": 720
+    },
+    {
+      "name": "RB19_Part_9992",
+      "group": "body",
+      "triangles": 800
+    },
+    {
+      "name": "RB19_Part_9588",
+      "group": "body",
+      "triangles": 2432
+    },
+    {
+      "name": "RB19_Part_9060",
+      "group": "body",
+      "triangles": 2992
+    },
+    {
+      "name": "RB19_Part_9016",
+      "group": "body",
+      "triangles": 4212
+    },
+    {
+      "name": "RB19_Part_8352",
+      "group": "body",
+      "triangles": 2992
+    },
+    {
+      "name": "RB19_Part_8080",
+      "group": "body",
+      "triangles": 128
+    },
+    {
+      "name": "RB19_Part_7997",
+      "group": "body",
+      "triangles": 872
+    },
+    {
+      "name": "RB19_Part_7785",
+      "group": "body",
+      "triangles": 1504
+    },
+    {
+      "name": "RB19_Part_7744",
+      "group": "body",
+      "triangles": 128
+    },
+    {
+      "name": "RB19_Part_7661",
+      "group": "body",
+      "triangles": 872
+    },
+    {
+      "name": "RB19_Part_7449",
+      "group": "body",
+      "triangles": 1504
+    },
+    {
+      "name": "RB19_Part_7312",
+      "group": "body",
+      "triangles": 1780
+    },
+    {
+      "name": "RB19_Part_7265",
+      "group": "body",
+      "triangles": 3540
+    },
+    {
+      "name": "RB19_Part_6957",
+      "group": "body",
+      "triangles": 288
+    },
+    {
+      "name": "RB19_Part_6951",
+      "group": "body",
+      "triangles": 432
+    },
+    {
+      "name": "RB19_Part_6356",
+      "group": "body",
+      "triangles": 2548
+    },
+    {
+      "name": "RB19_Part_4723",
+      "group": "body",
+      "triangles": 2548
+    },
+    {
+      "name": "RB19_Part_496",
+      "group": "body",
+      "triangles": 860
+    },
+    {
+      "name": "RB19_Part_301",
+      "group": "body",
+      "triangles": 1772
+    },
+    {
+      "name": "RB19_Part_266",
+      "group": "body",
+      "triangles": 192
+    },
+    {
+      "name": "RB19_Part_250",
+      "group": "body",
+      "triangles": 512
+    },
+    {
+      "name": "RB19_Part_111",
+      "group": "body",
+      "triangles": 860
+    },
+    {
+      "name": "FLOOR_VENTURI_R",
+      "group": "body",
+      "triangles": 6656
+    },
+    {
+      "name": "FLOOR_VENTURI_L",
+      "group": "body",
+      "triangles": 6656
+    },
+    {
+      "name": "DRS_Fixed_Mainplane_Lip",
+      "group": "body",
+      "triangles": 184
+    }
+  ],
+  "wheels": {
+    "FL": {
+      "center": [
+        -1.4720463752746582,
+        -0.796093225479126,
+        0.37302151322364807
+      ],
+      "axis": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "radius": 0.36901673045940697
+    },
+    "FR": {
+      "center": [
+        -1.4720463752746582,
+        0.7954937219619751,
+        0.3730214834213257
+      ],
+      "axis": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "radius": 0.3690167006570846
+    },
+    "RL": {
+      "center": [
+        2.0478739738464355,
+        -0.7892087697982788,
+        0.37481728196144104
+      ],
+      "axis": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "radius": 0.37289206526475027
+    },
+    "RR": {
+      "center": [
+        2.0478742122650146,
+        0.7892087697982788,
+        0.37481728196144104
+      ],
+      "axis": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "radius": 0.37289206514833495
+    }
+  }
+}

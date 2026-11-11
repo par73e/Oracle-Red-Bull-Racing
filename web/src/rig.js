@@ -1,7 +1,69 @@
-import { Vector3, MathUtils } from 'three';
+import { Matrix3, Matrix4, Vector3, MathUtils } from 'three';
 import { trackRodAngle } from './mechanics.js';
 
 const Y = new Vector3(0, 1, 0);
+
+// The RB19 carbon fairing is a display skin, separate from the rigid track
+// rod underneath. Its split at 0.13 m must stay registered to the fixed nose
+// fairing; hidden overlap alone leaves a visible step as the rack translates.
+function bindFairing(model, config, find) {
+  if (config.id !== 'rb19') return [];
+  model.updateMatrixWorld(true);
+  return Object.values(config.suspension.wheels).flatMap(spec => {
+    if (!spec.fixed_fairing) return [];
+    const root = find('AERO_CAR'), link = find(spec.link), patches = [];
+    find(spec.tie_mesh).traverse(mesh => {
+      if (!mesh.isMesh) return;
+      mesh.geometry = mesh.geometry.clone();
+      const position = mesh.geometry.attributes.position, normal = mesh.geometry.attributes.normal;
+      const tangent = mesh.geometry.attributes.tangent;
+      const toRoot = new Matrix4().copy(root.matrixWorld).invert().multiply(mesh.matrixWorld);
+      const toLink = new Matrix4().copy(link.matrixWorld).invert().multiply(mesh.matrixWorld);
+      const rootNormal = new Matrix3().getNormalMatrix(toRoot), vertices = [];
+      for (let i = 0; i < position.count; i++) {
+        const rest = new Vector3().fromBufferAttribute(position, i);
+        const along = rest.clone().applyMatrix4(toLink).y;
+        const t = MathUtils.clamp((along - .13) / .13, 0, 1);
+        const anchorWeight = 1 - t * t * (3 - 2 * t);
+        if (anchorWeight === 0) continue;
+        const restNormal = new Vector3().fromBufferAttribute(normal, i);
+        const restTangent = tangent ? new Vector3().fromBufferAttribute(tangent, i) : null;
+        vertices.push({ i, rest, restNormal, restTangent, anchorWeight,
+          anchor: rest.clone().applyMatrix4(toRoot),
+          anchorTangent: restTangent?.clone().transformDirection(toRoot),
+          anchorNormal: restNormal.clone().applyNormalMatrix(rootNormal) });
+      }
+      patches.push({ root, mesh, vertices });
+    });
+    return patches;
+  });
+}
+
+function applyFairing(patches) {
+  const toLocal = new Matrix4(), normalMatrix = new Matrix3();
+  const point = new Vector3(), normal = new Vector3(), tangent = new Vector3();
+  for (const { root, mesh, vertices } of patches) {
+    toLocal.copy(mesh.matrixWorld).invert().multiply(root.matrixWorld);
+    normalMatrix.getNormalMatrix(toLocal);
+    for (const v of vertices) {
+      point.copy(v.anchor).applyMatrix4(toLocal).lerp(v.rest, 1 - v.anchorWeight);
+      normal.copy(v.anchorNormal).applyNormalMatrix(normalMatrix).lerp(v.restNormal, 1 - v.anchorWeight).normalize();
+      mesh.geometry.attributes.position.setXYZ(v.i, point.x, point.y, point.z);
+      mesh.geometry.attributes.normal.setXYZ(v.i, normal.x, normal.y, normal.z);
+      if (v.restTangent) {
+        tangent.copy(v.anchorTangent).transformDirection(toLocal).lerp(v.restTangent, 1 - v.anchorWeight);
+        tangent.addScaledVector(normal, -tangent.dot(normal)).normalize();
+        mesh.geometry.attributes.tangent.setXYZ(v.i, tangent.x, tangent.y, tangent.z);
+      }
+    }
+    mesh.geometry.attributes.position.needsUpdate = true;
+    mesh.geometry.attributes.normal.needsUpdate = true;
+    if (mesh.geometry.attributes.tangent) mesh.geometry.attributes.tangent.needsUpdate = true;
+    mesh.geometry.boundsTree?.refit();
+    mesh.geometry.computeBoundingBox();
+    mesh.geometry.computeBoundingSphere();
+  }
+}
 
 export function bindRig(model, config) {
   const find = name => {
@@ -16,7 +78,7 @@ export function bindRig(model, config) {
     ...spec, linkNode:find(spec.link),innerNode:find(spec.inner_node),outerNode:find(spec.outer_node),
     restQuaternion:find(spec.link).quaternion.clone(),restDirection:Y.clone().applyQuaternion(find(spec.link).quaternion),
   }])):null;
-  return { model, config, wheels, links,rack:config.suspension?find(config.suspension.rack):null,
+  return { model, config, wheels, links, fairings:bindFairing(model, config, find),rack:config.suspension?find(config.suspension.rack):null,
     pistonFrame:config.drs.piston_frame?find(config.drs.piston_frame):null,pivot: find(config.drs.pivot),
     attachment: find(config.drs.attachment), base: find('DRS_BASE'),
     cylinder: find(config.drs.cylinder), rod: find(config.drs.rod) };
@@ -50,6 +112,10 @@ export function applyRig(rig, { drs, steer, spin }) {
       link.linkNode.quaternion.setFromUnitVectors(link.restDirection,b.sub(a).normalize()).multiply(link.restQuaternion);
     }
     rig.model.updateMatrixWorld(true);
+  }
+  if (rig.fairingSteer !== steer) {
+    applyFairing(rig.fairings);
+    rig.fairingSteer = steer;
   }
   const a = rig.base.getWorldPosition(new Vector3());
   const b = rig.attachment.getWorldPosition(new Vector3());
