@@ -1,0 +1,53 @@
+{
+  "road": {
+    "url": "https://github.com/TUMFTM/racetrack-database",
+    "license": "LGPL-3.0; see TUM-LICENSE.txt",
+    "modified": "Registered Spa.csv positions, sampled widths and associated road elevations in terrain.json."
+  },
+  "geographicRegistration": {
+    "url": "https://github.com/bacinger/f1-circuits",
+    "license": "MIT; see geographic-LICENSE.txt"
+  },
+  "elevation": {
+    "url": "https://geoservices.wallonie.be/arcgis/rest/services/RELIEF/WALLONIE_MNT_2021_2022/MapServer",
+    "attribution": "SPW Wallonie \u2014 MNT LiDAR 2021\u20132022; sampled raw pixel values."
+  },
+  "assets": [
+    {
+      "id": "asphalt_02",
+      "role": "diff",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_diff_1k.jpg",
+      "license": "CC0"
+    },
+    {
+      "id": "asphalt_02",
+      "role": "nor_gl",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_nor_gl_1k.jpg",
+      "license": "CC0"
+    },
+    {
+      "id": "leafy_grass",
+      "role": "diff",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/leafy_grass/leafy_grass_diff_1k.jpg",
+      "license": "CC0"
+    },
+    {
+      "id": "leafy_grass",
+      "role": "nor_gl",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/leafy_grass/leafy_grass_nor_gl_1k.jpg",
+      "license": "CC0"
+    },
+    {
+      "id": "pine_tree_01",
+      "role": "Original 3D mature pine; bark LOD and source needle branch bakes",
+      "url": "https://polyhaven.com/a/pine_tree_01",
+      "license": "CC0"
+    },
+    {
+      "id": "kloofendal_48d_partly_cloudy_puresky",
+      "role": "HDR sky",
+      "url": "https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky",
+      "license": "CC0"
+    }
+  ]
+}

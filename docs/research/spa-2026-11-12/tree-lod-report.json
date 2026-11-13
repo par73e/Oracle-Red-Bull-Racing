@@ -1,0 +1,50 @@
+[
+  {
+    "name": "near_pine_0",
+    "triangles": 7945,
+    "source": "Poly Haven pine_sapling_small",
+    "license": "CC0",
+    "ratio": 0.065,
+    "nativeHeightM": 1.0456083105527796
+  },
+  {
+    "name": "far_pine_0",
+    "triangles": 2200,
+    "source": "Poly Haven pine_sapling_small",
+    "license": "CC0",
+    "ratio": 0.018,
+    "nativeHeightM": 1.0456083105527796
+  },
+  {
+    "name": "near_pine_1",
+    "triangles": 9262,
+    "source": "Poly Haven pine_sapling_small",
+    "license": "CC0",
+    "ratio": 0.065,
+    "nativeHeightM": 1.2989574084058404
+  },
+  {
+    "name": "far_pine_1",
+    "triangles": 2565,
+    "source": "Poly Haven pine_sapling_small",
+    "license": "CC0",
+    "ratio": 0.018,
+    "nativeHeightM": 1.2989574084058404
+  },
+  {
+    "name": "near_pine_2",
+    "triangles": 8670,
+    "source": "Poly Haven pine_sapling_small",
+    "license": "CC0",
+    "ratio": 0.065,
+    "nativeHeightM": 0.9613255789154209
+  },
+  {
+    "name": "far_pine_2",
+    "triangles": 2401,
+    "source": "Poly Haven pine_sapling_small",
+    "license": "CC0",
+    "ratio": 0.018,
+    "nativeHeightM": 0.9613255789154209
+  }
+]

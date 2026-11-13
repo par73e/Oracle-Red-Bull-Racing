@@ -1,0 +1,229 @@
+{
+  "records": [
+    {
+      "car": "rb19",
+      "anchor": "road-stop",
+      "speedMps": 50,
+      "groundSpeedMps": 0,
+      "wheelSpeedMps": 0,
+      "cells": 179105,
+      "residuals": {
+        "Ux": 6.0924427e-08,
+        "Uy": 3.5868186e-06,
+        "Uz": 2.8271622e-07,
+        "p": 4.4354252e-05,
+        "omega": 9.6440547e-08,
+        "k": 9.9320888e-08
+      },
+      "rawFieldMax": 56.76446430721183,
+      "fieldMax": 56.76446533203125,
+      "excludedNumericalSamples": 0,
+      "sha256": "ea28258505e3f1ac87cf1eb3af77a434fed8fdfab157fe7a35fa6a996737e9ab",
+      "lastLocalContinuity": 2.4209296e-08,
+      "lastGlobalContinuity": 3.9182811e-10,
+      "forceRelativeRangeLast100": [
+        3.0300793401843107e-05,
+        0.032124090694786715,
+        0.00040135578219617556
+      ],
+      "strictResidualTargetMet": true
+    },
+    {
+      "car": "rb19",
+      "anchor": "road-slow",
+      "speedMps": 50,
+      "groundSpeedMps": 25,
+      "wheelSpeedMps": 25,
+      "cells": 179105,
+      "residuals": {
+        "Ux": 1.3369494e-07,
+        "Uy": 1.1940074e-05,
+        "Uz": 8.4426229e-07,
+        "p": 9.9123194e-05,
+        "omega": 1.01063e-07,
+        "k": 3.4081835e-07
+      },
+      "rawFieldMax": 56.939060600195276,
+      "fieldMax": 56.93906021118164,
+      "excludedNumericalSamples": 0,
+      "sha256": "9affc2a9245007ae5c126134be044c08bb698108e12b855207d5894c547ee7dd",
+      "lastLocalContinuity": 3.7417628e-08,
+      "lastGlobalContinuity": -3.669452e-10,
+      "forceRelativeRangeLast100": [
+        0.00043509247974277484,
+        0.19686500129310555,
+        0.0013832632859303421
+      ],
+      "strictResidualTargetMet": true
+    },
+    {
+      "car": "rb19",
+      "anchor": "road-fast",
+      "speedMps": 50,
+      "groundSpeedMps": 100,
+      "wheelSpeedMps": 100,
+      "cells": 179105,
+      "residuals": {
+        "Ux": 2.5346243e-08,
+        "Uy": 1.2492683e-06,
+        "Uz": 1.0455932e-07,
+        "p": 2.2599904e-05,
+        "omega": 9.1527699e-08,
+        "k": 9.8105331e-08
+      },
+      "rawFieldMax": 98.88145860858802,
+      "fieldMax": 98.88146209716797,
+      "excludedNumericalSamples": 0,
+      "sha256": "b80ce75fee938c1e1dc96e310aed82f73368fd52664a2db9c5efec1193403048",
+      "lastLocalContinuity": 1.1087209e-08,
+      "lastGlobalContinuity": -1.7848814e-10,
+      "forceRelativeRangeLast100": [
+        2.8382441339510202e-05,
+        0.031122365099999993,
+        6.256966959868881e-05
+      ],
+      "strictResidualTargetMet": true
+    },
+    {
+      "car": "rb19",
+      "anchor": "still-air",
+      "speedMps": 0,
+      "groundSpeedMps": 50,
+      "wheelSpeedMps": 50,
+      "cells": 179105,
+      "residuals": {
+        "Ux": 1.4180683e-06,
+        "Uy": 6.1088893e-05,
+        "Uz": 7.9891137e-06,
+        "p": 5.2780034e-05,
+        "omega": 6.097237e-06,
+        "k": 7.6300271e-08
+      },
+      "rawFieldMax": 49.378927286367286,
+      "fieldMax": 49.378929138183594,
+      "excludedNumericalSamples": 0,
+      "sha256": "453507d6a58cc1e303d7a9b6e2419430b8e31066af57f84a58cfe485fba86c70",
+      "lastLocalContinuity": 2.5604968e-09,
+      "lastGlobalContinuity": -3.3565656e-10,
+      "forceRelativeRangeLast100": [
+        4.61312960185218e-05,
+        0.003389988030000013,
+        0.0001664891194217067
+      ],
+      "strictResidualTargetMet": true
+    },
+    {
+      "car": "rb16b",
+      "anchor": "road-stop",
+      "speedMps": 50,
+      "groundSpeedMps": 0,
+      "wheelSpeedMps": 0,
+      "cells": 167565,
+      "residuals": {
+        "Ux": 4.9868734e-06,
+        "Uy": 0.0002584209,
+        "Uz": 3.2082233e-05,
+        "p": 0.00332736,
+        "omega": 9.3724289e-07,
+        "k": 6.6986226e-06
+      },
+      "rawFieldMax": 61.74396238270866,
+      "fieldMax": 61.74396514892578,
+      "excludedNumericalSamples": 0,
+      "sha256": "9a81a5c19376ee888580c6361f4989ad3308362a9d85431da732c2171d2d7785",
+      "lastLocalContinuity": 3.5365277e-08,
+      "lastGlobalContinuity": 2.6969032e-09,
+      "forceRelativeRangeLast100": [
+        0.05853496195158299,
+        0.15680709707416332,
+        0.05963408589253914
+      ],
+      "strictResidualTargetMet": false
+    },
+    {
+      "car": "rb16b",
+      "anchor": "road-slow",
+      "speedMps": 50,
+      "groundSpeedMps": 25,
+      "wheelSpeedMps": 25,
+      "cells": 167565,
+      "residuals": {
+        "Ux": 4.8075579e-06,
+        "Uy": 0.00025559988,
+        "Uz": 3.0921811e-05,
+        "p": 0.0030640859,
+        "omega": 1.0369743e-06,
+        "k": 7.9406646e-06
+      },
+      "rawFieldMax": 63.14953276866782,
+      "fieldMax": 63.149532318115234,
+      "excludedNumericalSamples": 0,
+      "sha256": "24d499176d0f219f3379910da0cb80ee9305450161415decc562cb12a50273a7",
+      "lastLocalContinuity": 3.4590261e-08,
+      "lastGlobalContinuity": 2.1881424e-09,
+      "forceRelativeRangeLast100": [
+        0.05579209510608591,
+        0.16057578049836516,
+        0.05332923520787297
+      ],
+      "strictResidualTargetMet": false
+    },
+    {
+      "car": "rb16b",
+      "anchor": "road-fast",
+      "speedMps": 50,
+      "groundSpeedMps": 100,
+      "wheelSpeedMps": 100,
+      "cells": 167565,
+      "residuals": {
+        "Ux": 4.3114815e-06,
+        "Uy": 0.00025412033,
+        "Uz": 2.9403942e-05,
+        "p": 0.0025839434,
+        "omega": 7.6970081e-07,
+        "k": 4.934015e-06
+      },
+      "rawFieldMax": 100.09293575283407,
+      "fieldMax": 100.09293365478516,
+      "excludedNumericalSamples": 0,
+      "sha256": "4763e5100c6bb0583ca52525be34d9b40873b5f629ed1ec44c5099b4a44a6823",
+      "lastLocalContinuity": 3.5453593e-08,
+      "lastGlobalContinuity": 1.2266546e-09,
+      "forceRelativeRangeLast100": [
+        0.048858891399719814,
+        0.12342993183171089,
+        0.05896798023091681
+      ],
+      "strictResidualTargetMet": false
+    },
+    {
+      "car": "rb16b",
+      "anchor": "still-air",
+      "speedMps": 0,
+      "groundSpeedMps": 50,
+      "wheelSpeedMps": 50,
+      "cells": 167565,
+      "residuals": {
+        "Ux": 0.00018652819,
+        "Uy": 0.0026633097,
+        "Uz": 0.00076187415,
+        "p": 0.0052710509,
+        "omega": 0.00013754382,
+        "k": 9.9160858e-08
+      },
+      "rawFieldMax": 50.14864960858002,
+      "fieldMax": 50.148651123046875,
+      "excludedNumericalSamples": 0,
+      "sha256": "92fe7fbc190339230fcca70f6cb83cbbdd8dbfb0f814a9360f090d42a1f17e56",
+      "lastLocalContinuity": 1.9770254e-07,
+      "lastGlobalContinuity": -6.6193673e-08,
+      "forceRelativeRangeLast100": [
+        0.05886314452211046,
+        0.025191094999999997,
+        0.01077329272561478
+      ],
+      "strictResidualTargetMet": false
+    }
+  ],
+  "quality": "Exploratory steady coarse RANS, not grid-independent or experimentally validated. No new locally refined underbody/sidepod solves. Straight geometry only; combined steering and DRS are sparse additive approximations."
+}

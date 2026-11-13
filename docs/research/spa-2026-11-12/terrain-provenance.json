@@ -1,0 +1,8 @@
+{
+  "plan": "TUMFTM racetrack-database Spa.csv, OSM-derived smoothed centreline and satellite widths",
+  "geographicRegistration": "Rigid ICP to bacinger/f1-circuits be-1925.geojson",
+  "registrationMedianM": 1.6085922627776539,
+  "elevation": "SPW Wallonie MNT 2021-2022 0.5 m LiDAR, raw Identify pixel values",
+  "roadHeightInterpolation": "shape-preserving cubic between 10 m source height samples",
+  "elevationOffsetM": 389.64626824562487
+}

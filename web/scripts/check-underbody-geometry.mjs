@@ -1,3 +1,4 @@
+import { loadRollingFixture } from './rolling-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import * as T from 'three';
@@ -12,17 +13,15 @@ for(const car of ['rb19','rb16b']){
  model.traverse(o=>{if(o.isMesh){o.geometry.computeBoundsTree();o.material.side=T.DoubleSide;}});
  const flow=new Airflow(scene),bottom=new UnderbodyFlow(scene,flow.material),base=new URL(`../public/flow/${car}/underbody`,import.meta.url),bytes=await fs.readFile(new URL(base.href+'.bin'));
  bottom.meta=JSON.parse(await fs.readFile(new URL(base.href+'.json')));bottom.data=new Int16Array(bytes.buffer,bytes.byteOffset,bytes.length/2);
- const manifest=JSON.parse(await fs.readFile(new URL(`../public/flow/${car}/manifest.json`,import.meta.url)));flow.data={};
- for(const anchor of manifest.anchors){const raw=await fs.readFile(new URL(`../public${anchor.file}`,import.meta.url));const ints=new Int16Array(raw.buffer,raw.byteOffset,raw.length/2);flow.data[anchor.anchor]=Float32Array.from(ints,v=>v*anchor.scale);}
- flow.spec=manifest.anchors[0].grid;flow.grid=new Float32Array(flow.data.base.length);flow.stats.ready=true;
+ await loadRollingFixture(flow,car);
  const scenarios=[
   {name:'baseline',speed:180,wheelSpeedMps:50,steer:0,drs:0,drsCurrent:0},
   {name:'DRS open',speed:180,wheelSpeedMps:50,steer:0,drs:1,drsCurrent:1},
   {name:'lower speed',speed:100,wheelSpeedMps:100/3.6,steer:0,drs:0,drsCurrent:0},
   {name:'very low speed',speed:1,wheelSpeedMps:1/3.6,steer:0,drs:0,drsCurrent:0},
   {name:'high speed',speed:350,wheelSpeedMps:350/3.6,steer:-18,drs:1,drsCurrent:1},
-  {name:'combined',speed:180,wheelSpeedMps:35,steer:12,drs:.5,drsCurrent:.5},
-  {name:'wheel only',speed:0,wheelSpeedMps:50,steer:0,drs:0,drsCurrent:0},
+  {name:'slow road combined',speed:180,wheelSpeedMps:25,steer:12,drs:.5,drsCurrent:.5},
+  {name:'still-air driving',speed:0,wheelSpeedMps:50,steer:0,drs:0,drsCurrent:0},
   {name:'stationary',speed:0,wheelSpeedMps:0,steer:0,drs:0,drsCurrent:0}
  ];let now=100, baselineGeometry=null;
  for(const item of scenarios){const state={model:car,flow:true,flowDensity:100,...item};applyRig(rig,{drs:state.drsCurrent,steer:state.steer,spin:0});model.updateMatrixWorld(true);flow.update(state,rig,0,now+=100);const visible=bottom.update(state,rig,flow);

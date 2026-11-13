@@ -1,0 +1,121 @@
+{
+  "car": "rb16b",
+  "pose": "neutral",
+  "steer": 0,
+  "drs": 0,
+  "wheels": {
+    "FL": {
+      "center": [
+        -1.5547973875661278,
+        -0.8152328114995018,
+        0.32705214142799377
+      ],
+      "axis": [
+        3.04092607755603e-05,
+        -0.9974909035963957,
+        0.0707947478117049
+      ],
+      "radius": 0.33209948503645137
+    },
+    "FR": {
+      "center": [
+        -1.554797663131525,
+        0.8152337895803855,
+        0.32705190300941467
+      ],
+      "axis": [
+        1.1926067463623237e-07,
+        -0.9974909114582557,
+        -0.07079464356972301
+      ],
+      "radius": 0.3320900193939451
+    },
+    "RL": {
+      "center": [
+        1.9879180192947388,
+        -0.7863106727600098,
+        0.32668843388557434
+      ],
+      "axis": [
+        0,
+        -1,
+        0
+      ],
+      "radius": 0.3286973695503548
+    },
+    "RR": {
+      "center": [
+        1.9879176616668701,
+        0.7872869372367859,
+        0.3266885828971863
+      ],
+      "axis": [
+        0,
+        -1,
+        0
+      ],
+      "radius": 0.328757657087408
+    }
+  },
+  "sourceGlbSha256": "cc90e680e5abfd86d1cfda3e8a1a48212698eab1f749cd203bd0371cd25ed9d8",
+  "modelRevision": "2026-11-10-tail-detail1",
+  "proxySha256": {
+    "body": "c022920f24f7c71327abebd51a18c2003e26c85b78052fa3843d7dcd99e1b2e0",
+    "FL": "0d9e53395e2cfa8bcac29e3e0cbdab4f69acb42d462eabcd4e34a96a3c838e6b",
+    "FR": "5e910bb7fcb52ab7fe6eb14e68970c1b7a3b6d351b0e484307427eff0e163ca3",
+    "RL": "5948141628b8f6cac0cd5d6586184a8c1cb6d051bb3f843878b59eacf3007ef2",
+    "RR": "18493d634f7e440b40026ad542d6c985df90beebfb108bdef353d460972b26a1"
+  },
+  "anchor": "air-115",
+  "family": "sweep",
+  "parameters": {
+    "airKmh": 115,
+    "groundKmh": 180,
+    "drsPercent": 0,
+    "steerDeg": 0
+  },
+  "speedMps": 31.944444444444443,
+  "groundSpeedMps": 50.0,
+  "wheelSpeedMps": 50.0,
+  "noSlipRolling": true,
+  "grid": {
+    "shape": [
+      88,
+      34,
+      32
+    ],
+    "min": [
+      -4.0,
+      -1.65,
+      0.025
+    ],
+    "max": [
+      9.0,
+      1.65,
+      1.65
+    ]
+  },
+  "file": "/flow/rb16b/sweep/air-115.bin",
+  "scale": 0.0014988969097207317,
+  "sampledPoints": 93356,
+  "unlocatedOrSolidGridPoints": 2388,
+  "excludedNumericalSamples": 0,
+  "rawFieldMax": 50.020170268266845,
+  "exclusionThresholdMps": 150.0,
+  "sampling": "cellPoint; isolated >3x max(inlet,wheel) samples excluded, never clipped",
+  "fieldMax": 50.02016830444336,
+  "cells": 167565,
+  "lastIteration": 650.0,
+  "residuals": {
+    "Ux": 4.4475947e-06,
+    "Uy": 0.00025511705,
+    "Uz": 2.9582086e-05,
+    "p": 0.0027595562,
+    "omega": 8.5262907e-07,
+    "k": 5.8525352e-06
+  },
+  "meshOk": true,
+  "solver": "OpenFOAM Foundation 14 kOmegaSST RANS",
+  "quality": "coarse voxel proxy; sparse factorised interpolation is approximate",
+  "sha256": "ba3b3d9c9d83f808bd94818277b4ecb746e4dbe40deb40c815ed5fa51d766630"
+}

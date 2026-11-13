@@ -1,0 +1,392 @@
+[
+  {
+    "car": "rb19",
+    "flow": {
+      "ready": true,
+      "lines": 265,
+      "peakMps": 55.676671915069576,
+      "blocked": 43,
+      "error": null,
+      "sweepCoverage": {
+        "completed": 9,
+        "planned": 277,
+        "complete": false
+      },
+      "axisSweep": true,
+      "activeAnchors": {
+        "ground-090": 1
+      },
+      "sourceMode": "anchor",
+      "vertices": 71380,
+      "buildMs": 70.69999999925494,
+      "inputKey": "50.000:25.000:0.00:0.000:100",
+      "signature": -16773638,
+      "state": {
+        "drs": 0,
+        "steer": 0,
+        "speed": 180,
+        "spin": 5.417500000000007,
+        "drsCurrent": 0,
+        "model": "rb19",
+        "view": "hero",
+        "environment": "wind",
+        "groundSpeed": 90,
+        "wheelRpm": 646.941981033308,
+        "wheelSpeedMps": 25,
+        "flow": true,
+        "flowDensity": 100
+      }
+    }
+  },
+  {
+    "car": "rb19",
+    "flow": {
+      "ready": true,
+      "lines": 32,
+      "peakMps": 39.2833763747279,
+      "blocked": 7,
+      "error": null,
+      "sweepCoverage": {
+        "completed": 9,
+        "planned": 277,
+        "complete": false
+      },
+      "axisSweep": true,
+      "activeAnchors": {
+        "air-000": 1
+      },
+      "sourceMode": "anchor",
+      "vertices": 7004,
+      "buildMs": 8.599999997764826,
+      "inputKey": "0.000:50.000:0.00:0.000:100",
+      "signature": -2729486,
+      "state": {
+        "drs": 0,
+        "steer": 0,
+        "speed": 0,
+        "spin": 10.417500000000008,
+        "drsCurrent": 0,
+        "model": "rb19",
+        "view": "hero",
+        "environment": "wind",
+        "groundSpeed": 180,
+        "wheelRpm": 1293.883962066616,
+        "wheelSpeedMps": 50,
+        "flow": true,
+        "flowDensity": 100
+      }
+    }
+  },
+  {
+    "car": "rb19",
+    "flow": {
+      "ready": true,
+      "lines": 265,
+      "peakMps": 55.500925386431334,
+      "blocked": 46,
+      "error": null,
+      "sweepCoverage": {
+        "completed": 9,
+        "planned": 277,
+        "complete": false
+      },
+      "axisSweep": true,
+      "activeAnchors": {
+        "ground-000": 1
+      },
+      "sourceMode": "anchor",
+      "vertices": 70360,
+      "buildMs": 42.5,
+      "inputKey": "50.000:0.000:0.00:0.000:100",
+      "signature": -15784746,
+      "state": {
+        "drs": 0,
+        "steer": 0,
+        "speed": 180,
+        "spin": 10.417500000000008,
+        "drsCurrent": 0,
+        "model": "rb19",
+        "view": "hero",
+        "environment": "wind",
+        "groundSpeed": 0,
+        "wheelRpm": 0,
+        "wheelSpeedMps": 0,
+        "flow": true,
+        "flowDensity": 100
+      }
+    }
+  },
+  {
+    "car": "rb19",
+    "flow": {
+      "ready": true,
+      "lines": 265,
+      "peakMps": 53.41806665192196,
+      "blocked": 48,
+      "error": null,
+      "sweepCoverage": {
+        "completed": 9,
+        "planned": 277,
+        "complete": false
+      },
+      "axisSweep": false,
+      "activeAnchors": {
+        "base": 0.1292735042735041,
+        "low": 0.934615384615385,
+        "road-fast": 0.3611111111111112
+      },
+      "sourceMode": "surrogate",
+      "vertices": 70556,
+      "buildMs": 47.600000001490116,
+      "inputKey": "37.500:55.556:0.00:0.000:100",
+      "signature": -16236363,
+      "state": {
+        "drs": 0,
+        "steer": 0,
+        "speed": 135,
+        "spin": 13.195277777777786,
+        "drsCurrent": 0,
+        "model": "rb19",
+        "view": "hero",
+        "environment": "wind",
+        "groundSpeed": 200,
+        "wheelRpm": 1437.6488467406846,
+        "wheelSpeedMps": 55.55555555555556,
+        "flow": true,
+        "flowDensity": 100
+      }
+    }
+  },
+  {
+    "car": "rb19",
+    "flow": {
+      "ready": true,
+      "lines": 0,
+      "peakMps": 0,
+      "blocked": 0,
+      "error": null,
+      "sweepCoverage": {
+        "completed": 9,
+        "planned": 277,
+        "complete": false
+      },
+      "axisSweep": true,
+      "activeAnchors": {},
+      "sourceMode": "surrogate",
+      "vertices": 0,
+      "buildMs": 0.19999999925494194,
+      "inputKey": "0.000:0.000:0.00:0.000:100",
+      "signature": 0,
+      "state": {
+        "drs": 0,
+        "steer": 0,
+        "speed": 0,
+        "spin": 13.195277777777786,
+        "drsCurrent": 0,
+        "model": "rb19",
+        "view": "hero",
+        "environment": "wind",
+        "groundSpeed": 0,
+        "wheelRpm": 0,
+        "wheelSpeedMps": 0,
+        "flow": true,
+        "flowDensity": 100
+      }
+    }
+  },
+  {
+    "car": "rb16b",
+    "flow": {
+      "ready": true,
+      "lines": 267,
+      "peakMps": 56.22902557795036,
+      "blocked": 33,
+      "error": null,
+      "sweepCoverage": {
+        "completed": 8,
+        "planned": 277,
+        "complete": false
+      },
+      "axisSweep": true,
+      "activeAnchors": {
+        "ground-090": 1
+      },
+      "sourceMode": "anchor",
+      "vertices": 74868,
+      "buildMs": 57.600000001490116,
+      "inputKey": "50.000:25.000:0.00:0.000:100",
+      "signature": -18774575,
+      "state": {
+        "drs": 0,
+        "steer": 0,
+        "speed": 180,
+        "spin": 3.75,
+        "drsCurrent": 0,
+        "model": "rb16b",
+        "view": "hero",
+        "environment": "wind",
+        "groundSpeed": 90,
+        "wheelRpm": 718.8581295500643,
+        "wheelSpeedMps": 25,
+        "flow": true,
+        "flowDensity": 100
+      }
+    }
+  },
+  {
+    "car": "rb16b",
+    "flow": {
+      "ready": true,
+      "lines": 32,
+      "peakMps": 39.54686888173881,
+      "blocked": 3,
+      "error": null,
+      "sweepCoverage": {
+        "completed": 8,
+        "planned": 277,
+        "complete": false
+      },
+      "axisSweep": true,
+      "activeAnchors": {
+        "air-000": 1
+      },
+      "sourceMode": "anchor",
+      "vertices": 7488,
+      "buildMs": 6,
+      "inputKey": "0.000:50.000:0.00:0.000:100",
+      "signature": -3084960,
+      "state": {
+        "drs": 0,
+        "steer": 0,
+        "speed": 0,
+        "spin": 10.410000000000036,
+        "drsCurrent": 0,
+        "model": "rb16b",
+        "view": "hero",
+        "environment": "wind",
+        "groundSpeed": 180,
+        "wheelRpm": 1437.7162591001286,
+        "wheelSpeedMps": 50,
+        "flow": true,
+        "flowDensity": 100
+      }
+    }
+  },
+  {
+    "car": "rb16b",
+    "flow": {
+      "ready": true,
+      "lines": 267,
+      "peakMps": 55.92887534616143,
+      "blocked": 35,
+      "error": null,
+      "sweepCoverage": {
+        "completed": 8,
+        "planned": 277,
+        "complete": false
+      },
+      "axisSweep": true,
+      "activeAnchors": {
+        "ground-000": 1
+      },
+      "sourceMode": "anchor",
+      "vertices": 73620,
+      "buildMs": 56.400000002235174,
+      "inputKey": "50.000:0.000:0.00:0.000:100",
+      "signature": -17934431,
+      "state": {
+        "drs": 0,
+        "steer": 0,
+        "speed": 180,
+        "spin": 10.410000000000036,
+        "drsCurrent": 0,
+        "model": "rb16b",
+        "view": "hero",
+        "environment": "wind",
+        "groundSpeed": 0,
+        "wheelRpm": 0,
+        "wheelSpeedMps": 0,
+        "flow": true,
+        "flowDensity": 100
+      }
+    }
+  },
+  {
+    "car": "rb16b",
+    "flow": {
+      "ready": true,
+      "lines": 267,
+      "peakMps": 52.90715231106675,
+      "blocked": 36,
+      "error": null,
+      "sweepCoverage": {
+        "completed": 8,
+        "planned": 277,
+        "complete": false
+      },
+      "axisSweep": false,
+      "activeAnchors": {
+        "base": 0.1292735042735041,
+        "low": 0.934615384615385,
+        "road-fast": 0.3611111111111112
+      },
+      "sourceMode": "surrogate",
+      "vertices": 75162,
+      "buildMs": 77.70000000298023,
+      "inputKey": "37.500:55.556:0.00:0.000:100",
+      "signature": -17913411,
+      "state": {
+        "drs": 0,
+        "steer": 0,
+        "speed": 135,
+        "spin": 13.187777777777814,
+        "drsCurrent": 0,
+        "model": "rb16b",
+        "view": "hero",
+        "environment": "wind",
+        "groundSpeed": 200,
+        "wheelRpm": 1597.4625101112542,
+        "wheelSpeedMps": 55.55555555555556,
+        "flow": true,
+        "flowDensity": 100
+      }
+    }
+  },
+  {
+    "car": "rb16b",
+    "flow": {
+      "ready": true,
+      "lines": 0,
+      "peakMps": 0,
+      "blocked": 0,
+      "error": null,
+      "sweepCoverage": {
+        "completed": 8,
+        "planned": 277,
+        "complete": false
+      },
+      "axisSweep": true,
+      "activeAnchors": {},
+      "sourceMode": "surrogate",
+      "vertices": 0,
+      "buildMs": 0,
+      "inputKey": "0.000:0.000:0.00:0.000:100",
+      "signature": 0,
+      "state": {
+        "drs": 0,
+        "steer": 0,
+        "speed": 0,
+        "spin": 13.187777777777814,
+        "drsCurrent": 0,
+        "model": "rb16b",
+        "view": "hero",
+        "environment": "wind",
+        "groundSpeed": 0,
+        "wheelRpm": 0,
+        "wheelSpeedMps": 0,
+        "flow": true,
+        "flowDensity": 100
+      }
+    }
+  }
+]

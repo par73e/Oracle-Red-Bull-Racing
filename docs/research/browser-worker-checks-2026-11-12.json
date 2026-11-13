@@ -1,0 +1,494 @@
+[
+  {
+    "car": "rb19",
+    "flow": {
+      "ready": true,
+      "lines": 265,
+      "peakMps": 55.52263303488737,
+      "blocked": 44,
+      "sweepCoverage": {
+        "completed": 15,
+        "planned": 277,
+        "complete": false,
+        "queueState": "running"
+      },
+      "axisSweep": false,
+      "activeAnchors": {
+        "base": -1.6666666666666665,
+        "open": 1,
+        "right": 0.6666666666666665,
+        "road-slow": 1
+      },
+      "sourceMode": "surrogate",
+      "vertices": 71640,
+      "buildMs": 237.39999999850988,
+      "inputKey": "50.000:25.000:12.00:1.000:100",
+      "signature": -17147781,
+      "workerMs": 237.39999999850988,
+      "worker": true,
+      "mainThreadMs": 1.4000000022351742,
+      "state": {
+        "drs": 1,
+        "steer": 12,
+        "speed": 180,
+        "spin": 18.405000000000005,
+        "drsCurrent": 1,
+        "model": "rb19",
+        "view": "hero",
+        "environment": "wind",
+        "groundSpeed": 90,
+        "wheelRpm": 646.941981033308,
+        "wheelSpeedMps": 25,
+        "flow": true,
+        "flowDensity": 100
+      }
+    },
+    "underbody": {
+      "available": true,
+      "visible": true,
+      "mode": "surrogate",
+      "lines": 68,
+      "stops": {
+        "boundary": 1,
+        "masked": 83,
+        "slow": 0,
+        "collision": 0,
+        "limit": 0
+      },
+      "boundaryAxes": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      },
+      "case": "rb19-underbody-l6-continued1",
+      "time": "1150"
+    },
+    "sidepod": {
+      "available": true,
+      "visible": true,
+      "mode": "surrogate",
+      "lines": 112,
+      "regions": {
+        "suspension": 68,
+        "sidepod": 44
+      },
+      "layers": {
+        "undercut": 26,
+        "upper": 18
+      },
+      "fallbackSamples": 745,
+      "blockedSeeds": 14,
+      "case": "rb19-sidepod-suspension-l5-20261111",
+      "time": "1150"
+    }
+  },
+  {
+    "car": "rb19",
+    "flow": {
+      "ready": true,
+      "lines": 0,
+      "peakMps": 55.52263303488737,
+      "blocked": 44,
+      "sweepCoverage": {
+        "completed": 15,
+        "planned": 277,
+        "complete": false,
+        "queueState": "running"
+      },
+      "axisSweep": false,
+      "activeAnchors": {
+        "base": -1.6666666666666665,
+        "open": 1,
+        "right": 0.6666666666666665,
+        "road-slow": 1
+      },
+      "sourceMode": "surrogate",
+      "vertices": 71640,
+      "buildMs": 237.39999999850988,
+      "inputKey": "50.000:25.000:12.00:1.000:100",
+      "signature": -17147781,
+      "workerMs": 237.39999999850988,
+      "worker": true,
+      "mainThreadMs": 1.4000000022351742,
+      "state": {
+        "drs": 0,
+        "steer": 0,
+        "speed": 0,
+        "spin": 18.405000000000005,
+        "drsCurrent": 0,
+        "model": "rb19",
+        "view": "hero",
+        "environment": "wind",
+        "groundSpeed": 0,
+        "wheelRpm": 0,
+        "wheelSpeedMps": 0,
+        "flow": true,
+        "flowDensity": 100
+      }
+    },
+    "underbody": {
+      "available": true,
+      "visible": false,
+      "mode": "surrogate",
+      "lines": 68,
+      "stops": {
+        "boundary": 1,
+        "masked": 83,
+        "slow": 0,
+        "collision": 0,
+        "limit": 0
+      },
+      "boundaryAxes": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      },
+      "case": "rb19-underbody-l6-continued1",
+      "time": "1150"
+    },
+    "sidepod": {
+      "available": true,
+      "visible": false,
+      "mode": "surrogate",
+      "lines": 112,
+      "regions": {
+        "suspension": 68,
+        "sidepod": 44
+      },
+      "layers": {
+        "undercut": 26,
+        "upper": 18
+      },
+      "fallbackSamples": 745,
+      "blockedSeeds": 14,
+      "case": "rb19-sidepod-suspension-l5-20261111",
+      "time": "1150"
+    }
+  },
+  {
+    "car": "rb19",
+    "flow": {
+      "ready": true,
+      "lines": 265,
+      "peakMps": 55.69637462013782,
+      "blocked": 50,
+      "sweepCoverage": {
+        "completed": 15,
+        "planned": 277,
+        "complete": false,
+        "queueState": "running"
+      },
+      "axisSweep": true,
+      "activeAnchors": {
+        "base": 1
+      },
+      "sourceMode": "anchor",
+      "vertices": 69742,
+      "buildMs": 254,
+      "inputKey": "50.000:50.000:0.00:0.000:100",
+      "signature": -16396486,
+      "workerMs": 254,
+      "worker": true,
+      "mainThreadMs": 0.5,
+      "state": {
+        "drs": 0,
+        "steer": 0,
+        "speed": 180,
+        "spin": 34.23499999999999,
+        "drsCurrent": 0,
+        "model": "rb19",
+        "view": "hero",
+        "environment": "wind",
+        "groundSpeed": 180,
+        "wheelRpm": 1293.883962066616,
+        "wheelSpeedMps": 50,
+        "flow": true,
+        "flowDensity": 100
+      }
+    },
+    "underbody": {
+      "available": true,
+      "visible": true,
+      "mode": "baseline",
+      "lines": 78,
+      "stops": {
+        "boundary": 21,
+        "masked": 61,
+        "slow": 0,
+        "collision": 2,
+        "limit": 0
+      },
+      "boundaryAxes": {
+        "x": 0,
+        "y": 1,
+        "z": 20
+      },
+      "case": "rb19-underbody-l6-continued1",
+      "time": "1150"
+    },
+    "sidepod": {
+      "available": true,
+      "visible": true,
+      "mode": "baseline",
+      "lines": 114,
+      "regions": {
+        "suspension": 70,
+        "sidepod": 44
+      },
+      "layers": {
+        "undercut": 26,
+        "upper": 18
+      },
+      "fallbackSamples": 0,
+      "blockedSeeds": 14,
+      "case": "rb19-sidepod-suspension-l5-20261111",
+      "time": "1150"
+    }
+  },
+  {
+    "car": "rb16b",
+    "flow": {
+      "ready": true,
+      "lines": 267,
+      "peakMps": 56.11834284223167,
+      "blocked": 35,
+      "sweepCoverage": {
+        "completed": 14,
+        "planned": 277,
+        "complete": false,
+        "queueState": "running"
+      },
+      "axisSweep": false,
+      "activeAnchors": {
+        "base": -1.6666666666666665,
+        "open": 1,
+        "right": 0.6666666666666665,
+        "road-slow": 1
+      },
+      "sourceMode": "surrogate",
+      "vertices": 73354,
+      "buildMs": 261.3999999985099,
+      "inputKey": "50.000:25.000:12.00:1.000:100",
+      "signature": -17410626,
+      "workerMs": 261.3999999985099,
+      "worker": true,
+      "mainThreadMs": 1.5,
+      "state": {
+        "drs": 1,
+        "steer": 12,
+        "speed": 180,
+        "spin": 19.532499999999978,
+        "drsCurrent": 1,
+        "model": "rb16b",
+        "view": "hero",
+        "environment": "wind",
+        "groundSpeed": 90,
+        "wheelRpm": 718.8581295500643,
+        "wheelSpeedMps": 25,
+        "flow": true,
+        "flowDensity": 100
+      }
+    },
+    "underbody": {
+      "available": true,
+      "visible": true,
+      "mode": "surrogate",
+      "lines": 68,
+      "stops": {
+        "boundary": 1,
+        "masked": 83,
+        "slow": 0,
+        "collision": 0,
+        "limit": 0
+      },
+      "boundaryAxes": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "case": "rb16b-underbody-l6-retry1",
+      "time": "1150"
+    },
+    "sidepod": {
+      "available": true,
+      "visible": true,
+      "mode": "surrogate",
+      "lines": 108,
+      "regions": {
+        "suspension": 71,
+        "sidepod": 37
+      },
+      "layers": {
+        "undercut": 21,
+        "upper": 16
+      },
+      "fallbackSamples": 871,
+      "blockedSeeds": 8,
+      "case": "rb16b-sidepod-suspension-l5-20261111",
+      "time": "1150"
+    }
+  },
+  {
+    "car": "rb16b",
+    "flow": {
+      "ready": true,
+      "lines": 0,
+      "peakMps": 56.11834284223167,
+      "blocked": 35,
+      "sweepCoverage": {
+        "completed": 14,
+        "planned": 277,
+        "complete": false,
+        "queueState": "running"
+      },
+      "axisSweep": false,
+      "activeAnchors": {
+        "base": -1.6666666666666665,
+        "open": 1,
+        "right": 0.6666666666666665,
+        "road-slow": 1
+      },
+      "sourceMode": "surrogate",
+      "vertices": 73354,
+      "buildMs": 261.3999999985099,
+      "inputKey": "50.000:25.000:12.00:1.000:100",
+      "signature": -17410626,
+      "workerMs": 261.3999999985099,
+      "worker": true,
+      "mainThreadMs": 1.5,
+      "state": {
+        "drs": 0,
+        "steer": 0,
+        "speed": 0,
+        "spin": 19.532499999999978,
+        "drsCurrent": 0,
+        "model": "rb16b",
+        "view": "hero",
+        "environment": "wind",
+        "groundSpeed": 0,
+        "wheelRpm": 0,
+        "wheelSpeedMps": 0,
+        "flow": true,
+        "flowDensity": 100
+      }
+    },
+    "underbody": {
+      "available": true,
+      "visible": false,
+      "mode": "surrogate",
+      "lines": 68,
+      "stops": {
+        "boundary": 1,
+        "masked": 83,
+        "slow": 0,
+        "collision": 0,
+        "limit": 0
+      },
+      "boundaryAxes": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "case": "rb16b-underbody-l6-retry1",
+      "time": "1150"
+    },
+    "sidepod": {
+      "available": true,
+      "visible": false,
+      "mode": "surrogate",
+      "lines": 108,
+      "regions": {
+        "suspension": 71,
+        "sidepod": 37
+      },
+      "layers": {
+        "undercut": 21,
+        "upper": 16
+      },
+      "fallbackSamples": 871,
+      "blockedSeeds": 8,
+      "case": "rb16b-sidepod-suspension-l5-20261111",
+      "time": "1150"
+    }
+  },
+  {
+    "car": "rb16b",
+    "flow": {
+      "ready": true,
+      "lines": 267,
+      "peakMps": 56.293846946735826,
+      "blocked": 36,
+      "sweepCoverage": {
+        "completed": 14,
+        "planned": 277,
+        "complete": false,
+        "queueState": "running"
+      },
+      "axisSweep": true,
+      "activeAnchors": {
+        "base": 1
+      },
+      "sourceMode": "anchor",
+      "vertices": 73632,
+      "buildMs": 320.79999999701977,
+      "inputKey": "50.000:50.000:0.00:0.000:100",
+      "signature": -16476931,
+      "workerMs": 320.79999999701977,
+      "worker": true,
+      "mainThreadMs": 0.3999999985098839,
+      "state": {
+        "drs": 0,
+        "steer": 0,
+        "speed": 180,
+        "spin": 40.41749999999996,
+        "drsCurrent": 0,
+        "model": "rb16b",
+        "view": "hero",
+        "environment": "wind",
+        "groundSpeed": 180,
+        "wheelRpm": 1437.7162591001286,
+        "wheelSpeedMps": 50,
+        "flow": true,
+        "flowDensity": 100
+      }
+    },
+    "underbody": {
+      "available": true,
+      "visible": true,
+      "mode": "baseline",
+      "lines": 74,
+      "stops": {
+        "boundary": 29,
+        "masked": 55,
+        "slow": 0,
+        "collision": 0,
+        "limit": 0
+      },
+      "boundaryAxes": {
+        "x": 17,
+        "y": 0,
+        "z": 12
+      },
+      "case": "rb16b-underbody-l6-retry1",
+      "time": "1150"
+    },
+    "sidepod": {
+      "available": true,
+      "visible": true,
+      "mode": "baseline",
+      "lines": 109,
+      "regions": {
+        "suspension": 72,
+        "sidepod": 37
+      },
+      "layers": {
+        "undercut": 21,
+        "upper": 16
+      },
+      "fallbackSamples": 0,
+      "blockedSeeds": 8,
+      "case": "rb16b-sidepod-suspension-l5-20261111",
+      "time": "1150"
+    }
+  }
+]

@@ -1,0 +1,113 @@
+[
+  {
+    "environment": {
+      "name": "studio"
+    },
+    "metrics": {
+      "fps": 0.999000999000999,
+      "environmentTriangles": 7042,
+      "environmentCalls": 19,
+      "triangles": 470098,
+      "calls": 329,
+      "textures": 13,
+      "pixelRatio": 1.5,
+      "width": 1440,
+      "height": 900
+    }
+  },
+  {
+    "environment": {
+      "name": "wind"
+    },
+    "metrics": {
+      "fps": 0.999000999000999,
+      "environmentTriangles": 7042,
+      "environmentCalls": 19,
+      "triangles": 470100,
+      "calls": 333,
+      "textures": 14,
+      "pixelRatio": 1.5,
+      "width": 1440,
+      "height": 900
+    }
+  },
+  {
+    "environment": {
+      "name": "eau-rouge",
+      "metadata": {
+        "units": "metres",
+        "roadSource": "TUMFTM racetrack-database Spa.csv, OSM-derived smoothed centreline and satellite widths",
+        "elevationSource": "SPW Wallonie MNT 2021-2022 0.5 m LiDAR, raw Identify pixel values",
+        "roadWidthAtCar": 8.379,
+        "registrationMedianM": 1.6085922627776539,
+        "roadStations": 135,
+        "terrainSamples": 1881
+      },
+      "forestReady": true,
+      "treeCount": 823,
+      "forestTriangles": 1043540
+    },
+    "metrics": {
+      "fps": 1.9357336430507166,
+      "environmentTriangles": 683136,
+      "environmentCalls": 91,
+      "triangles": 470100,
+      "calls": 333,
+      "textures": 25,
+      "pixelRatio": 1.5,
+      "width": 1440,
+      "height": 900
+    }
+  },
+  {
+    "steady": {
+      "frames": 120,
+      "elapsed": 4127.699999999255,
+      "fps": 29.071880223858724,
+      "metrics": {
+        "fps": 29.033194619181284,
+        "environmentTriangles": 683136,
+        "environmentCalls": 91,
+        "triangles": 470100,
+        "calls": 333,
+        "textures": 25,
+        "pixelRatio": 1.5,
+        "width": 1440,
+        "height": 900
+      }
+    },
+    "drag": {
+      "events": 71,
+      "elapsed": 3396.39999999851,
+      "longTasks": [],
+      "maximumEventDelay": 40.400000002235174
+    },
+    "errors": [],
+    "failedResources": []
+  },
+  {
+    "secondCar": "rb16b",
+    "environment": "eau-rouge",
+    "bounds": [
+      2.1080799416927762,
+      1.236883770527067,
+      5.499999761581421
+    ]
+  },
+  {
+    "mobile": {
+      "fps": 1.8751171948246792,
+      "environmentTriangles": 521688,
+      "environmentCalls": 69,
+      "triangles": 665554,
+      "calls": 860,
+      "textures": 54,
+      "pixelRatio": 1.5,
+      "width": 390,
+      "height": 844
+    },
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "errors": []
+  }
+]

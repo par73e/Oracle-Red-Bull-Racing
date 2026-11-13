@@ -1,0 +1,22 @@
+{
+  "source": "Poly Haven pine_tree_01 (CC0), source needle positions and actual trunk mesh",
+  "foliageLOD": "0.17 m voxel envelope of original needle distribution, smoothed and decimated; not original full-resolution needles",
+  "models": [
+    {
+      "name": "near_mature_bark",
+      "triangles": 6280
+    },
+    {
+      "name": "near_mature_foliage",
+      "triangles": 7994
+    },
+    {
+      "name": "far_mature_bark",
+      "triangles": 6280
+    },
+    {
+      "name": "far_mature_foliage",
+      "triangles": 2927
+    }
+  ]
+}

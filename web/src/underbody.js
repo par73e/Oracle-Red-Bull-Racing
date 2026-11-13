@@ -20,7 +20,7 @@ export class UnderbodyFlow {
   this.group.visible=Boolean(active);if(!active)return false;
   // Wait for the coarse field to match the current controls before blending.
   const desired=[U.toFixed(3),W.toFixed(3),state.steer.toFixed(2),state.drsCurrent.toFixed(3),state.flowDensity].join(':');
-  if(airflow.stats.inputKey!==desired)return true;
+  if(airflow.stats.inputKey!==desired){this.group.visible=false;return false;}
   const key=`${state.model}:${desired}`;if(key===this.key)return true;this.key=key;
   const exact=Math.abs(U-50)<1e-6&&Math.abs(W-50)<1e-6&&Math.abs(state.steer)<.001&&Math.abs(state.drsCurrent)<.001;
   const baseScale=U/50,coarse=new T.Vector3(),reference=new T.Vector3();

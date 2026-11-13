@@ -1,0 +1,18 @@
+{
+  "state": "running",
+  "car": "rb16b",
+  "key": "ground-165",
+  "parameters": {
+    "airKmh": 180,
+    "groundKmh": 165,
+    "drsPercent": 0,
+    "steerDeg": 0
+  },
+  "completed": {
+    "rb19": 108,
+    "rb16b": 107
+  },
+  "plannedPerCar": 277,
+  "updatedAt": "2026-11-13T01:37:38+0800",
+  "pid": 20278
+}

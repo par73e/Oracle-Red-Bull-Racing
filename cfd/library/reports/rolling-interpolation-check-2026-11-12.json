@@ -1,0 +1,55 @@
+{
+  "records": [
+    {
+      "car": "rb19",
+      "heldOut": "road-slow (air=50, road=25 m/s)",
+      "prediction": "0.5 * road-stop + 0.5 * base",
+      "regions": {
+        "allCommonFluid": {
+          "points": 94105,
+          "velocityErrorMpsP50P90": [
+            0.054653103632246805,
+            0.1672115862065684
+          ],
+          "rmsVelocityErrorMps": 0.166482606402701,
+          "rmsErrorRelativeToTruthRms": 0.003985005148211034
+        },
+        "within0.8mOfWheelCentres": {
+          "points": 7836,
+          "velocityErrorMpsP50P90": [
+            0.10739836333233344,
+            0.3299152372981107
+          ],
+          "rmsVelocityErrorMps": 0.4190638403353995,
+          "rmsErrorRelativeToTruthRms": 0.011032685853613167
+        }
+      }
+    },
+    {
+      "car": "rb16b",
+      "heldOut": "road-slow (air=50, road=25 m/s)",
+      "prediction": "0.5 * road-stop + 0.5 * base",
+      "regions": {
+        "allCommonFluid": {
+          "points": 93351,
+          "velocityErrorMpsP50P90": [
+            0.2436568466143183,
+            1.6913540782075036
+          ],
+          "rmsVelocityErrorMps": 0.8916730872638686,
+          "rmsErrorRelativeToTruthRms": 0.02046155351034976
+        },
+        "within0.8mOfWheelCentres": {
+          "points": 7626,
+          "velocityErrorMpsP50P90": [
+            0.31907176410562377,
+            2.122276421673484
+          ],
+          "rmsVelocityErrorMps": 1.2034731007888464,
+          "rmsErrorRelativeToTruthRms": 0.030602173434059066
+        }
+      }
+    }
+  ],
+  "scope": "Single interior holdout at air=50 m/s. Does not validate the entire two-dimensional domain, DRS/steering combinations, fine fields or actual car aerodynamics."
+}

@@ -31,6 +31,7 @@
         <div class="label-row"><label for="flow-density">气流密度</label><output id="flow-density-value" for="flow-density">100%</output></div>
         <input id="flow-density" type="range" min="0" max="150" step="5" value="100" />
         <div class="range-labels"><span>0</span><span>显示密度</span><span>150%</span></div>
+        <p id="sweep-status" class="underbody-status" aria-live="polite"></p>
         <p id="underbody-status" class="underbody-status" aria-live="polite"></p>
         <p id="sidepod-status" class="underbody-status" aria-live="polite"></p>
       </section>
@@ -40,8 +41,8 @@
         <div class="range-labels"><span>闭合</span><output id="drs-value" for="drs">0%</output><span>打开</span></div>
       </section>
       <section class="control-group">
-        <div class="label-row"><label for="speed">车速与来流</label><output id="speed-value" for="speed">静止</output></div>
-        <input id="speed" type="range" min="0" max="350" step="1" value="180" aria-label="车速与来流速度" />
+        <div class="label-row"><label for="speed">相对来流速度</label><output id="speed-value" for="speed">静止</output></div>
+        <input id="speed" type="range" min="0" max="350" step="5" value="180" aria-label="空气相对车身的来流速度" />
         <div class="range-labels"><span>0</span><span>km/h</span><span>350</span></div>
       </section>
       <section class="control-group">
@@ -50,18 +51,17 @@
         <div class="range-labels"><span>向右</span><button id="center-steering">回正</button><span>向左</span></div>
       </section>
       <section class="control-group wheel-control">
-        <div class="label-row"><label for="wheel-rpm">车轮转速</label><output id="wheel-value" for="wheel-rpm">0 rpm</output></div>
-        <input id="wheel-rpm" type="range" min="0" max="3000" step="10" value="0" aria-label="前轮参考转速" />
-        <div class="range-labels"><span>0</span><span>前轮参考 rpm</span><span id="wheel-max">3000</span></div>
-        <label class="auto-wheel"><input id="wheel-auto" type="checkbox" checked />随车速同步</label>
+        <div class="label-row"><label for="ground-speed">对地车速</label><output id="ground-speed-value" for="ground-speed">180 km/h</output></div>
+        <input id="ground-speed" type="range" min="0" max="350" step="5" value="180" aria-label="对地车速，车轮与地面同步运动" />
+        <div class="range-labels"><span>0</span><span>km/h</span><span>350</span></div>
+        <div class="range-labels"><span>纯滚动 · 前轮参考转速</span><output id="wheel-value">0 rpm</output></div>
       </section>
       <div class="control-footer"><span>后轮朝向固定 · <span id="wind-speed">50.0 m/s</span></span><button id="reset">全部复位 <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M13 5V2m0 3h-3M13 5A5.5 5.5 0 1 0 13.5 9"/></svg></button></div>
     </aside>
     <nav class="environment-switch" aria-label="选择环境">
       <button data-environment="wind" aria-pressed="true">风洞<span>WIND TUNNEL</span></button>
-      <button data-environment="eau-rouge" aria-pressed="false">Eau Rouge<span>谷底入弯</span></button>
-      <button data-environment="raidillon" aria-pressed="false">Raidillon<span>上坡与坡顶</span></button>
-      <button data-environment="studio" aria-pressed="false">模型检视<span>STUDIO</span></button>
+      <button data-environment="eau-rouge" aria-pressed="false">Eau Rouge<span>坡底仰视</span></button>
+      <button data-environment="studio" aria-pressed="false">纯空白<span>STUDIO</span></button>
     </nav>
     <section class="scene-caption" aria-label="当前场景及气流状态">
       <p id="scene-label">风洞试验段</p>
@@ -88,11 +88,11 @@
       <p><a href="https://skfb.ly/oR7sq" target="_blank" rel="noreferrer">Oracle Red Bull F1 Car RB19 2023</a> · Redgrund</p>
       <p><a href="https://skfb.ly/py9Uu" target="_blank" rel="noreferrer">Redbull rb16b</a> · MattDoesBlender</p>
       <p>两份原模型均标注为 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">Creative Commons Attribution 4.0</a>。</p>
-      <p>本地修改：材质调整、统一展示尺度、四轮与前轮转向绑定、近似 DRS 液压机构；RB19 另补简化底板通道。机构与底板为展示用近似，不是车队 CAD。气流基于两车型分别求解的 OpenFOAM 粗网格关键工况，网页对速度矢量场做稀疏组合近似并积分流线。中间状态、多个参数同时变化、低速及高速缩放不等于完整工程求解，也不模拟瞬态湍流。孤立的数值异常采样点会被排除并留有记录；这些预览不用于气动性能判断。静止车辆的转向轮边场采用局部坐标变形近似。车轮使用旋转壁面近似，独立调节轮速代表滑移工况。</p>
+      <p>本地修改：材质调整、统一展示尺度、四轮与前轮转向绑定、近似 DRS 液压机构；RB19 另补简化底板通道。机构与底板为展示用近似，不是车队 CAD。气流基于两车型分别求解的 OpenFOAM 粗网格关键工况，网页对速度矢量场做稀疏组合近似并积分流线。中间状态、多个参数同时变化、低速及高速缩放不等于完整工程求解，也不模拟瞬态湍流。孤立的数值异常采样点会被排除并留有记录；这些预览不用于气动性能判断。零来流下的行驶采用新增移动地面与旋转车轮共同作用的流场；中间状态为缩放及插值。车轮使用旋转壁面近似，来流速度与对地车速独立控制，四轮角速度按对地车速除以各自半径计算，保持纵向纯滚动；移动地面使用对地车速。新增工况均为直行，转向组合仍为姿态插值，不模拟真实转弯的各轮运动学。</p>
       <p>底盘流线在 180 km/h、直行、DRS 关闭且轮速匹配时使用单独的加密 CFD 基线；其他工况在基线速度缩放上叠加相应粗网格整车场相对基线的变化，是探索性代理近似，不是对应工况的底盘加密重算。车辆几何为体素代理，近壁没有边界层网格，两档网格仍有明显差异，RB19 结果尚未充分收敛，结果仅供探索，不能用于气动性能判断。</p>
       <p>侧箱下方、侧箱上沿及前悬挂附近的流线来自各车单独的局部加密基线；其他工况叠加整车粗网格差分。粗场无有效数据的位置沿用速度缩放的基线，不包含该处的工况响应。两车局部计算仍有收敛、网格和几何限制，不用于赛车性能判断。</p>
-      <p>风洞为原创场景，显示的 CFD 来自自由外流域，并未计算该房间的壁面影响。斯帕按 Eau Rouge 左弯、Raidillon 右转上坡及坡顶左转的公开实景关系重建；地形、建筑和植被为展示近似（林木透明素材由 AI 生成），非测绘模型。2021 与 2023 的缓冲区和看台布置分开处理。</p>
-      <p><a href="https://www.spa-francorchamps.be/en/news/275_the-spa-francorchamps-track-is-decked-out-in-new-colours" target="_blank" rel="noreferrer">赛道官方：2022 年场地变化</a> · 阴天干地，远景按深度虚化。赛道背景不代表已求解真实过弯载荷。</p>
+      <p>风洞为原创场景，显示的 CFD 来自自由外流域，未计算房间壁面影响。Eau Rouge 场景采用公开中心线、路宽和瓦隆地区 LiDAR 高程重建，默认从坡底望向 Raidillon；植被使用 CC0 三维松树模型及其枝叶烘焙，天空为真实 HDR 摄影。中心线地理配准和采样仍有误差，看台及护栏按实拍比例建模，不是赛道测绘 CAD。<a href="https://github.com/TUMFTM/racetrack-database" target="_blank" rel="noreferrer">TUMFTM 数据</a>（LGPL-3.0） · <a href="https://geoservices.wallonie.be/arcgis/rest/services/RELIEF/WALLONIE_MNT_2021_2022/MapServer" target="_blank" rel="noreferrer">SPW 地形</a> · <a href="https://polyhaven.com/" target="_blank" rel="noreferrer">Poly Haven CC0 材质与树模型</a>。场景不改变直线 CFD 的适用范围。</p>
+      <p><a href="https://www.spa-francorchamps.be/en/news/275_the-spa-francorchamps-track-is-decked-out-in-new-colours" target="_blank" rel="noreferrer">赛道官方：2022 年场地变化</a> · 多云干地，远景按深度虚化。赛道背景不代表已求解真实过弯载荷。</p>
     </dialog>
   </main>
   <script type="module" src="/src/main.js"></script>

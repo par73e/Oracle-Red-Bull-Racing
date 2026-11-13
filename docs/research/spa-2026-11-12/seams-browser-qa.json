@@ -1,0 +1,20 @@
+{
+  "performance": {
+    "frames": 120,
+    "elapsed": 4126.70000000298,
+    "fps": 29.078925049049687,
+    "metrics": {
+      "fps": 28.504029880087472,
+      "environmentTriangles": 822032,
+      "environmentCalls": 91,
+      "triangles": 470100,
+      "calls": 330,
+      "textures": 25,
+      "pixelRatio": 1.5,
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "errors": [],
+  "failedResources": []
+}
