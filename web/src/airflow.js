@@ -78,7 +78,7 @@ export class Airflow {
   this.anchorPending.set(key,p);return p;
  }
  startSecondary(){if(!this._secondaryFn)return Promise.resolve();const fn=this._secondaryFn;this._secondaryFn=null;return fn();}
- async load(car,{deferSecondary=true,autoSecondary=true}={}){const serial=++this.serial;this.car=car;this.data=null;this.anchorMeta=null;this.anchorPending.clear();this._secondaryFn=null;this.stats.ready=false;this.group.visible=false;this.onStatus('正在加载气流数据…');
+ async load(car,{deferSecondary=true,autoSecondary=true}={}){const serial=++this.serial;this.car=car;this.yaw.setCar(car);this.data=null;this.anchorMeta=null;this.anchorPending.clear();this._secondaryFn=null;this.stats.ready=false;this.group.visible=false;this.onStatus('正在加载气流数据…');
   let lastError=null;
   for(let attempt=1;attempt<=FLOW_LOAD_ATTEMPTS;attempt++){
   if(serial!==this.serial)return;
@@ -93,7 +93,7 @@ export class Airflow {
    this.anchorMeta=map;this.data={base:baseField};this.meta=manifest;this.baseSpec=map.base.grid;this.spec=this.baseSpec;this.baseGrid=new Float32Array(baseField.length);this.grid=this.baseGrid;this.yawGrid=null;this.lastKey='';this.revision++;this.stats.ready=true;this.stats.error=null;
    this.onStatus('粗网格 CFD · 实时插值预览');
    const bg=async()=>{
-    await Promise.all([this.sweep.load(car,baseField),this.yaw.load(car,{preloadBaseYaw:false}).catch(()=>{})]);
+    await Promise.all([this.sweep.load(car,baseField),this.yaw.refresh()]);
     const rest=ROLLING_FLOW_ANCHORS.filter(k=>k!=='base');
     for(let i=0;i<rest.length;i+=3){
      if(serial!==this.serial)return;
@@ -137,7 +137,7 @@ export class Airflow {
   const cosB=useYaw?Math.abs(Math.cos(windAngle*Math.PI/180)):1;
   const effSteer=state.steer*cosB,effDrs=state.drsCurrent*cosB;
   const sweep=this.sweep.selection(U,W,effSteer,effDrs);if(sweep?.loading){this.lastKey='';this.onStatus('正在加载此档位的 CFD 数据…');return;}
-  const yawSel=useYaw?this.yaw.selection(windAngle):null;if(yawSel?.loading){this.lastKey='';this.onStatus('正在加载侧风 CFD 数据…');return;}
+  const yawSel=useYaw?this.yaw.selection(windAngle):null;if(yawSel?.loading||yawSel?.error){this.lastKey='';this.onStatus(yawSel.error?'侧风气流暂不可用 · 请重试':'正在加载侧风 CFD 数据…');return;}
   let weights=sweep?.weights||rollingWeights(U,W,effSteer,effDrs);const fields=sweep?.data||this.data;
   if(!sweep){const missing=Object.keys(weights).filter(k=>Math.abs(weights[k])>1e-7&&!fields[k]);if(missing.length){missing.forEach(k=>this.ensureAnchor(k));weights=fields.base?{base:U/50}:{};}}
   const active=Object.entries(weights).filter(([,v])=>Math.abs(v)>1e-7);const started=performance.now();

@@ -217,13 +217,15 @@ const underbody = new UnderbodyFlow(carTurntable, airflow.material);
 const sidepod = new SidepodFlow(carTurntable, airflow.material);
 let secondaryStartedFor = 0;
 function startSecondaryLayers(serial, carId) {
-  if (serial !== loadSerial || secondaryStartedFor === serial) return;
-  secondaryStartedFor = serial;
+  if (serial !== loadSerial) return;
   airflow.startSecondary();
+  if (secondaryStartedFor === serial) return;
+  secondaryStartedFor = serial;
   underbody.load(carId);
   sidepod.load(carId);
 }
 const flowJobs = new FlowJobs(airflow, underbody, sidepod, {
+  reducedMotion,
   onWorkerReady: carId => startSecondaryLayers(loadSerial, carId),
 });
 airflow.setEnabled(state.flow);
@@ -1288,7 +1290,17 @@ $('brand-home')?.addEventListener('click', e => {
   e.preventDefault();
   resetToInitialState().catch(() => {});
 });
-$('flow-retry').addEventListener('click', () => airflow.load(state.model));
+$('flow-retry').addEventListener('click', () => {
+  airflow.yaw.retry();
+  if (!airflow.stats.ready) {
+    void airflow.load(state.model);
+  } else if (flowJobs.failed) {
+    flowJobs.retry();
+    updateFlowStatus('正在恢复流线计算…');
+  } else {
+    updateFlowStatus('正在加载当前角度的侧风数据…');
+  }
+});
 // Recover automatically when the network comes back instead of waiting for a manual retry.
 window.addEventListener('online', () => { if (airflow.stats.error && !airflow.stats.ready) airflow.load(state.model); });
 $('retry').addEventListener('click', () => loadModel(state.model).catch(() => {}));
@@ -1417,7 +1429,13 @@ renderer.setAnimationLoop(now => {
 // Read-only diagnostics plus explicit controls for reproducible browser QA.
 window.aeroStudio = {
   get ready() { return Boolean(rig); },
-  get airflow() { return { ...airflow.stats, visible: airflow.group.visible, state: { ...state } }; },
+  get airflow() { return { ...airflow.stats, visible: airflow.group.visible || flowJobs.preview.lines.visible, presentation: {
+    previewAngle: flowJobs.preview.lines.visible ? flowJobs.preview.angle : null,
+    previewMs: flowJobs.previewMs,
+    detailAngle: airflow.group.visible ? flowJobs.detailAngle : null,
+    detailOpacity: airflow.group.visible ? airflow.material.uniforms.opacity.value : 0,
+    workerPending: Boolean(flowJobs.sent),
+  }, state: { ...state } }; },
   get forces() { return aeroForces.estimate(state); },
   get turntable() { return { carYawDeg: THREE.MathUtils.radToDeg(carTurntable.rotation.y), environmentYawDeg: THREE.MathUtils.radToDeg(worlds.turntableYaw), fanPosition: worlds.root?.userData.fan?.position?.toArray() || null }; },
   get sidepod() { return { available: Boolean(sidepod.data), visible: sidepod.group.visible, mode: sidepod.mode, lines: sidepod.count, regions: sidepod.regions, layers: sidepod.layers, fallbackSamples: sidepod.fallbackSamples, blockedSeeds: sidepod.blockedSeeds, case: sidepod.meta?.case, time: sidepod.meta?.time }; },

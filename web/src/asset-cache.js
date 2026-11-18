@@ -26,7 +26,8 @@ export async function hasCachedAsset(cacheKey, { bypass = import.meta.env.DEV } 
   }
 }
 
-export async function cachedArrayBuffer(url, { cacheKey = url, bypass = import.meta.env.DEV, onProgress = null } = {}) {
+export async function cachedArrayBuffer(url, { cacheKey = url, bypass = import.meta.env.DEV, onProgress = null, signal } = {}) {
+  signal?.throwIfAborted();
   const cache = bypass ? null : await openAssetCache();
   if (cache) {
     try {
@@ -41,7 +42,7 @@ export async function cachedArrayBuffer(url, { cacheKey = url, bypass = import.m
     }
   }
 
-  const response = await fetch(url);
+  const response = await fetch(url, { signal });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
   const total = Number(response.headers.get('content-length')) || 0;
@@ -69,6 +70,7 @@ export async function cachedArrayBuffer(url, { cacheKey = url, bypass = import.m
     if (onProgress) onProgress(buffer.byteLength, total || buffer.byteLength);
   }
 
+  signal?.throwIfAborted();
   if (cache) {
     const contentType = response.headers.get('content-type') || 'application/octet-stream';
     cache.put(cacheKey, new Response(buffer, { headers: { 'Content-Type': contentType } })).catch(() => {});

@@ -1,6 +1,9 @@
 // ±90° crosswind/yaw CFD field loader (5° steps), loaded lazily with live queue polling.
-import { cachedArrayBuffer } from './asset-cache.js';
+import { cachedArrayBuffer, deleteCachedAsset } from './asset-cache.js';
 export const YAW_STEP = 5;
+const YAW_FETCH_TIMEOUT_MS = 5000;
+const YAW_CACHE_LIMIT = 12;
+const YAW_WARM_NEIGHBORS = 4;
 
 export function yawKeyFor(deg) {
   const rounded = Math.round(deg);
@@ -36,68 +39,92 @@ export class YawFields {
     this.lastRefresh = 0;
     this.manifest = null;
     this.records = new Map();
+    this.failures = new Set();
+    this.warmAttempts = new Set();
   }
 
-  async load(car, { preloadBaseYaw = false } = {}) {
+  setCar(car) {
+    if (this.car === car) return;
+    this.cancelRequestsExcept(new Set());
     this.serial++;
     this.revision++;
     this.car = car;
     this.cache.clear();
-    this.pending.clear();
+    this.failures.clear();
+    this.warmAttempts.clear();
     this.manifest = null;
-    this.records = new Map();
-    await this.refresh();
-    if (preloadBaseYaw && this.records.has('yaw-000')) {
-      this.request('yaw-000');
-    }
+    this.manifestFailed = false;
+    this.refreshing = false;
+    this.lastRefresh = 0;
+    this.records.clear();
+    this.queue = null;
   }
 
   async refresh() {
-    if (!this.car || this.refreshing) return;
+    if (!this.car || this.refreshing || this.manifestFailed) return;
     this.refreshing = true;
     const serial = this.serial;
     this.lastRefresh = performance.now();
+    const cache = import.meta.env?.DEV ? 'no-store' : 'default';
     try {
-      const cacheMode = import.meta.env.DEV ? 'no-store' : 'default';
-      const [r, q] = await Promise.all([
-        fetch(`/flow/${this.car}/yaw/manifest.json`, { cache: cacheMode }),
-        fetch('/flow/yaw-status.json', { cache: cacheMode }),
-      ]);
-      if (!r.ok) return;
-      const m = await r.json();
-      const queue = q.ok ? await q.json() : null;
+      const response = await fetch(`/flow/${this.car}/yaw/manifest.json`, {
+        cache, signal: AbortSignal.timeout(YAW_FETCH_TIMEOUT_MS),
+      });
+      if (!response.ok) throw Error(`HTTP ${response.status}`);
+      const manifest = await response.json();
       if (serial !== this.serial) return;
-      const changed =
-        m.completedUnique !== this.manifest?.completedUnique ||
-        queue?.state !== this.queue?.state;
-      this.queue = queue;
-      this.manifest = m;
-      this.records = new Map(m.fields.map(a => [a.key, a]));
+      const changed = manifest.completedUnique !== this.manifest?.completedUnique;
+      this.manifest = manifest;
+      this.records = new Map(manifest.fields.map(record => [record.key, record]));
+      if (!manifest.complete) void this.refreshQueue(serial, cache);
       if (changed) {
         this.revision++;
         this.onChange();
       }
     } catch {
-      // Non-fatal while background solver writes manifest
+      if (serial === this.serial && !this.manifest) this.manifestFailed = true;
     } finally {
-      this.refreshing = false;
+      if (serial === this.serial) this.refreshing = false;
+    }
+  }
+
+  async refreshQueue(serial, cache) {
+    try {
+      const response = await fetch('/flow/yaw-status.json', { cache, signal: AbortSignal.timeout(YAW_FETCH_TIMEOUT_MS) });
+      const queue = response.ok ? await response.json() : null;
+      if (serial === this.serial) this.queue = queue;
+    } catch {
+      // Optional queue telemetry must not delay a field selection.
+    }
+  }
+
+  retry() {
+    this.failures?.clear();
+    this.manifestFailed = false;
+    if (!this.manifest) void this.refresh();
+  }
+
+  cancelRequestsExcept(keys) {
+    for (const [key, request] of this.pending) {
+      if (keys.has(key)) continue;
+      this.pending.delete(key);
+      request.controller.abort();
     }
   }
 
   selection(windAngleDeg = 0) {
-    if (!this.manifest?.complete && performance.now() - this.lastRefresh > 10000) {
+    if (!this.manifest || !this.manifest.complete && performance.now() - this.lastRefresh > 10000) {
       this.refresh();
     }
-    if (!this.manifest || !this.records.size) return null;
-    const baseRecord = this.records.get('yaw-000');
-    if (!baseRecord) return null;
+    if (this.manifestFailed) return { error: true };
+    if (!this.manifest) return { loading: true };
 
     const clamped = Math.max(-90, Math.min(90, windAngleDeg));
     const solved = [...this.records.values()]
       .map(r => ({ deg: r.windAngleDeg ?? r.parameters?.windAngleDeg, record: r }))
       .filter(item => Number.isFinite(item.deg))
       .sort((a, b) => a.deg - b.deg);
-    if (!solved.length) return null;
+    if (!solved.length) return { error: true };
 
     const exact5 = Math.abs(clamped - Math.round(clamped / YAW_STEP) * YAW_STEP) < 1e-6;
     const exactKey = yawKeyFor(clamped);
@@ -141,63 +168,22 @@ export class YawFields {
     addNeed(loItem.record.key, 1 - t);
     addNeed(hiItem.record.key, t);
 
-    const reqKeys = new Set(['yaw-000', ...needed.keys()]);
-    const missing = [...reqKeys].filter(k => !this.cache.has(k));
-    for (const k of missing) this.request(k);
+    const reqKeys = new Set(needed.keys());
+    this.cancelRequestsExcept(new Set([...reqKeys, ...[...this.pending].filter(([, request]) => request.warm).map(([key]) => key)]));
+    const missing = [...reqKeys].filter(key => !this.cache.has(key));
+    if (missing.some(key => this.failures.has(key))) return { error: true };
+    for (const key of missing) this.request(key);
+    if (missing.length) return { loading: true };
 
-    // Lightly warm immediate ±5° solved neighbors during drag without saturating fetch.
-    if (this.pending.size < 2) {
-      const idx = solved.findIndex(item => item.record.key === loItem.record.key);
-      for (const adj of [solved[idx - 1], solved[idx + 1]]) {
-        if (adj && !this.cache.has(adj.record.key) && this.pending.size < 2) {
-          this.request(adj.record.key);
-        }
-      }
-    }
-
-    let provisional = false;
-    if (missing.length) {
-      if (!this.cache.has('yaw-000')) return { loading: true };
-      const cachedSolved = solved.filter(item => this.cache.has(item.record.key));
-      if (!cachedSolved.length) return { loading: true };
-      let cLo = null;
-      let cHi = null;
-      let cMirror = false;
-      for (const item of cachedSolved) {
-        if (item.deg <= clamped + 1e-6) cLo = item;
-        if (item.deg >= clamped - 1e-6 && !cHi) cHi = item;
-      }
-      if (!cLo && clamped < 0) {
-        cMirror = true;
-        const absDeg = Math.abs(clamped);
-        for (const item of cachedSolved) {
-          if (item.deg <= absDeg + 1e-6) cLo = item;
-          if (item.deg >= absDeg - 1e-6 && !cHi) cHi = item;
-        }
-      }
-      if (!cLo) cLo = cachedSolved[0];
-      if (!cHi) cHi = cachedSolved[cachedSolved.length - 1];
-      const cTarget = cMirror ? Math.abs(clamped) : clamped;
-      const cT =
-        cHi.deg === cLo.deg
-          ? 0
-          : Math.max(0, Math.min(1, (cTarget - cLo.deg) / (cHi.deg - cLo.deg)));
-      needed.clear();
-      addNeed(cLo.record.key, 1 - cT);
-      addNeed(cHi.record.key, cT);
-      mirror = cMirror;
-      provisional = true;
-    }
-
-    const shape = baseRecord.grid.shape;
+    const spec = loItem.record.grid;
     const weights = {};
-    const data = { 'yaw-000': this.cache.get('yaw-000') };
+    const data = {};
     for (const [k, w] of needed.entries()) {
       const cacheKey = mirror && k !== 'yaw-000' ? `${k}:mirror` : k;
       weights[cacheKey] = w;
       if (!data[cacheKey]) {
         const raw = this.cache.get(k);
-        data[cacheKey] = mirror && k !== 'yaw-000' ? mirrorYawField(raw, shape) : raw;
+        data[cacheKey] = mirror && k !== 'yaw-000' ? mirrorYawField(raw, spec.shape) : raw;
       }
       // Touch LRU
       const v = this.cache.get(k);
@@ -205,48 +191,69 @@ export class YawFields {
       this.cache.set(k, v);
     }
 
-    while (this.cache.size > 48) {
-      const victim = [...this.cache.keys()].find(k => k !== 'yaw-000' && !reqKeys.has(k));
-      if (!victim) break;
-      this.cache.delete(victim);
-    }
-
-    const exact = !provisional && !mirror && exact5 && this.records.has(exactKey);
-    const pendingAngle = provisional || (exact5 && !this.records.has(exactKey));
+    const exact = !mirror && exact5 && this.records.has(exactKey);
     return {
       weights,
       data,
-      spec: baseRecord.grid,
+      spec,
       exact,
       mirror,
-      pendingAngle,
     };
   }
 
-  request(key) {
-    if (this.pending.has(key)) return;
-    const a = this.records.get(key);
-    if (!a) return;
-    const serial = this.serial;
-    const p = (async () => {
-      try {
-        const b = await cachedArrayBuffer(a.file);
-        if (b.byteLength !== a.grid.shape.reduce((n, v) => n * v, 1) * 6) throw Error('size');
-        const raw = new Int16Array(b);
-        const field = new Float32Array(raw.length);
-        const s = a.scale;
-        for (let i = 0; i < raw.length; i++) field[i] = raw[i] * s;
-        if (serial === this.serial) {
-          this.cache.set(key, field);
-          this.revision++;
-          this.onChange();
-        }
-      } catch {
-        this.lastRefresh = 0;
-      } finally {
-        if (serial === this.serial) this.pending.delete(key);
+  // Warm one nearby field at a time, only after the foreground trace has settled.
+  warmNearby(angle) {
+    if (!this.manifest || this.pending.size) return;
+    const nearby = [...this.records.values()]
+      .map(record => ({ key: record.key, distance: Math.abs((record.windAngleDeg ?? record.parameters?.windAngleDeg) - angle) }))
+      .filter(item => item.distance <= 10)
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, YAW_WARM_NEIGHBORS);
+    const next = nearby.find(item => !this.cache.has(item.key) && !this.warmAttempts.has(item.key) && !this.failures.has(item.key));
+    if (next) {
+      this.warmAttempts.add(next.key);
+      this.request(next.key, { warm: true });
+    }
+  }
+
+  request(key, { warm = false } = {}) {
+    const existing = this.pending.get(key);
+    if (existing) {
+      if (!warm) existing.warm = false;
+      return;
+    }
+    const record = this.records.get(key);
+    if (!record) return;
+    const controller = new AbortController();
+    const request = { controller, warm };
+    this.pending.set(key, request);
+    void this.fetchField(key, record, request);
+  }
+
+  async fetchField(key, record, request) {
+    const signal = request.controller.signal;
+    const timer = setTimeout(() => request.controller.abort(), YAW_FETCH_TIMEOUT_MS);
+    try {
+      const bytes = await cachedArrayBuffer(record.file, { signal });
+      if (bytes.byteLength !== record.grid.shape.reduce((n, v) => n * v, 1) * 6) {
+        await deleteCachedAsset(record.file);
+        throw Error('Invalid yaw field size');
       }
-    })();
-    this.pending.set(key, p);
+      if (this.pending.get(key) !== request) return;
+      const raw = new Int16Array(bytes);
+      const field = Float32Array.from(raw, value => value * record.scale);
+      this.cache.set(key, field);
+      if (this.cache.size > YAW_CACHE_LIMIT) {
+        const oldest = this.cache.keys().next().value;
+        this.cache.delete(oldest);
+      }
+      this.revision++;
+      this.onChange();
+    } catch {
+      if (this.pending.get(key) === request && !request.warm) this.failures.add(key);
+    } finally {
+      clearTimeout(timer);
+      if (this.pending.get(key) === request) this.pending.delete(key);
+    }
   }
 }

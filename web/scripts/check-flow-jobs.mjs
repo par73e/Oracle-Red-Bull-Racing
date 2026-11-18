@@ -1,29 +1,163 @@
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { FlowJobs } from '../src/flow-jobs.js';
+
 class FakeWorker {
- constructor(){this.messages=[];}
- postMessage(m){this.messages.push(m);}
- terminate(){}
- emit(data){this.onmessage({data});}
+  messages = [];
+  postMessage(message) { this.messages.push(message); }
+  terminate() { this.terminated = true; }
+  emit(data) { this.onmessage({ data }); }
+  get jobs() { return this.messages.filter(message => message.type === 'compute'); }
 }
-globalThis.Worker=FakeWorker;
-const layer=()=>({geometry:new T.BufferGeometry(),lines:{},group:{visible:true},status:'ready'});
-const flow={...layer(),serial:1,elapsed:0,data:{base:new Float32Array(3),open:new Float32Array(3)},stats:{ready:true},material:{uniforms:{clock:{value:0}}},onStatus(){},sweep:{lastRefresh:Infinity,revision:0,selection:()=>null}};
-const bottom=layer(),side=layer(),jobs=new FlowJobs(flow,bottom,side),rig={model:new T.Group(),wheels:{}};
-const state={model:'rb19',flow:true,flowDensity:100,speed:180,wheelSpeedMps:50,steer:0,drsCurrent:0};
-jobs.update(state,rig,.016,1000);const worker=jobs.worker;worker.emit({type:'ready'});
-function send(drs,now){state.drsCurrent=drs;jobs.update(state,rig,.016,now);return worker.messages.at(-1);}
-function complete(m){const output={visible:true,attributes:{position:new Float32Array([m.state.drsCurrent,0,0])},stats:{ready:true,inputKey:m.key}};worker.emit({type:'result',key:m.key,cachedKeys:['base','open'],pose:{steer:0,drs:m.state.drsCurrent},flow:output,bottom:output,side:output,workerMs:150});}
-let m=send(.1,1100);send(.4,1200);
-assert.equal(flow.group.visible,true,'Moving DRS must not hide existing flow');
-complete(m);assert.equal(flow.geometry.attributes.position.array[0],Math.fround(.1),'Publish completed flow while DRS is still moving');
-m=send(.7,1300);assert.equal(m.state.drsCurrent,.7,'Coalesce intermediate input to newest pose');send(.9,1400);complete(m);
-assert.equal(flow.geometry.attributes.position.array[0],Math.fround(.7));
-m=send(1,1500);complete(m);assert.equal(flow.stats.inputKey,m.key,'Settle to final opening');
-const count=worker.messages.length;send(1,1600);assert.equal(worker.messages.length,count,'Do not recompute unchanged input');
-flow.sweep.selection=()=>({loading:true});m=send(.5,1700);assert.equal(m.type,'compute','Keep computing approximation while fields load');assert.equal(m.selection.axisSweep,false);complete(m);
-flow.sweep.selection=()=>({weights:{base:1},data:flow.data});flow.sweep.revision++;m=send(.5,1800);assert.equal(m.selection.axisSweep,true,'Use newly available solved field without further slider motion');complete(m);
-m=send(.3,1900);state.flow=false;jobs.update(state,rig,.016,1950);complete(m);assert.equal(flow.group.visible,false,'Disabled flow stays hidden when pending result arrives');
-state.flow=true;m=send(.2,2100);const geometry=flow.geometry;flow.serial++;complete(m);assert.equal(flow.geometry,geometry,'Reject result from obsolete model load');
-console.log('DRS motion, latest input, loading fallback, field revision, disabled flow and obsolete model guards passed');
+globalThis.Worker = FakeWorker;
+const layer = () => ({ geometry: new T.BufferGeometry(), lines: {}, group: { visible: false }, status: 'ready' });
+const material = new T.ShaderMaterial({ uniforms: { clock: { value: 0 }, opacity: { value: 1 } } });
+const field = new Float32Array(3);
+const base = { base: field, open: field, right: field, low: field, 'road-slow': field, 'still-air': field };
+let yawState = 'loading';
+const yawRequests = [];
+const flow = {
+  ...layer(), serial: 1, elapsed: 0, material, data: base, stats: { ready: true },
+  onStatus(value) { this.statusText = value; },
+  sweep: { lastRefresh: Infinity, selection: () => null },
+  yaw: {
+    lastRefresh: Infinity, cancelRequestsExcept() {},
+    selection(angle) {
+      yawRequests.push(angle);
+      if (yawState !== 'ready') return { [yawState]: true };
+      return { weights: { angle: 1 }, data: { angle: field }, spec: { shape: [1, 1, 1] }, exact: true };
+    },
+  },
+};
+const bottom = layer(), side = layer();
+const jobs = new FlowJobs(flow, bottom, side, { reducedMotion: true });
+const rig = { model: new T.Group(), wheels: {}, config: { id: 'rb19' } };
+const state = { model: 'rb19', flow: true, flowDensity: 150, speed: 180, wheelSpeedMps: 50, steer: 0, drsCurrent: 0, windAngle: 0 };
+function update(now, patch) {
+  Object.assign(state, patch);
+  jobs.update(state, rig, .016, now);
+}
+function complete(worker, job) {
+  const result = { visible: true, attributes: { position: new Float32Array([job.state.drsCurrent, 0, 0]) }, stats: { inputKey: job.key, yawActive: Boolean(job.yawSelection) } };
+  worker.emit({ type: 'result', id: job.id, key: job.key, cachedKeys: ['base'], flow: result, bottom: result, side: result });
+}
+function assertPreview(angle) {
+  assert.equal(jobs.preview.lines.visible, true);
+  assert.equal(jobs.preview.angle, angle);
+  assert.equal(flow.group.visible, false);
+  assert.equal(bottom.group.visible, false);
+  assert.equal(side.group.visible, false);
+  const geometry = jobs.preview.lines.geometry;
+  const { array, count } = geometry.attributes.position;
+  assert(geometry.drawRange.count > 0 && geometry.drawRange.count <= count);
+  if (!state.speed) return;
+  const beta = angle * Math.PI / 180;
+  const first = new T.Vector3().fromArray(array, 0);
+  const last = new T.Vector3().fromArray(array, 71 * 3);
+  const local = last.sub(first).normalize();
+  assert(local.distanceTo(new T.Vector3(Math.sin(beta), 0, -Math.cos(beta))) < 1e-5);
+  assert(local.applyAxisAngle(new T.Vector3(0, 1, 0), beta).distanceTo(new T.Vector3(0, 0, -1)) < 1e-5);
+}
+
+update(1000);
+assertPreview(0);
+const worker = jobs.worker;
+worker.emit({ type: 'ready' });
+update(1150);
+const headwind = worker.jobs.at(-1);
+assert(headwind);
+update(1170, { windAngle: -85 });
+assertPreview(-85);
+complete(worker, headwind); // result buffered just before the next render
+update(1190, { windAngle: 70 });
+assertPreview(70);
+assert.deepEqual(yawRequests, []);
+update(1340);
+assertPreview(70);
+assert.deepEqual(yawRequests, [70]);
+assert.equal(worker.jobs.length, 1);
+
+yawState = 'error';
+update(1420);
+assertPreview(70);
+assert.match(flow.statusText, /请重试/);
+yawState = 'ready';
+update(1500);
+const crosswind = worker.jobs.at(-1);
+assert.equal(crosswind.state.windAngle, 70);
+assert(crosswind.yawSelection);
+complete(worker, crosswind);
+update(1520);
+assert.equal(flow.group.visible, true);
+assert.equal(jobs.preview.lines.visible, false);
+assert.equal(jobs.detailAngle, 70);
+
+// Each slider updates the same reusable preview buffers before the next draw.
+const previewGeometry = jobs.preview.lines.geometry;
+update(1600, { drsCurrent: .2 });
+assertPreview(70);
+for (const [now, patch, attribute] of [
+  [1620, { drsCurrent: .8 }, 'position'],
+  [1640, { steer: 16 }, 'position'],
+  [1660, { wheelSpeedMps: 22 }, 'position'],
+  [1680, { speed: 135 }, 'flight'],
+]) {
+  const previous = previewGeometry.attributes[attribute].array.slice();
+  update(now, patch);
+  assertPreview(70);
+  assert.notDeepEqual(previewGeometry.attributes[attribute].array, previous);
+}
+assert.equal(worker.jobs.length, 2);
+update(1850);
+const finalPose = worker.jobs.at(-1);
+for (const key of ['windAngle', 'speed', 'wheelSpeedMps', 'steer', 'drsCurrent']) assert.equal(finalPose.state[key], state[key]);
+complete(worker, finalPose);
+update(1870);
+assert.equal(flow.geometry.attributes.position.array[0], Math.fround(.8));
+update(1960);
+assert.equal(worker.jobs.length, 3, 'Unchanged input must not trace again');
+flow.sweep.selection = () => ({ weights: { base: 1 }, data: base });
+update(2040);
+const upgradedField = worker.jobs.at(-1);
+assert(upgradedField.selection.axisSweep, 'Upgrade to newly arrived fields at the same pose');
+assert.equal(flow.group.visible, true, 'Keep same-pose detail visible while refining it');
+complete(worker, upgradedField);
+update(2060);
+
+update(2080, { windAngle: 0 });
+update(2230);
+const obsolete = worker.jobs.at(-1);
+assert.equal(obsolete.state.windAngle, 0);
+assert.equal(obsolete.yawSelection, null);
+update(2240, { flow: false });
+complete(worker, obsolete);
+update(2250);
+assert(!jobs.preview.lines.visible && !flow.group.visible);
+update(2260, { flow: true, speed: 0 });
+assertPreview(0);
+update(2280, { wheelSpeedMps: 0 });
+assert(!jobs.preview.lines.visible && !flow.group.visible);
+
+update(2300, { speed: 180, wheelSpeedMps: 50, windAngle: -45 });
+update(2460);
+const started = worker.jobs.at(-1);
+assert.equal(started.state.windAngle, -45);
+jobs.recover(jobs.serial, true);
+update(2470);
+assertPreview(-45);
+assert.match(flow.statusText, /请重试/);
+jobs.retry();
+update(2500);
+const recovered = jobs.worker;
+recovered.emit({ type: 'ready' });
+update(2510);
+assert.equal(recovered.jobs.at(-1).state.windAngle, -45);
+flow.serial++;
+rig.config.id = 'rb16b';
+update(2600, { model: 'rb16b', windAngle: 85 });
+complete(recovered, recovered.jobs.at(-1));
+update(2610);
+assertPreview(85);
+assert(recovered.terminated);
+jobs.retry();
+console.log('Immediate preview direction and parameters, final-pose scheduling, timeouts, retries and car isolation passed');
