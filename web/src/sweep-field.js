@@ -20,10 +20,10 @@ export class SweepFields {
   if(missing.length)return {loading:true};
   const data=Object.fromEntries(Object.keys(weights).map(k=>[k,this.cache.get(k)]));
   for(const k of Object.keys(weights)){const v=this.cache.get(k);this.cache.delete(k);this.cache.set(k,v);}
-  while(this.cache.size>16){const victim=[...this.cache.keys()].find(k=>k!=='base'&&!Object.hasOwn(weights,k));if(!victim)break;this.cache.delete(victim);}
+  while(this.cache.size>48){const victim=[...this.cache.keys()].find(k=>k!=='base'&&!Object.hasOwn(weights,k));if(!victim)break;this.cache.delete(victim);}
   return {weights,data,exact:Object.keys(weights).length===1&&Math.abs(Object.values(weights)[0]-1)<1e-7};
  }
  request(key){if(this.pending.has(key))return;const a=this.records.get(key),serial=this.serial;
-  const p=(async()=>{try{const r=await fetch(a.file);if(!r.ok)throw Error('missing');const b=await r.arrayBuffer();if(b.byteLength!==a.grid.shape.reduce((n,v)=>n*v,1)*6)throw Error('size');const raw=new Int16Array(b),field=Float32Array.from(raw,v=>v*a.scale);if(serial===this.serial){this.cache.set(key,field);this.revision++;this.onChange();}}catch{this.lastRefresh=0;}finally{if(serial===this.serial)this.pending.delete(key);}})();this.pending.set(key,p);
+  const p=(async()=>{try{const r=await fetch(a.file);if(!r.ok)throw Error('missing');const b=await r.arrayBuffer();if(b.byteLength!==a.grid.shape.reduce((n,v)=>n*v,1)*6)throw Error('size');const raw=new Int16Array(b),field=new Float32Array(raw.length),s=a.scale;for(let i=0;i<raw.length;i++)field[i]=raw[i]*s;if(serial===this.serial){this.cache.set(key,field);this.revision++;this.onChange();}}catch{this.lastRefresh=0;}finally{if(serial===this.serial)this.pending.delete(key);}})();this.pending.set(key,p);
  }
 }

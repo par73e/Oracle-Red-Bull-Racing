@@ -17,10 +17,10 @@
     <header class="topbar chrome">
       <button type="button" id="brand-home" class="wordmark" aria-label="AERO 01 回到默认整车视角">AERO<span>/ 01</span></button>
       <div class="model-switch" role="group" aria-label="选择车型">
-        <button data-model="rb16b" aria-pressed="false">RB16B<span>2021</span></button>
-        <button data-model="rb19" aria-pressed="true">RB19<span>2023</span></button>
+        <button data-model="rb16b" aria-pressed="true">RB16B<span>2021</span></button>
+        <button data-model="rb19" aria-pressed="false">RB19<span>2023</span></button>
       </div>
-      <p class="model-era" id="era">2023 / GROUND EFFECT</p>
+      <p class="model-era" id="era">2021 / HYBRID ERA</p>
       <div class="topbar-actions">
         <button id="credits-button" class="icon-button" aria-haspopup="dialog" title="模型与制作说明">
           <svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="7.25"/><path d="M10 9v5M10 6.25v.01"/></svg>
@@ -29,17 +29,50 @@
       </div>
     </header>
 
-    <div class="interface-controls" role="group" aria-label="界面隐藏模式">
-      <button id="auto-hide-toggle" class="interface-toggle icon-button" type="button" aria-pressed="false" title="拖动或按键控制视角时自动隐去四周界面，点击鼠标恢复">
-        <svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2.75v2.5M10 14.75v2.5M2.75 10h2.5M14.75 10h2.5"/><circle cx="10" cy="10" r="3.25"/></svg>
-        <span class="toggle-text">自动隐藏</span>
-      </button>
-      <span class="controls-divider" aria-hidden="true"></span>
-      <button id="interface-toggle" class="interface-toggle icon-button" type="button" aria-pressed="false" title="手动隐藏界面（H）">
-        <svg class="icon icon-eye" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10s3-5.5 8-5.5S18 10 18 10s-3 5.5-8 5.5S2 10 2 10Z"/><circle cx="10" cy="10" r="2.25"/></svg>
-        <svg class="icon icon-eye-off" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M3 3l14 14M8.2 4.8A7.6 7.6 0 0 1 10 4.5c5 0 8 5.5 8 5.5a14 14 0 0 1-2.3 3M12.1 12.2A2.25 2.25 0 0 1 8 10a2.2 2.2 0 0 1 .4-1.3M5.3 6.2C3.2 7.6 2 10 2 10s3 5.5 8 5.5a7.5 7.5 0 0 0 3-.6"/></svg>
-        <span class="toggle-text">手动隐藏</span>
-      </button>
+    <div class="top-right">
+      <div class="downforce-dock chrome">
+        <div class="telemetry-item telemetry-readout-only" data-telemetry="downforce">
+          <button type="button" class="readout aero-readout" aria-expanded="false">
+            <span class="aero-metric" data-metric="downforce">
+              <span class="readout-label">下压力</span>
+              <span class="readout-value" id="t-downforce">6355<small>N · 0%</small></span>
+            </span>
+            <span class="aero-metric-sep" aria-hidden="true"></span>
+            <span class="aero-metric" data-metric="drag">
+              <span class="readout-label">空气阻力</span>
+              <span class="readout-value" id="t-drag">2418<small>N · 0%</small></span>
+            </span>
+          </button>
+          <div class="telemetry-popover popover-forces" role="group" aria-label="实时气动力估算详情">
+            <div class="popover-head">
+              <span class="force-title">实时气动力估算</span>
+              <output id="hud-downforce-value">6355 N (0%)</output>
+            </div>
+            <div class="force-grid">
+              <span>合成相对来流</span><strong id="hud-rel-airflow">180 km/h · 0.0°</strong>
+              <span>下压力 (Fz)</span><strong id="hud-downforce-pct">6355 N · 0%</strong>
+              <span>空气阻力 (Fx)</span><strong id="hud-drag-value">2418 N · 0%</strong>
+              <span>侧向气动力 (Fy)</span><strong id="hud-side-value">0 N</strong>
+              <span>升阻比 (L/D)</span><strong id="hud-ld-ratio">2.63</strong>
+              <span>粗网格原始下压力</span><strong id="hud-raw-downforce">739 N</strong>
+            </div>
+            <p class="force-note" id="hud-force-note">基于 180 km/h F1 参考基准与 OpenFOAM 实算工况趋势连续估算，仅作直观量级参考。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="interface-controls" role="group" aria-label="界面隐藏模式">
+        <button id="auto-hide-toggle" class="interface-toggle icon-button" type="button" aria-pressed="false" title="拖动或按键控制视角时自动隐去四周界面，点击鼠标恢复">
+          <svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2.75v2.5M10 14.75v2.5M2.75 10h2.5M14.75 10h2.5"/><circle cx="10" cy="10" r="3.25"/></svg>
+          <span class="toggle-text">自动隐藏</span>
+        </button>
+        <span class="controls-divider" aria-hidden="true"></span>
+        <button id="interface-toggle" class="interface-toggle icon-button" type="button" aria-pressed="false" title="手动隐藏界面（H）">
+          <svg class="icon icon-eye" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10s3-5.5 8-5.5S18 10 18 10s-3 5.5-8 5.5S2 10 2 10Z"/><circle cx="10" cy="10" r="2.25"/></svg>
+          <svg class="icon icon-eye-off" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M3 3l14 14M8.2 4.8A7.6 7.6 0 0 1 10 4.5c5 0 8 5.5 8 5.5a14 14 0 0 1-2.3 3M12.1 12.2A2.25 2.25 0 0 1 8 10a2.2 2.2 0 0 1 .4-1.3M5.3 6.2C3.2 7.6 2 10 2 10s3 5.5 8 5.5a7.5 7.5 0 0 0 3-.6"/></svg>
+          <span class="toggle-text">手动隐藏</span>
+        </button>
+      </div>
     </div>
 
     <nav class="rail chrome" aria-label="控制面板">
@@ -62,8 +95,8 @@
         <div class="panel-head"><h2 id="panel-scene-title">场景</h2><button class="panel-close icon-button" data-close-panel aria-label="收起场景面板"><svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="m5.5 5.5 9 9m0-9-9 9"/></svg></button></div>
         <div class="environment-switch" role="group" aria-label="选择环境">
           <button data-environment="wind" aria-pressed="true"><b>风洞</b><span>WIND TUNNEL</span></button>
-          <button data-environment="eau-rouge" aria-pressed="false"><b>Eau Rouge</b><span>坡底仰视</span></button>
-          <button data-environment="studio" aria-pressed="false"><b>纯空白</b><span>STUDIO</span></button>
+          <button data-environment="eau-rouge" aria-pressed="false"><b>艾尔罗格</b><span>EAU ROUGE</span></button>
+          <button data-environment="studio" aria-pressed="false"><b>纯白影棚</b><span>STUDIO</span></button>
         </div>
         <div class="scene-caption" aria-live="polite">
           <p id="scene-label">风洞试验段</p>
@@ -236,29 +269,6 @@
       </div>
 
       <div class="hud-right">
-        <div class="telemetry-item telemetry-readout-only" data-telemetry="downforce">
-          <button type="button" class="readout" aria-expanded="false">
-            <span class="readout-label">下压力</span>
-            <span class="readout-value" id="t-downforce">6355<small>N · 0%</small></span>
-          </button>
-          <div class="telemetry-popover popover-forces" role="group" aria-label="实时气动力与下压力估算详情">
-            <div class="popover-head">
-              <span class="force-title">实时下压力估算</span>
-              <output id="hud-downforce-value">6355 N (0%)</output>
-            </div>
-            <div class="force-grid">
-              <span>合成相对来流</span><strong id="hud-rel-airflow">180 km/h · 0.0°</strong>
-              <span>相对 180 直行</span><strong id="hud-downforce-pct">0%</strong>
-              <span>气动阻力 Fx</span><strong id="hud-drag-value">2418 N</strong>
-              <span>侧向气动力 Fy</span><strong id="hud-side-value">0 N</strong>
-              <span>粗网格原始积分</span><strong id="hud-raw-downforce">739 N</strong>
-            </div>
-            <p class="force-note" id="hud-force-note">基于 180 km/h F1 参考基准与 OpenFOAM 实算工况趋势连续估算，仅作直观量级参考。</p>
-          </div>
-        </div>
-
-        <span class="hud-right-divider" aria-hidden="true"></span>
-
         <div class="flow-state">
           <span class="status-dot" id="flow-dot" data-tone="loading"></span>
           <span id="flow-status" role="status">正在准备气流…</span>

@@ -22,14 +22,14 @@ export class FlowJobs {
  }
  update(state,rig,dt,now){this.current={...state};this.flow.elapsed+=dt;this.flow.material.uniforms.clock.value=this.flow.elapsed;
   if(!this.flow.stats.ready||!rig)return;
-  const sweep=this.flow.sweep,yaw=this.flow.yaw;if(now-sweep.lastRefresh>10000&&!sweep.manifest?.complete)sweep.refresh();
-  if(yaw&&now-yaw.lastRefresh>10000&&!yaw.manifest?.complete)yaw.refresh();
+  const sweep=this.flow.sweep,yaw=this.flow.yaw;if(state.flow&&now-sweep.lastRefresh>30000&&!sweep.manifest?.complete)sweep.refresh();
+  if(state.flow&&yaw&&now-yaw.lastRefresh>30000&&!yaw.manifest?.complete)yaw.refresh();
   this.flow.stats.sweepCoverage=sweep.manifest?{completed:sweep.manifest.completedUnique,planned:sweep.manifest.plannedUnique,complete:sweep.manifest.complete,queueState:sweep.queue?.state}:null;
   this.flow.stats.yawCoverage=yaw?.manifest?{completed:yaw.manifest.completedUnique,planned:yaw.manifest.plannedUnique,complete:yaw.manifest.complete,queueState:yaw.queue?.state}:null;
   if(this.model!==rig||this.loadSerial!==this.flow.serial){if(this.bottom.status==='loading'||this.side.status==='loading')return;this.initialize(state,rig);}
   const active=state.flow&&state.flowDensity>0&&(state.speed>0||state.wheelSpeedMps>0);
   if(!active){for(const x of [this.flow,this.bottom,this.side])x.group.visible=false;this.appliedKey='';if(state.flow&&state.speed===0&&state.wheelSpeedMps===0){this.flow.stats.lines=0;this.flow.onStatus('静止 · 来流与车轮均为 0');}return;}
-  if(!this.ready||this.busy||this.failed||now-this.lastSent<70)return;
+  if(!this.ready||this.busy||this.failed||now-this.lastSent<16)return;
   const key=inputKey(state),fieldRevision=`${sweep.manifest?.completedUnique||0}:${sweep.revision||0}:${yaw?.manifest?.completedUnique||0}:${yaw?.revision||0}`;
   if(key===this.appliedKey&&this.fieldRevision===fieldRevision)return;
   const start=performance.now(),U=state.speed/3.6,W=state.wheelSpeedMps,windAngle=state.effWindAngle??state.windAngle??0,useYaw=Math.abs(windAngle)>=1e-6;

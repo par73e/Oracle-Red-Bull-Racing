@@ -9,6 +9,7 @@ import { FlowJobs } from './flow-jobs.js';
 import { UnderbodyFlow } from './underbody.js';
 import { SidepodFlow } from './sidepod.js';
 import { Environments } from './environments.js';
+import { createSpaShadowGeometry } from './spa-scene.js';
 import { computeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
@@ -25,7 +26,7 @@ const state = {
   effWindAngle: 0,
   spin: 0,
   drsCurrent: 0,
-  model: 'rb19',
+  model: 'rb16b',
   view: 'hero',
   freeMode: false,
   panel: null,
@@ -39,6 +40,99 @@ const state = {
   autoHidden: false,
   manualHidden: false,
 };
+
+const STORAGE_KEY = 'aero-studio:config:v1';
+const VALID_ENVS = new Set(['studio', 'wind', 'eau-rouge']);
+const VALID_VIEWS = new Set(['hero', 'front', 'side', 'drs', 'floor']);
+let persistenceReady = false;
+let savedCameraPose = null;
+let cameraSaveTimer = 0;
+
+function isVec3(v) {
+  return Array.isArray(v) && v.length === 3 && v.every(Number.isFinite);
+}
+
+function hydrateSavedState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (!saved || typeof saved !== 'object') return;
+    if (typeof saved.model === 'string' && saved.model) state.model = saved.model;
+    if (VALID_ENVS.has(saved.environment)) state.environment = saved.environment;
+    if (VALID_VIEWS.has(saved.view)) state.view = saved.view;
+    if (typeof saved.freeMode === 'boolean') state.freeMode = saved.freeMode;
+    if (Number.isFinite(saved.ambientWindMps)) state.ambientWindMps = THREE.MathUtils.clamp(saved.ambientWindMps, 0, 15);
+    if (Number.isFinite(saved.windAngle)) state.windAngle = THREE.MathUtils.clamp(saved.windAngle, -90, 90);
+    if (Number.isFinite(saved.groundSpeed)) state.groundSpeed = THREE.MathUtils.clamp(saved.groundSpeed, 0, 350);
+    if (Number.isFinite(saved.drs)) state.drs = THREE.MathUtils.clamp(saved.drs, 0, 1);
+    if (Number.isFinite(saved.steer)) state.steer = THREE.MathUtils.clamp(saved.steer, -18, 18);
+    if (typeof saved.flow === 'boolean') state.flow = saved.flow;
+    if (Number.isFinite(saved.flowDensity)) state.flowDensity = THREE.MathUtils.clamp(saved.flowDensity, 0, 150);
+    if (typeof saved.autoHide === 'boolean') state.autoHide = saved.autoHide;
+    state.drsCurrent = state.drs;
+    state.wheelSpeedMps = state.groundSpeed / 3.6;
+    const cp = saved.cameraPose;
+    if (cp && cp.environment === state.environment && isVec3(cp.position) && isVec3(cp.target)) {
+      const dist = Math.hypot(cp.position[0] - cp.target[0], cp.position[1] - cp.target[1], cp.position[2] - cp.target[2]);
+      if (dist > 0.25 && dist < 200) {
+        savedCameraPose = {
+          environment: cp.environment,
+          position: cp.position.slice(),
+          target: cp.target.slice(),
+        };
+      }
+    }
+  } catch {}
+}
+
+function saveState() {
+  if (!persistenceReady) return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      model: state.model,
+      environment: state.environment,
+      view: state.view,
+      freeMode: state.freeMode,
+      ambientWindMps: state.ambientWindMps,
+      windAngle: state.windAngle,
+      groundSpeed: state.groundSpeed,
+      drs: state.drs,
+      steer: state.steer,
+      flow: state.flow,
+      flowDensity: state.flowDensity,
+      autoHide: state.autoHide,
+      cameraPose: savedCameraPose && savedCameraPose.environment === state.environment ? savedCameraPose : null,
+    }));
+  } catch {}
+}
+
+function captureCameraPose() {
+  savedCameraPose = {
+    environment: state.environment,
+    position: camera.position.toArray(),
+    target: orbit.target.toArray(),
+  };
+}
+
+function clearSavedCameraPose() {
+  savedCameraPose = null;
+  clearTimeout(cameraSaveTimer);
+  cameraSaveTimer = 0;
+}
+
+function scheduleCameraPoseSave() {
+  if (!persistenceReady) return;
+  clearTimeout(cameraSaveTimer);
+  cameraSaveTimer = setTimeout(() => {
+    cameraSaveTimer = 0;
+    captureCameraPose();
+    saveState();
+  }, 220);
+}
+
+hydrateSavedState();
+
 let rig, currentModel, configs, loadSerial = 0, transition = null;
 let lastTime = performance.now(), statsTime = lastTime, frameCount = 0, fps = 0;
 let wasNarrow = innerWidth <= 620;
@@ -53,6 +147,8 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.08;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.autoUpdate = false;
+renderer.shadowMap.needsUpdate = true;
 viewport.appendChild(renderer.domElement);
 renderer.domElement.setAttribute('aria-label', '赛车三维自由观察视图：拖动以自身视角转向，右键平移，滚轮进退，WASD与QE移动，双击车身聚焦');
 
@@ -69,16 +165,20 @@ function updateFlowStatus(message) {
   const statusEl = $('flow-status');
   if (statusEl && statusEl.textContent !== message) statusEl.textContent = message;
   const retryEl = $('flow-retry');
-  if (retryEl) retryEl.hidden = !message.includes('暂不可用');
+  if (retryEl) {
+    const showRetry = message.includes('暂不可用');
+    if (retryEl.hidden === showRetry) retryEl.hidden = !showRetry;
+  }
   const dotEl = $('flow-dot');
   if (dotEl) {
-    dotEl.dataset.tone = message.includes('暂不可用') || message.includes('失败')
+    const tone = message.includes('暂不可用') || message.includes('失败')
       ? 'error'
       : message.includes('正在')
         ? 'loading'
         : !state.flow || message.includes('静止')
           ? 'idle'
           : 'ready';
+    if (dotEl.dataset.tone !== tone) dotEl.dataset.tone = tone;
   }
 }
 
@@ -91,12 +191,17 @@ const aeroForces = new AeroForces();
 const underbody = new UnderbodyFlow(carTurntable, airflow.material);
 const sidepod = new SidepodFlow(carTurntable, airflow.material);
 const flowJobs = new FlowJobs(airflow, underbody, sidepod);
-worlds.set(state.environment, 2023);
+airflow.setEnabled(state.flow);
+if (!state.flow) updateFlowStatus('流线已隐藏');
+worlds.set(state.environment, state.model === 'rb19' ? 2023 : 2021);
 
 function syncTurntable() {
   const yawRad = state.environment === 'wind' ? THREE.MathUtils.degToRad(state.windAngle || 0) : 0;
-  carTurntable.rotation.y = yawRad;
-  carTurntable.updateMatrixWorld(true);
+  if (Math.abs(carTurntable.rotation.y - yawRad) > 1e-6) {
+    carTurntable.rotation.y = yawRad;
+    carTurntable.updateMatrixWorld(true);
+    renderer.shadowMap.needsUpdate = true;
+  }
   worlds.setYaw(yawRad);
 }
 
@@ -133,6 +238,21 @@ floor.rotation.x = -Math.PI / 2;
 floor.position.y = -.035;
 floor.receiveShadow = true;
 scene.add(floor);
+
+const eauRougeFloor = new THREE.Mesh(
+  createSpaShadowGeometry(),
+  new THREE.ShadowMaterial({
+    color: '#05080c',
+    opacity: .38,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+    polygonOffsetUnits: -2,
+    depthWrite: false,
+  })
+);
+eauRougeFloor.receiveShadow = true;
+eauRougeFloor.visible = false;
+scene.add(eauRougeFloor);
 
 const orbit = new OrbitControls(camera, renderer.domElement);
 orbit.enableDamping = true;
@@ -207,6 +327,7 @@ function setCameraMode(freeMode) {
     syncLookFromTarget(camera.position, orbit.target);
   }
   updateCameraHint();
+  saveState();
 }
 
 function markFreeCameraActive() {
@@ -215,6 +336,9 @@ function markFreeCameraActive() {
 
 orbit.addEventListener('start', () => {
   transition = null;
+});
+orbit.addEventListener('end', () => {
+  scheduleCameraPoseSave();
 });
 
 function closeAllTelemetryPopovers() {
@@ -288,8 +412,12 @@ window.addEventListener('pointermove', e => {
 
 window.addEventListener('pointerup', e => {
   if (!pointerTrack || e.pointerId !== pointerTrack.id) return;
-  const { moved: wasMoved, button, startedOutsideDrawer } = pointerTrack;
+  const { moved: wasMoved, button, onCanvas, startedOutsideDrawer } = pointerTrack;
   pointerTrack = null;
+  if (wasMoved && onCanvas && state.freeMode) {
+    captureCameraPose();
+    saveState();
+  }
   if (!wasMoved && state.autoHidden) {
     setAutoHidden(false);
   }
@@ -310,8 +438,10 @@ renderer.domElement.addEventListener('wheel', e => {
   const step = -THREE.MathUtils.clamp(e.deltaY, -120, 120) * .0025 * refDist;
   camera.position.addScaledVector(forward, step);
   orbit.target.addScaledVector(forward, step);
+  scheduleCameraPoseSave();
 }, { passive: false });
 
+const FREE_MOVE_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'Space', 'ShiftLeft', 'ShiftRight', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
 const freeKeys = new Set();
 window.addEventListener('keydown', e => {
   if (e.target.closest?.('input, textarea, select, button, dialog, [contenteditable]')) {
@@ -336,7 +466,7 @@ window.addEventListener('keydown', e => {
     if (e.code === 'Digit4') { setView('drs'); return; }
     if (e.code === 'Digit5') { setView('floor'); return; }
   }
-  if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'Space', 'ShiftLeft', 'ShiftRight', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+  if (FREE_MOVE_KEYS.has(e.code)) {
     e.preventDefault();
     transition = null;
     markFreeCameraActive();
@@ -344,8 +474,21 @@ window.addEventListener('keydown', e => {
     if (state.autoHide && !state.manualHidden) setAutoHidden(true);
   }
 });
-window.addEventListener('keyup', e => freeKeys.delete(e.code));
+window.addEventListener('keyup', e => {
+  if (freeKeys.delete(e.code) && state.freeMode) {
+    captureCameraPose();
+    saveState();
+  }
+});
 window.addEventListener('blur', () => freeKeys.clear());
+window.addEventListener('pagehide', () => {
+  if (cameraSaveTimer) {
+    clearTimeout(cameraSaveTimer);
+    cameraSaveTimer = 0;
+    captureCameraPose();
+    saveState();
+  }
+});
 
 function moveFreeCamera(dt) {
   if (!freeKeys.size) return;
@@ -390,7 +533,7 @@ function resolveView(name, forFreeLanding = false) {
   const frontZ = rig?.config.wheels?.FL?.center ? rig.config.wheels.FL.center[2] * .62 : .94;
   if (name === 'hero') {
     if (state.environment === 'wind') {
-      return { position: [-5.0, 2.48, -7.8], target: [0, .62, 0] };
+      return { position: [5.0, 2.42, 7.2], target: [0, .60, 0] };
     }
     if (state.environment === 'eau-rouge') {
       return forFreeLanding
@@ -436,9 +579,10 @@ function applyInstantOrbitPose(pos, target) {
   syncLookFromTarget(pos, target);
 }
 
-function setView(name, instant = false, keepFreeBadge = false) {
+function setView(name, instant = false, keepFreeBadge = false, resetSavedPose = true) {
   if (!views[name]) name = 'hero';
   state.view = name;
+  if (resetSavedPose) clearSavedCameraPose();
   $('app').classList.toggle('detail-view', name === 'drs' || name === 'floor' || name === 'front');
   setCameraMode(keepFreeBadge);
   document.querySelectorAll('[data-view]').forEach(b => {
@@ -451,10 +595,11 @@ function setView(name, instant = false, keepFreeBadge = false) {
       : 34;
   camera.updateProjectionMatrix();
 
-  const view = resolveView(name, keepFreeBadge);
+  const useSavedPose = !resetSavedPose && savedCameraPose && savedCameraPose.environment === state.environment;
+  const view = useSavedPose ? savedCameraPose : resolveView(name, keepFreeBadge);
   const pos = new THREE.Vector3(...view.position);
   const target = new THREE.Vector3(...view.target);
-  if (viewport.clientWidth <= 620) {
+  if (!useSavedPose && viewport.clientWidth <= 620) {
     const distanceFactor = { hero: 1.08, front: 1.12, side: state.environment === 'wind' ? .68 : 1.12, drs: 1.05, floor: .95 }[name] || 1.08;
     pos.sub(target).multiplyScalar(distanceFactor).add(target);
   }
@@ -477,6 +622,7 @@ function activateFreeView() {
     setView('hero', false, true);
   } else {
     transition = null;
+    captureCameraPose();
     markFreeCameraActive();
   }
 }
@@ -511,6 +657,8 @@ renderer.domElement.addEventListener('dblclick', e => {
   if (reducedMotion) {
     transition = null;
     applyInstantOrbitPose(endPos, hitPoint);
+    captureCameraPose();
+    saveState();
   } else {
     transition = {
       start: performance.now(),
@@ -518,6 +666,7 @@ renderer.domElement.addEventListener('dblclick', e => {
       target: orbit.target.clone(),
       endPosition: endPos,
       endTarget: hitPoint,
+      savePose: true,
     };
   }
 });
@@ -545,14 +694,19 @@ function updatePopoverPosition(item) {
   const pop = item.querySelector('.telemetry-popover');
   if (!pop) return;
   const itemRect = item.getBoundingClientRect();
-  const hudRect = document.querySelector('.hud')?.getBoundingClientRect();
+  const topDock = item.closest('.downforce-dock')?.getBoundingClientRect();
+  const hudRect = topDock ? null : document.querySelector('.hud')?.getBoundingClientRect();
   const popWidth = pop.offsetWidth || 224;
   const minLeft = hudRect ? hudRect.left : 16;
   const maxLeft = Math.max(minLeft, (hudRect ? hudRect.right : window.innerWidth - 16) - popWidth);
   const idealLeft = itemRect.left + itemRect.width / 2 - popWidth / 2;
   const clampedLeft = Math.min(maxLeft, Math.max(minLeft, idealLeft));
   pop.style.setProperty('--popover-shift', `${Math.round(clampedLeft - idealLeft)}px`);
-  const lift = hudRect ? Math.max(10, Math.round(itemRect.top - hudRect.top + 10)) : 10;
+  const lift = topDock
+    ? Math.max(10, Math.round(topDock.bottom - itemRect.bottom + 10))
+    : hudRect
+      ? Math.max(10, Math.round(itemRect.top - hudRect.top + 10))
+      : 10;
   pop.style.setProperty('--popover-lift', `${lift}px`);
 }
 
@@ -609,12 +763,14 @@ document.querySelector('.flow-state')?.addEventListener('click', e => {
 
 function setEnvironment(name) {
   if (!['studio', 'wind', 'eau-rouge'].includes(name)) return;
+  const envChanged = state.environment !== name;
   state.environment = name;
+  if (envChanged) clearSavedCameraPose();
   $('app').dataset.environment = name;
   document.querySelectorAll('[data-environment]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.environment === name)));
-  worlds.set(name, rig?.config.year || 2023);
+  worlds.set(name, rig?.config.year || (state.model === 'rb19' ? 2023 : 2021));
   $('scene-label').textContent = {
-    studio: '深灰无缝影棚',
+    studio: '纯白无缝影棚',
     wind: '风洞试验段',
     'eau-rouge': 'Eau Rouge · 坡底望向 Raidillon',
   }[name];
@@ -622,16 +778,29 @@ function setEnvironment(name) {
     ? '斯帕 · 谷底仰视上坡与盲顶'
     : name === 'wind'
       ? '原创全尺寸风洞场景 · 气流来自自由外流算例'
-      : '深色暗室影棚 · 聚焦赛车曲面与流线细节';
+      : '纯白影棚打光 · 聚焦赛车曲面与流线细节';
   orbit.maxDistance = name === 'eau-rouge' ? 120 : 18;
   floor.position.y = name === 'studio' ? -.035 : -.003;
-  floor.material.opacity = name === 'eau-rouge' ? .38 : name === 'studio' ? .42 : .24;
-  key.position.set(...(name === 'wind' || name === 'studio' ? [3, 6, 4] : [-2, 7, -3]));
+  floor.material.opacity = name === 'studio' ? .42 : .24;
+  floor.visible = name !== 'eau-rouge';
+  eauRougeFloor.visible = name === 'eau-rouge';
+  key.position.set(...(name === 'wind' || name === 'studio' ? [3, 6, 4] : [-4.5, 6.0, 2.0]));
+  const shadowSpan = name === 'eau-rouge' ? 6 : 4;
+  Object.assign(key.shadow.camera, {
+    left: -shadowSpan,
+    right: shadowSpan,
+    top: shadowSpan,
+    bottom: -shadowSpan,
+    far: name === 'eau-rouge' ? 24 : 18,
+  });
+  key.shadow.camera.updateProjectionMatrix();
   scene.environmentIntensity = name === 'studio' ? .82 : name === 'wind' ? .68 : .9;
   key.intensity = name === 'studio' ? 3.5 : name === 'wind' ? 3.2 : 2.2;
   fill.intensity = name === 'studio' ? 1.45 : name === 'wind' ? 1.2 : .8;
   syncTurntable();
-  setView(state.view, true, state.freeMode);
+  setView(state.view, true, state.freeMode, false);
+  renderer.shadowMap.needsUpdate = true;
+  saveState();
 }
 
 function formatWindLabel(deg) {
@@ -646,34 +815,58 @@ function formatWindSide(deg) {
   return deg < 0 ? '左侧来流' : '右侧来流';
 }
 
-function updateForcesDisplay() {
+let lastForcesKey = '';
+const forceNodes = {
+  tDownforce: $('t-downforce'),
+  tDrag: $('t-drag'),
+  downVal: $('hud-downforce-value'),
+  rel: $('hud-rel-airflow'),
+  dfGrid: $('hud-downforce-pct'),
+  dragVal: $('hud-drag-value'),
+  sideVal: $('hud-side-value'),
+  ldVal: $('hud-ld-ratio'),
+  rawVal: $('hud-raw-downforce'),
+  note: $('hud-force-note'),
+};
+const statusNodes = {
+  sweep: $('sweep-status'),
+  yaw: $('yaw-status'),
+  underbody: $('underbody-status'),
+  sidepod: $('sidepod-status'),
+};
+
+function updateForcesDisplay(force = false) {
+  const yawLen = aeroForces.data?.axes?.yaw?.length || 0;
+  const fKey = `${state.model}:${state.speed.toFixed(2)}:${state.groundSpeed}:${state.windAngle}:${state.drsCurrent.toFixed(3)}:${state.steer}:${aeroForces.car}:${yawLen}`;
+  if (!force && fKey === lastForcesKey) return;
+  lastForcesKey = fKey;
   const forces = aeroForces.estimate(state);
   const pctSign = forces.downforceDeltaPct > 0 ? '+' : '';
   const pctStr = `${pctSign}${forces.downforceDeltaPct}%`;
-  const tDownforce = $('t-downforce');
-  if (tDownforce) {
-    const html = `${forces.downforceN}<small>N · ${pctStr}</small>`;
-    if (tDownforce.innerHTML !== html) tDownforce.innerHTML = html;
-    tDownforce.classList.toggle('is-lift', forces.downforceN < 0);
+  const dragSign = forces.dragDeltaPct > 0 ? '+' : '';
+  const dragPctStr = `${dragSign}${forces.dragDeltaPct}%`;
+  if (forceNodes.tDownforce) {
+    forceNodes.tDownforce.innerHTML = `${forces.downforceN}<small>N · ${pctStr}</small>`;
+    forceNodes.tDownforce.classList.toggle('is-lift', forces.downforceN < 0);
   }
-  const downVal = `${forces.downforceN} N (${pctStr})`;
-  if ($('hud-downforce-value') && $('hud-downforce-value').textContent !== downVal) $('hud-downforce-value').textContent = downVal;
-  const relText = `${forces.relSpeedKmh} km/h · ${forces.effWindAngleDeg > 0 ? '+' : ''}${forces.effWindAngleDeg.toFixed(1)}°`;
-  if ($('hud-rel-airflow') && $('hud-rel-airflow').textContent !== relText) $('hud-rel-airflow').textContent = relText;
-  if ($('hud-downforce-pct') && $('hud-downforce-pct').textContent !== pctStr) $('hud-downforce-pct').textContent = pctStr;
-  const dragVal = `${forces.dragN} N`;
-  if ($('hud-drag-value') && $('hud-drag-value').textContent !== dragVal) $('hud-drag-value').textContent = dragVal;
+  if (forceNodes.tDrag) {
+    forceNodes.tDrag.innerHTML = `${forces.dragN}<small>N · ${dragPctStr}</small>`;
+  }
+  if (forceNodes.downVal) forceNodes.downVal.textContent = `${forces.downforceN} N (${pctStr})`;
+  if (forceNodes.rel) forceNodes.rel.textContent = `${forces.relSpeedKmh} km/h · ${forces.effWindAngleDeg > 0 ? '+' : ''}${forces.effWindAngleDeg.toFixed(1)}°`;
+  if (forceNodes.dfGrid) forceNodes.dfGrid.textContent = `${forces.downforceN} N · ${pctStr}`;
+  if (forceNodes.dragVal) forceNodes.dragVal.textContent = `${forces.dragN} N · ${dragPctStr}`;
   const sideDir = Math.abs(forces.sideN) < 5 ? '' : forces.sideN < 0 ? '（向车左）' : '（向车右）';
-  const sideVal = `${forces.sideN > 0 ? '+' : ''}${forces.sideN} N${sideDir}`;
-  if ($('hud-side-value') && $('hud-side-value').textContent !== sideVal) $('hud-side-value').textContent = sideVal;
-  const rawVal = `${forces.rawCfdDownforceN} N`;
-  if ($('hud-raw-downforce') && $('hud-raw-downforce').textContent !== rawVal) $('hud-raw-downforce').textContent = rawVal;
-  const noteText = forces.mirroredYawForce
-    ? '负向侧风暂用右侧对应实算镜像（完整 5° 队列后台求解中），基于 180 km/h F1 基准估算。'
-    : forces.downforceN < 0
-      ? '大侧风工况下纵向下压力大幅衰减并呈失速/微正升力趋势，基于 OpenFOAM 实算趋势估算。'
-      : '基于 180 km/h F1 参考基准与 OpenFOAM 实算工况趋势连续估算，仅作直观量级参考。';
-  if ($('hud-force-note') && $('hud-force-note').textContent !== noteText) $('hud-force-note').textContent = noteText;
+  if (forceNodes.sideVal) forceNodes.sideVal.textContent = `${forces.sideN > 0 ? '+' : ''}${forces.sideN} N${sideDir}`;
+  if (forceNodes.ldVal) forceNodes.ldVal.textContent = forces.liftToDrag !== null ? `${forces.liftToDrag.toFixed(2)}` : '—';
+  if (forceNodes.rawVal) forceNodes.rawVal.textContent = `${forces.rawCfdDownforceN} N`;
+  if (forceNodes.note) {
+    forceNodes.note.textContent = forces.mirroredYawForce
+      ? '负向侧风暂用右侧对应实算镜像（完整 5° 队列后台求解中），基于 180 km/h F1 基准估算。'
+      : forces.downforceN < 0
+        ? '大侧风工况下纵向下压力大幅衰减并呈失速/微正升力趋势，基于 OpenFOAM 实算趋势估算。'
+        : '基于 180 km/h F1 参考基准与 OpenFOAM 实算工况趋势连续估算，仅作直观量级参考。';
+  }
 }
 
 function showState() {
@@ -754,6 +947,7 @@ function showState() {
   if ($('t-rpm')) $('t-rpm').innerHTML = `${rpmRounded}<small>rpm</small>`;
   syncTurntable();
   updateForcesDisplay();
+  saveState();
 }
 
 function disposeModel(model) {
@@ -778,6 +972,7 @@ async function loadModel(id) {
   $('loading-text').textContent = `正在加载 ${config.name}…`;
   document.querySelectorAll('[data-model]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.model === id)));
   state.model = id;
+  saveState();
   try {
     const loaded = await loader.loadAsync(`${config.file}?v=${config.revision || config.glb_bytes}`, progress => {
       if (serial === loadSerial && progress.total) $('loading-text').textContent = `${config.name} / ${Math.round(progress.loaded / progress.total * 100)}%`;
@@ -800,12 +995,13 @@ async function loadModel(id) {
     carTurntable.add(currentModel);
     setEnvironment(state.environment);
     airflow.load(id);
-    aeroForces.load(id).then(() => updateForcesDisplay()).catch(() => {});
+    aeroForces.load(id).then(() => updateForcesDisplay(true)).catch(() => {});
     underbody.load(id);
     sidepod.load(id);
     showState();
     state.spin = 0;
     applyRig(rig, { drs: state.drsCurrent, steer: state.steer, spin: state.spin });
+    renderer.shadowMap.needsUpdate = true;
     if ($('model-name')) $('model-name').innerHTML = `${config.name}<span>.</span>`;
     $('era').textContent = `${config.year} / ${id === 'rb19' ? 'GROUND EFFECT' : 'HYBRID ERA'}`;
     $('loading').classList.add('hidden');
@@ -826,6 +1022,7 @@ $('auto-hide-toggle')?.addEventListener('click', e => {
   state.autoHide = !state.autoHide;
   e.currentTarget.setAttribute('aria-pressed', String(state.autoHide));
   if (!state.autoHide) setAutoHidden(false);
+  saveState();
 });
 $('interface-toggle').addEventListener('click', e => {
   const hidden = $('app').classList.toggle('interface-hidden');
@@ -895,10 +1092,13 @@ renderer.domElement.addEventListener('webglcontextlost', e => {
 });
 
 window.addEventListener('resize', applyFraming);
+document.querySelectorAll('[data-model]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.model === state.model)));
+if ($('era')) $('era').textContent = state.model === 'rb19' ? '2023 / GROUND EFFECT' : '2021 / HYBRID ERA';
+$('auto-hide-toggle')?.setAttribute('aria-pressed', String(state.autoHide));
 applyFraming();
 setEnvironment(state.environment);
-setView('hero', true, false);
 showState();
+persistenceReady = true;
 
 renderer.setAnimationLoop(now => {
   const elapsed = Math.max(0, (now - lastTime) / 1000), dt = Math.min(elapsed, .05);
@@ -909,8 +1109,13 @@ renderer.setAnimationLoop(now => {
     camera.position.lerpVectors(transition.position, transition.endPosition, ease);
     orbit.target.lerpVectors(transition.target, transition.endTarget, ease);
     if (t === 1) {
+      const saveTransitionPose = Boolean(transition.savePose);
       transition = null;
       applyInstantOrbitPose(camera.position, orbit.target);
+      if (saveTransitionPose) {
+        captureCameraPose();
+        saveState();
+      }
     } else {
       syncLookFromTarget(camera.position, orbit.target);
     }
@@ -923,7 +1128,11 @@ renderer.setAnimationLoop(now => {
   state.drsCurrent = reducedMotion ? state.drs : THREE.MathUtils.damp(state.drsCurrent, state.drs, 9, Math.min(elapsed, .5));
   if (Math.abs(state.drsCurrent - state.drs) < .001) state.drsCurrent = state.drs;
   state.spin += state.wheelSpeedMps * dt;
-  if (rig) applyRig(rig, { drs: state.drsCurrent, steer: state.steer, spin: state.spin });
+  if (rig && (rig._lastDrs !== state.drsCurrent || rig._lastSteer !== state.steer || rig._lastSpin !== state.spin)) {
+    const shadowDirty = rig._lastDrs !== state.drsCurrent || rig._lastSteer !== state.steer;
+    applyRig(rig, { drs: state.drsCurrent, steer: state.steer, spin: state.spin });
+    if (shadowDirty) renderer.shadowMap.needsUpdate = true;
+  }
 
   flowJobs.update(state, rig, dt, now);
   updateForcesDisplay();
@@ -931,13 +1140,13 @@ renderer.setAnimationLoop(now => {
   const coverageText = coverage
     ? `逐档 ${coverage.completed}/${coverage.planned} · ${coverage.queueState === 'failed' ? '计算中断' : coverage.queueState === 'complete' ? '已完成' : coverage.complete ? '校验中' : '计算中'}`
     : '';
-  if ($('sweep-status').textContent !== coverageText) $('sweep-status').textContent = coverageText;
+  if (statusNodes.sweep && statusNodes.sweep.textContent !== coverageText) statusNodes.sweep.textContent = coverageText;
 
   const yawCoverage = airflow.stats.yawCoverage;
   const yawText = yawCoverage
     ? `侧风 ±90°（5°）${yawCoverage.completed}/${yawCoverage.planned} · ${yawCoverage.complete ? '已全部完成' : yawCoverage.queueState === 'running' ? '后台求解中' : yawCoverage.queueState === 'failed' ? '计算中断' : '就绪'}`
     : '';
-  if ($('yaw-status') && $('yaw-status').textContent !== yawText) $('yaw-status').textContent = yawText;
+  if (statusNodes.yaw && statusNodes.yaw.textContent !== yawText) statusNodes.yaw.textContent = yawText;
 
   const underbodyVisible = underbody.group.visible;
   const underbodyMessage = !state.flow || state.flowDensity === 0
@@ -951,7 +1160,7 @@ renderer.setAnimationLoop(now => {
           : underbodyVisible
             ? (underbody.mode === 'baseline' ? '底盘加密基线 · 仍有网格差异，未充分收敛' : '底盘：加密基线叠加粗网格工况变化 · 近似预览')
             : '正在准备底盘气流…';
-  if ($('underbody-status').textContent !== underbodyMessage) $('underbody-status').textContent = underbodyMessage;
+  if (statusNodes.underbody && statusNodes.underbody.textContent !== underbodyMessage) statusNodes.underbody.textContent = underbodyMessage;
 
   const sidepodVisible = sidepod.group.visible;
   const sidepodMessage = !state.flow || state.flowDensity === 0
@@ -965,11 +1174,14 @@ renderer.setAnimationLoop(now => {
           : sidepodVisible
             ? (sidepod.mode === 'baseline' ? '侧箱及悬挂：探索性加密基线，未充分收敛' : '侧箱及悬挂：近似预览，缺失处沿用缩放基线')
             : '正在准备侧箱及悬挂气流…';
-  if ($('sidepod-status').textContent !== sidepodMessage) $('sidepod-status').textContent = sidepodMessage;
+  if (statusNodes.sidepod && statusNodes.sidepod.textContent !== sidepodMessage) statusNodes.sidepod.textContent = sidepodMessage;
 
+  const prevForestReady = worlds.lastForestReady;
   worlds.update(dt, state.speed, state.groundSpeed);
+  if (worlds.kind === 'eau-rouge' && !prevForestReady && worlds.lastForestReady) renderer.shadowMap.needsUpdate = true;
   const underCar = (!state.freeMode && state.view === 'floor') || camera.position.y < -.05;
-  floor.visible = !underCar;
+  floor.visible = !underCar && state.environment !== 'eau-rouge';
+  eauRougeFloor.visible = !underCar && state.environment === 'eau-rouge';
   floorInspectionLight.visible = underCar;
 
   const near = THREE.MathUtils.clamp((state.freeMode ? camera.position.length() : camera.position.distanceTo(orbit.target)) * .004, .025, .5);
@@ -1043,6 +1255,7 @@ window.aeroStudio = {
     state.drsCurrent = state.drs;
     showState();
     if (rig) applyRig(rig, { drs: state.drsCurrent, steer: state.steer, spin: state.spin });
+    renderer.shadowMap.needsUpdate = true;
   },
   runKinematicChecks() {
     const saved = { ...state }, results = [];
@@ -1063,7 +1276,8 @@ try {
   if (!response.ok) throw new Error('模型清单尚未生成');
   const manifest = await response.json();
   configs = Object.fromEntries(manifest.map(c => [c.id, c]));
-  await loadModel('rb19');
+  const initialModel = configs[state.model] ? state.model : (configs.rb16b ? 'rb16b' : manifest[0]?.id);
+  await loadModel(initialModel);
 } catch (error) {
   $('loading').classList.add('hidden');
   $('error').hidden = false;

@@ -176,6 +176,7 @@ function loadForest(root){const r=random(93041),placements=[];for(let i=0;i<(inn
   }root.userData.forestReady=true;root.userData.forestTriangles=triangles;root.userData.treeCount=placements.length+spruce.length;root.userData.spruceCount=spruce.length;root.userData.forestBatches=batches;
  }).catch(error=>{root.userData.forestError=error.message;});
 }
+export function createSpaShadowGeometry(){return surface.ribbonGeometry(s=>-s.rightWidth-1.2,s=>s.leftWidth+1.2,{start:.21,end:.36,lift:.004});}
 export function createSpaScene(){const root=new T.Group();root.name='SPA_EAU_ROUGE_LIDAR';root.userData.keepMeshes=false;root.userData.metadata={units:'metres',roadSource:survey.source.plan,elevationSource:survey.source.elevation,roadWidthAtCar:survey.road[212-175][3]+survey.road[212-175][4],registrationMedianM:survey.source.registrationMedianM,roadStations:survey.road.length,terrainSamples:survey.terrain.heights.length};
  const grass=pbr('leafy_grass','#ffffff',.5);grass.vertexColors=true;terrain(root,grass);
  const road=pbr('asphalt_02','#63696e',.45);road.vertexColors=true;

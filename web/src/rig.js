@@ -2,6 +2,7 @@ import { Matrix3, Matrix4, Vector3, MathUtils } from 'three';
 import { trackRodAngle } from './mechanics.js';
 
 const Y = new Vector3(0, 1, 0);
+const _vA = new Vector3(), _vB = new Vector3(), _vDir = new Vector3(), _vLocalA = new Vector3(), _vLocalB = new Vector3();
 
 // The RB19 carbon fairing is a display skin, separate from the rigid track
 // rod underneath. Its split at 0.13 m must stay registered to the fixed nose
@@ -94,52 +95,69 @@ export function steeringAngles(degrees, wheelbase, track) {
 }
 
 export function applyRig(rig, { drs, steer, spin }) {
-  const travel=steer*(rig.config.suspension?.travel_per_degree||0);
-  const angles = rig.links?Object.fromEntries(Object.entries(rig.links).map(([key,spec])=>[key,trackRodAngle(spec,travel)])):
-    steeringAngles(steer, rig.config.wheelbase, rig.config.front_track);
-  if(rig.rack)rig.rack.position.x=travel;
-  for (const [key, wheel] of Object.entries(rig.wheels)) {
-    wheel.steerNode.rotation.y = angles[key] || 0;
+  const poseChanged = rig._lastSteer !== steer || rig._lastDrs !== drs;
+  const spinChanged = rig._lastSpin !== spin;
+  if (!poseChanged && !spinChanged) return;
+
+  for (const wheel of Object.values(rig.wheels)) {
     wheel.spinNode.rotation.x = spin / wheel.radius;
   }
-  rig.pivot.rotation.x = -drs * rig.config.drs.max_angle_radians;
-  rig.model.updateMatrixWorld(true);
-  if(rig.links){
-    for(const link of Object.values(rig.links)){
-      const a=link.linkNode.parent.worldToLocal(link.innerNode.getWorldPosition(new Vector3()));
-      const b=link.linkNode.parent.worldToLocal(link.outerNode.getWorldPosition(new Vector3()));
-      link.linkNode.position.copy(a);
-      link.linkNode.quaternion.setFromUnitVectors(link.restDirection,b.sub(a).normalize()).multiply(link.restQuaternion);
+
+  if (poseChanged) {
+    const travel = steer * (rig.config.suspension?.travel_per_degree || 0);
+    const angles = rig.links
+      ? Object.fromEntries(Object.entries(rig.links).map(([key, spec]) => [key, trackRodAngle(spec, travel)]))
+      : steeringAngles(steer, rig.config.wheelbase, rig.config.front_track);
+    if (rig.rack) rig.rack.position.x = travel;
+    for (const [key, wheel] of Object.entries(rig.wheels)) {
+      wheel.steerNode.rotation.y = angles[key] || 0;
     }
+    rig.pivot.rotation.x = -drs * rig.config.drs.max_angle_radians;
     rig.model.updateMatrixWorld(true);
-  }
-  if (rig.fairingSteer !== steer) {
-    applyFairing(rig.fairings);
-    rig.fairingSteer = steer;
-  }
-  const a = rig.base.getWorldPosition(new Vector3());
-  const b = rig.attachment.getWorldPosition(new Vector3());
-  // Solve both ends in the cylinder parent's coordinate system. This survives
-  // positioning/scaling the whole model in a larger scene.
-  const localA = rig.cylinder.parent.worldToLocal(a.clone());
-  const localB = rig.cylinder.parent.worldToLocal(b.clone());
-  const direction = localB.clone().sub(localA);
-  const distance = direction.length();
-  direction.normalize();
-  for (const node of [rig.cylinder, rig.pistonFrame||rig.rod]) {
-    node.position.copy(localA);
-    node.quaternion.setFromUnitVectors(Y, direction);
-  }
-  if(rig.pistonFrame){
-    rig.cylinder.scale.set(1,1,1);
-    rig.pistonFrame.position.copy(rig.pistonFrame.parent.worldToLocal(b.clone()));
-    rig.rod.position.set(0,-rig.config.drs.rod_length,0);
-    rig.rod.scale.set(1,1,1);
-  }else{
-    rig.cylinder.scale.set(1, rig.config.drs.cylinder_length, 1);
-    rig.rod.scale.set(1, distance, 1);
+    if (rig.links) {
+      for (const link of Object.values(rig.links)) {
+        link.linkNode.parent.worldToLocal(link.innerNode.getWorldPosition(_vA));
+        link.linkNode.parent.worldToLocal(link.outerNode.getWorldPosition(_vB));
+        link.linkNode.position.copy(_vA);
+        _vDir.copy(_vB).sub(_vA).normalize();
+        link.linkNode.quaternion.setFromUnitVectors(link.restDirection, _vDir).multiply(link.restQuaternion);
+      }
+      rig.model.updateMatrixWorld(true);
+    }
+    if (rig.fairingSteer !== steer) {
+      applyFairing(rig.fairings);
+      rig.fairingSteer = steer;
+    }
+    rig.base.getWorldPosition(_vA);
+    rig.attachment.getWorldPosition(_vB);
+    // Solve both ends in the cylinder parent's coordinate system. This survives
+    // positioning/scaling the whole model in a larger scene.
+    _vLocalA.copy(_vA);
+    rig.cylinder.parent.worldToLocal(_vLocalA);
+    _vLocalB.copy(_vB);
+    rig.cylinder.parent.worldToLocal(_vLocalB);
+    _vDir.copy(_vLocalB).sub(_vLocalA);
+    const distance = _vDir.length();
+    _vDir.normalize();
+    for (const node of [rig.cylinder, rig.pistonFrame || rig.rod]) {
+      node.position.copy(_vLocalA);
+      node.quaternion.setFromUnitVectors(Y, _vDir);
+    }
+    if (rig.pistonFrame) {
+      rig.cylinder.scale.set(1, 1, 1);
+      rig.pistonFrame.parent.worldToLocal(_vB);
+      rig.pistonFrame.position.copy(_vB);
+      rig.rod.position.set(0, -rig.config.drs.rod_length, 0);
+      rig.rod.scale.set(1, 1, 1);
+    } else {
+      rig.cylinder.scale.set(1, rig.config.drs.cylinder_length, 1);
+      rig.rod.scale.set(1, distance, 1);
+    }
   }
   rig.model.updateMatrixWorld(true);
+  rig._lastSteer = steer;
+  rig._lastDrs = drs;
+  rig._lastSpin = spin;
 }
 
 export function inspectRig(rig) {

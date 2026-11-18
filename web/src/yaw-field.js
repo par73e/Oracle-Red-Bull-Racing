@@ -46,6 +46,9 @@ export class YawFields {
     this.manifest = null;
     this.records = new Map();
     await this.refresh();
+    if (this.records.has('yaw-000')) {
+      this.request('yaw-000');
+    }
   }
 
   async refresh() {
@@ -139,7 +142,50 @@ export class YawFields {
     const reqKeys = new Set(['yaw-000', ...needed.keys()]);
     const missing = [...reqKeys].filter(k => !this.cache.has(k));
     for (const k of missing) this.request(k);
-    if (missing.length) return { loading: true };
+
+    // Lightly warm immediate ±5° solved neighbors during drag without saturating fetch.
+    if (this.pending.size < 2) {
+      const idx = solved.findIndex(item => item.record.key === loItem.record.key);
+      for (const adj of [solved[idx - 1], solved[idx + 1]]) {
+        if (adj && !this.cache.has(adj.record.key) && this.pending.size < 2) {
+          this.request(adj.record.key);
+        }
+      }
+    }
+
+    let provisional = false;
+    if (missing.length) {
+      if (!this.cache.has('yaw-000')) return { loading: true };
+      const cachedSolved = solved.filter(item => this.cache.has(item.record.key));
+      if (!cachedSolved.length) return { loading: true };
+      let cLo = null;
+      let cHi = null;
+      let cMirror = false;
+      for (const item of cachedSolved) {
+        if (item.deg <= clamped + 1e-6) cLo = item;
+        if (item.deg >= clamped - 1e-6 && !cHi) cHi = item;
+      }
+      if (!cLo && clamped < 0) {
+        cMirror = true;
+        const absDeg = Math.abs(clamped);
+        for (const item of cachedSolved) {
+          if (item.deg <= absDeg + 1e-6) cLo = item;
+          if (item.deg >= absDeg - 1e-6 && !cHi) cHi = item;
+        }
+      }
+      if (!cLo) cLo = cachedSolved[0];
+      if (!cHi) cHi = cachedSolved[cachedSolved.length - 1];
+      const cTarget = cMirror ? Math.abs(clamped) : clamped;
+      const cT =
+        cHi.deg === cLo.deg
+          ? 0
+          : Math.max(0, Math.min(1, (cTarget - cLo.deg) / (cHi.deg - cLo.deg)));
+      needed.clear();
+      addNeed(cLo.record.key, 1 - cT);
+      addNeed(cHi.record.key, cT);
+      mirror = cMirror;
+      provisional = true;
+    }
 
     const shape = baseRecord.grid.shape;
     const weights = {};
@@ -157,14 +203,14 @@ export class YawFields {
       this.cache.set(k, v);
     }
 
-    while (this.cache.size > 16) {
+    while (this.cache.size > 48) {
       const victim = [...this.cache.keys()].find(k => k !== 'yaw-000' && !reqKeys.has(k));
       if (!victim) break;
       this.cache.delete(victim);
     }
 
-    const exact = !mirror && exact5 && this.records.has(exactKey);
-    const pendingAngle = exact5 && !this.records.has(exactKey);
+    const exact = !provisional && !mirror && exact5 && this.records.has(exactKey);
+    const pendingAngle = provisional || (exact5 && !this.records.has(exactKey));
     return {
       weights,
       data,
@@ -187,7 +233,9 @@ export class YawFields {
         const b = await r.arrayBuffer();
         if (b.byteLength !== a.grid.shape.reduce((n, v) => n * v, 1) * 6) throw Error('size');
         const raw = new Int16Array(b);
-        const field = Float32Array.from(raw, v => v * a.scale);
+        const field = new Float32Array(raw.length);
+        const s = a.scale;
+        for (let i = 0; i < raw.length; i++) field[i] = raw[i] * s;
         if (serial === this.serial) {
           this.cache.set(key, field);
           this.revision++;

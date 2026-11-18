@@ -30,6 +30,24 @@ export function resolveRelativeWind(state) {
   };
 }
 
+function cleanAxisPoints(points) {
+  if (!Array.isArray(points)) return points;
+  const filtered = points.filter(
+    p =>
+      p &&
+      Number.isFinite(p.value) &&
+      Number.isFinite(p.drag) &&
+      Number.isFinite(p.downforce) &&
+      Number.isFinite(p.side) &&
+      (p.downforcePtp ?? 0) <= 500 &&
+      p.drag >= -50 &&
+      p.drag <= 30000 &&
+      Math.abs(p.downforce) <= 15000 &&
+      Math.abs(p.side) <= 20000,
+  );
+  return filtered.length ? filtered : points;
+}
+
 function interpAxis(points, value, field) {
   if (!points?.length) return null;
   if (value <= points[0].value) return points[0][field];
@@ -67,7 +85,7 @@ function interpYawAxis(points, deg, field) {
 export class AeroForces {
   constructor() {
     this.serial = 0;
-    this.car = 'rb19';
+    this.car = 'rb16b';
     this.data = null;
     this.lastRefresh = 0;
   }
@@ -85,6 +103,11 @@ export class AeroForces {
       const r = await fetch(`/flow/${this.car}/forces.json`, { cache: 'no-store' });
       if (!r.ok) return;
       const payload = await r.json();
+      if (payload?.axes) {
+        for (const k of Object.keys(payload.axes)) {
+          payload.axes[k] = cleanAxisPoints(payload.axes[k]);
+        }
+      }
       if (serial === this.serial) this.data = payload;
     } catch {
       // Optional telemetry
@@ -113,6 +136,8 @@ export class AeroForces {
         downforceN: 0,
         downforceDeltaPct: -100,
         dragN: 0,
+        dragDeltaPct: -100,
+        liftToDrag: null,
         sideN: 0,
         rawCfdDownforceN: 0,
         refBaseN: refBase,
@@ -175,18 +200,22 @@ export class AeroForces {
     const wheelOnlyDown = cfdAir0 * ((g / 50) ** 2) * (1 - Math.min(1, u / 8));
     const downforceN = airDownforce + wheelOnlyDown;
 
-    // Drag & Side force directly from OpenFOAM forces scaled by speed² (quadratic above 350 km/h)
+    // Drag & Side force directly from OpenFOAM forces scaled by speed² (quadratic above 350 km/h),
+    // cleanly separating air-stream drag from still-air wheel pumping drag at low/zero speed.
+    const cfdDrag0 = interpAxis(axes?.air, 0, 'drag') ?? 70;
     const cfdDrag350 = interpAxis(axes?.air, 350, 'drag');
     const cfdDragU =
       airKmh > 350 && cfdDrag350 !== null
-        ? cfdDrag350 * ((airKmh / 350) ** 2)
-        : (interpAxis(axes?.air, airKmh, 'drag') ?? baseRaw.drag * (u / 50) ** 2);
+        ? Math.max(0, cfdDrag350 - cfdDrag0) * ((airKmh / 350) ** 2)
+        : Math.max(0, (interpAxis(axes?.air, airKmh, 'drag') ?? baseRaw.drag * ((u / 50) ** 2) + cfdDrag0) - cfdDrag0);
     const cfdDragYaw = interpYawAxis(axes?.yaw, windAngleDeg, 'drag').value ?? yawBaseRaw.drag * cos2B;
-    const dragYawScale = yawBaseRaw.drag > 1 ? cfdDragYaw / yawBaseRaw.drag : cos2B;
+    const dragYawScale = yawBaseRaw.drag > 1 ? Math.max(0, cfdDragYaw / yawBaseRaw.drag) : cos2B;
     const cfdDrsDrag100 = interpAxis(axes?.drs, 100, 'drag') ?? baseRaw.drag * 0.95;
     const drsDragFactor = 1 - drs * (1 - cfdDrsDrag100 / Math.max(1, baseRaw.drag)) * cos2B;
-    const groundDragOffset = (interpAxis(axes?.ground, groundKmh, 'drag') ?? baseRaw.drag) - baseRaw.drag;
-    const dragN = Math.max(0, (cfdDragU + groundDragOffset * (u / 50)) * dragYawScale * drsDragFactor);
+    const wheelDrag = cfdDrag0 * ((g / 50) ** 2);
+    const dragN = Math.max(0, (cfdDragU * dragYawScale + wheelDrag) * drsDragFactor);
+    const dragDeltaPct = Math.round(((dragN - Math.max(1, baseRaw.drag)) / Math.max(1, baseRaw.drag)) * 100);
+    const liftToDrag = dragN > 100 && Math.abs(windAngleDeg) <= 65 ? Number((downforceN / dragN).toFixed(2)) : null;
 
     const cfdSideYaw = interpYawAxis(axes?.yaw, windAngleDeg, 'side').value ?? -5600 * sinB;
     const cfdSideSteer = interpAxis(axes?.steer, steerDeg, 'side') ?? 0;
@@ -198,6 +227,8 @@ export class AeroForces {
       downforceN: Math.round(downforceN),
       downforceDeltaPct: Math.round(((downforceN - refBase) / refBase) * 100),
       dragN: Math.round(dragN),
+      dragDeltaPct,
+      liftToDrag,
       sideN: Math.round(sideN),
       rawCfdDownforceN: Math.round(rawCfdDownforceN),
       refBaseN: refBase,

@@ -13,8 +13,8 @@
   color-scheme: dark;
   font-synthesis: none;
   --bg: #0b0e13;
-  --surface: rgba(13, 17, 23, 0.86);
-  --surface-strong: rgba(15, 20, 27, 0.94);
+  --surface: rgba(13, 17, 23, 0.9);
+  --surface-strong: rgba(15, 20, 27, 0.95);
   --surface-item: rgba(235, 242, 250, 0.05);
   --surface-hover: rgba(235, 242, 250, 0.1);
   --border: rgba(190, 206, 224, 0.15);
@@ -135,7 +135,6 @@ canvas {
   height: 42px;
   padding: 0 14px;
   background: var(--surface);
-  backdrop-filter: blur(14px);
   border: 1px solid var(--border);
   border-radius: 10px;
 }
@@ -242,7 +241,7 @@ canvas {
   color: var(--text);
 }
 
-/* Interface Controls (Top Right) */
+/* Interface Controls & Downforce Box (Top Right) */
 .chrome,
 .drawer,
 .interface-controls {
@@ -256,18 +255,79 @@ canvas {
   pointer-events: none;
 }
 
-.interface-controls {
+.top-right {
   position: absolute;
   top: 14px;
   right: 16px;
   z-index: 8;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.downforce-dock {
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.downforce-dock [data-telemetry="downforce"] > .readout {
+  height: 32px;
+  width: auto;
+  padding: 2px 6px;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.aero-metric {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.aero-metric[data-metric="downforce"] {
+  width: 108px;
+}
+
+.aero-metric[data-metric="drag"] {
+  width: 102px;
+}
+
+.aero-metric-sep {
+  width: 1px;
+  height: 22px;
+  background: var(--border);
+  flex: none;
+}
+
+.downforce-dock .telemetry-popover {
+  top: calc(100% + var(--popover-lift));
+  bottom: auto;
+  transform: translate(calc(-50% + var(--popover-shift)), -8px);
+}
+
+.downforce-dock .telemetry-popover::after {
+  top: auto;
+  bottom: 100%;
+}
+
+.downforce-dock .telemetry-item.is-open > .telemetry-popover {
+  transform: translate(calc(-50% + var(--popover-shift)), 0);
+}
+
+.interface-controls {
   height: 42px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 4px;
   background: var(--surface);
-  backdrop-filter: blur(14px);
   border: 1px solid var(--border);
   border-radius: 10px;
 }
@@ -325,7 +385,6 @@ canvas {
   gap: 6px;
   padding: 6px;
   background: var(--surface);
-  backdrop-filter: blur(14px);
   border: 1px solid var(--border);
   border-radius: 12px;
 }
@@ -701,7 +760,6 @@ input[type="range"]::-moz-range-thumb {
   gap: 12px;
   padding: 8px 14px;
   background: var(--surface);
-  backdrop-filter: blur(14px);
   border: 1px solid var(--border);
   border-radius: 12px;
 }
@@ -748,7 +806,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 [data-telemetry="downforce"] > .readout {
-  width: 108px;
+  width: 112px;
 }
 
 .readout:hover,
@@ -954,26 +1012,20 @@ input[type="range"]::-moz-range-thumb {
   color: var(--text-secondary);
 }
 
-/* Right Downforce & CFD Status in HUD */
+/* Right CFD Status in HUD */
 .hud-right {
   justify-self: end;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
   min-width: 0;
-}
-
-.hud-right-divider {
-  width: 1px;
-  height: 22px;
-  background: var(--border);
-  flex: none;
+  max-width: 100%;
 }
 
 .flow-state {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
   padding: 5px 8px;
   border-radius: 7px;
@@ -981,8 +1033,8 @@ input[type="range"]::-moz-range-thumb {
   color: var(--text-secondary);
   cursor: pointer;
   transition: background-color 0.15s ease;
-  width: 274px;
-  flex: none;
+  width: auto;
+  flex: 0 1 auto;
   min-width: 0;
   max-width: 100%;
 }
@@ -993,11 +1045,12 @@ input[type="range"]::-moz-range-thumb {
 }
 
 #flow-status {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: right;
 }
 
 .status-dot {
@@ -1151,6 +1204,18 @@ dialog p:last-child {
   }
 }
 
+@media (max-width: 960px) {
+  .model-era {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .topbar .icon-label {
+    display: none;
+  }
+}
+
 @media (max-width: 720px) {
   .topbar {
     top: 10px;
@@ -1164,9 +1229,39 @@ dialog p:last-child {
   .topbar .icon-label {
     display: none;
   }
-  .interface-controls {
+  .top-right {
     top: 10px;
     right: 10px;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .downforce-dock {
+    height: 36px;
+    padding: 3px;
+  }
+  .downforce-dock [data-telemetry="downforce"] > .readout {
+    height: 28px;
+    width: auto;
+    padding: 2px 4px;
+    gap: 4px;
+  }
+  .downforce-dock .readout-label {
+    font-size: 9px;
+  }
+  .downforce-dock .readout-value {
+    font-size: 10px;
+  }
+  .aero-metric[data-metric="downforce"] {
+    width: 74px;
+  }
+  .aero-metric[data-metric="drag"] {
+    width: 72px;
+  }
+  .aero-metric-sep {
+    height: 16px;
+  }
+  .interface-controls {
     height: 38px;
     padding: 3px;
     gap: 2px;
@@ -1227,7 +1322,6 @@ dialog p:last-child {
     flex-wrap: wrap;
     gap: 4px;
   }
-  .hud-right-divider,
   .camera-hint,
   .readout-rpm {
     display: none;
