@@ -231,28 +231,31 @@ export class YawFields {
   }
 
   async fetchField(key, record, request) {
-    const signal = request.controller.signal;
-    const timer = setTimeout(() => request.controller.abort(), YAW_FETCH_TIMEOUT_MS);
+    const canceled = request.controller.signal;
+    const expectedBytes = record.grid.shape.reduce((n, v) => n * v, 1) * 6;
     try {
-      const bytes = await cachedArrayBuffer(record.file, { signal });
-      if (bytes.byteLength !== record.grid.shape.reduce((n, v) => n * v, 1) * 6) {
-        await deleteCachedAsset(record.file);
-        throw Error('Invalid yaw field size');
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const signal = AbortSignal.any([canceled, AbortSignal.timeout(YAW_FETCH_TIMEOUT_MS)]);
+        try {
+          const bytes = await cachedArrayBuffer(record.file, { signal });
+          if (bytes.byteLength !== expectedBytes) {
+            await deleteCachedAsset(record.file);
+            throw Error('Invalid yaw field size');
+          }
+          if (this.pending.get(key) !== request) return;
+          const raw = new Int16Array(bytes);
+          this.cache.set(key, Float32Array.from(raw, value => value * record.scale));
+          if (this.cache.size > YAW_CACHE_LIMIT) this.cache.delete(this.cache.keys().next().value);
+          this.revision++;
+          this.onChange();
+          return;
+        } catch {
+          if (canceled.aborted || this.pending.get(key) !== request || request.warm) return;
+          // Retry one foreground fetch while the same pose still needs it.
+          if (attempt === 1) this.failures.add(key);
+        }
       }
-      if (this.pending.get(key) !== request) return;
-      const raw = new Int16Array(bytes);
-      const field = Float32Array.from(raw, value => value * record.scale);
-      this.cache.set(key, field);
-      if (this.cache.size > YAW_CACHE_LIMIT) {
-        const oldest = this.cache.keys().next().value;
-        this.cache.delete(oldest);
-      }
-      this.revision++;
-      this.onChange();
-    } catch {
-      if (this.pending.get(key) === request && !request.warm) this.failures.add(key);
     } finally {
-      clearTimeout(timer);
       if (this.pending.get(key) === request) this.pending.delete(key);
     }
   }
