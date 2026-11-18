@@ -1,0 +1,11 @@
+{
+  "state": "complete",
+  "completed": {
+    "rb19": 37,
+    "rb16b": 37
+  },
+  "plannedPerCar": 37,
+  "failed": [],
+  "updatedAt": "2026-11-18T10:40:23+0800",
+  "pid": 25096
+}

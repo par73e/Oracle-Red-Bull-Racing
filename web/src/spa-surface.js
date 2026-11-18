@@ -20,6 +20,17 @@ export function createSpaSurface(survey) {
     const a=t*(road.length-1), i=Math.min(road.length-2,Math.floor(a)), f=a-i;
     return {p,v,left,t,rightWidth:T.MathUtils.lerp(road[i][3],road[i+1][3],f),leftWidth:T.MathUtils.lerp(road[i][4],road[i+1][4],f)};
   }
+  const stations = road.map((_, k) => sample(k / (road.length - 1)));
+  function nearestStation(x, z) {
+    let best = Infinity, index = 0;
+    for (let k = 0; k < stations.length; k++) {
+      const s = stations[k], d = (x - s.p.x) ** 2 + (z - s.p.z) ** 2;
+      if (d < best) { best = d; index = k; }
+    }
+    const s = stations[index];
+    const lat = (x - s.p.x) * s.left.x + (z - s.p.z) * s.left.z;
+    return { s, index, distance: Math.sqrt(best), lat, t: s.t };
+  }
   function heightAt(s, offset) {
     const edge=offset>0?s.leftWidth:s.rightWidth;
     const distance=Math.max(0,Math.abs(offset)-edge);
@@ -35,6 +46,28 @@ export function createSpaSurface(survey) {
     const p=s.p.clone().addScaledVector(s.left,offset);
     p.y=heightAt(s,offset)+lift;
     return p;
+  }
+  // Open ground that stays grass instead of forest: the track/runoff corridor,
+  // the right-hand grassy bank seen from the valley, and the cleared plot in
+  // front of and inside the 2022 Raidillon grandstand (while keeping dense
+  // spruce behind the grandstand roof and behind the left-hand catch fence).
+  const stand=sample(.54);
+  function forestClearing(x,z) {
+    const { t, lat, distance } = nearestStation(x, z);
+    const leftLimit = t > .22 && t < .74 ? 22.5 : 18;
+    const rightLimit = t > .10 && t < .76 ? 16.5 : 15;
+    if (distance < 18 || (lat >= 0 && lat < leftLimit) || (lat < 0 && -lat < rightLimit)) return 1;
+    const bank = lat < 0
+      ? T.MathUtils.smoothstep(-lat, 8, 14) * (1 - T.MathUtils.smoothstep(-lat, 46, 58))
+        * T.MathUtils.smoothstep(t, .36, .42) * (1 - T.MathUtils.smoothstep(t, .66, .73))
+      : 0;
+    const dx=x-stand.p.x,dz=z-stand.p.z,along=dx*stand.v.x+dz*stand.v.z,across=dx*stand.left.x+dz*stand.left.z;
+    // Keep the grandstand footprint and the grassy bank in front of its downhill
+    // corner clear so the raked side profile and trackside boards stay unobstructed.
+    const maxAcross = along < -50 ? 46 : 53;
+    const plot = T.MathUtils.smoothstep(along, -138, -122) * (1 - T.MathUtils.smoothstep(along, 60, 68))
+      * T.MathUtils.smoothstep(across, -4, 4) * (1 - T.MathUtils.smoothstep(across, maxAcross - 5, maxAcross));
+    return Math.max(bank,plot);
   }
   function groundHeight(x,z) {
     let best=Infinity, t=0;
@@ -66,17 +99,34 @@ export function createSpaSurface(survey) {
   function terrainGeometry(spacing=2.5) {
     const nx=Math.ceil((xs.at(-1)-xs[0])/spacing), nz=Math.ceil((zs.at(-1)-zs[0])/spacing);
     const positions=[],uv=[],colors=[],indices=[],color=new T.Color();
+    // Reference photos show closely mown, saturated verges beside the circuit,
+    // rougher grass on the banks, exposed Ardennes ochre-brown shale/earth cuts
+    // beneath the grandstand and right hillside, and a dark needle floor under spruce.
+    const mown=new T.Color('#8ec15b'),rough=new T.Color('#7ca34d'),shale=new T.Color('#8c714d'),floor=new T.Color('#3d492c');
     for(let j=0;j<=nz;j++)for(let i=0;i<=nx;i++) {
       const x=T.MathUtils.lerp(xs[0],xs.at(-1),i/nx),z=T.MathUtils.lerp(zs[0],zs.at(-1),j/nz);
       positions.push(x,groundHeight(x,z),z);uv.push(x/3,z/3);
-      color.set('#9fb886').multiplyScalar(1+.025*Math.sin(z*.07+x*.03));colors.push(...color.toArray());
+      const { index, distance, lat, t } = nearestStation(x, z);
+      const stripe=Math.floor(index*5/7)%2?1.04:.96;
+      color.copy(mown).multiplyScalar(stripe).lerp(rough,T.MathUtils.smoothstep(distance,14,32));
+      const dx=x-stand.p.x,dz=z-stand.p.z,along=dx*stand.v.x+dz*stand.v.z,across=dx*stand.left.x+dz*stand.left.z;
+      const podiumCut=T.MathUtils.smoothstep(along,-58,-48)*(1-T.MathUtils.smoothstep(along,48,58))
+        *T.MathUtils.smoothstep(across,-13,-8)*(1-T.MathUtils.smoothstep(across,1,4));
+      const rightCut=lat<0
+        ? T.MathUtils.smoothstep(-lat,16,23)*(1-T.MathUtils.smoothstep(-lat,42,54))
+          *T.MathUtils.smoothstep(t,.18,.25)*(1-T.MathUtils.smoothstep(t,.40,.48))
+        : 0;
+      const rockMix=Math.max(podiumCut*.88,rightCut*.85*(.65+.35*Math.sin(x*.45+z*.31)));
+      if(rockMix>0)color.lerp(shale,rockMix);
+      color.lerp(floor,T.MathUtils.smoothstep(distance,24,46)*(1-forestClearing(x,z)));
+      color.multiplyScalar(1+.035*Math.sin(z*.07+x*.03)+.025*Math.sin(x*.21-z*.13));colors.push(...color.toArray());
       if(i<nx&&j<nz){const k=j*(nx+1)+i;indices.push(k,k+nx+1,k+1,k+1,k+nx+1,k+nx+2);}
     }
     const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(positions,3));
     g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setAttribute('color',new T.Float32BufferAttribute(colors,3));
     g.setIndex(indices);g.computeVertexNormals();return g;
   }
-  function ribbonGeometry(from,to,{segments=680,lift=0,start=0,end=1,uvScale=3,curb=false}={}) {
+  function ribbonGeometry(from,to,{segments=680,lift=0,start=0,end=1,uvScale=3,curb=false,colorFn=null}={}) {
     const positions=[],uv=[],colors=[],indices=[];
     // Lateral subdivisions let broad paved areas follow the same cross-section
     // as the terrain, instead of stretching one flat triangle across the slope.
@@ -89,7 +139,8 @@ export function createSpaSurface(survey) {
       for(let j=0;j<=cols;j++) {
         const offset=T.MathUtils.lerp(a,b,j/cols),p=point(s,offset,lift-.005);
         positions.push(...p.toArray());uv.push(offset/uvScale,distance/uvScale);
-        const c=new T.Color(curb?(Math.floor(distance/1.2)%2?'#b82b27':'#e0bb21'):'#ffffff');colors.push(...c.toArray());
+        const hex=curb?(Math.floor(distance/1.2)%2?'#b82b27':'#e0bb21'):(colorFn?colorFn(s,offset,distance,j/cols):'#ffffff');
+        const c=new T.Color(hex);colors.push(...c.toArray());
         if(i<segments&&j<cols){const k=i*(cols+1)+j;if(b>a)indices.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);else indices.push(k,k+1,k+cols+1,k+1,k+cols+2,k+cols+1);}
       }
     }
@@ -97,5 +148,5 @@ export function createSpaSurface(survey) {
     g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setAttribute('color',new T.Float32BufferAttribute(colors,3));
     g.setIndex(indices);g.computeVertexNormals();return g;
   }
-  return {curve,sample,point,measuredHeight,groundHeight,terrainGeometry,ribbonGeometry};
+  return {curve,sample,point,measuredHeight,groundHeight,terrainGeometry,ribbonGeometry,forestClearing,nearestStation};
 }

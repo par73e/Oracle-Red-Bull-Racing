@@ -19,10 +19,10 @@ export class UnderbodyFlow {
   const active=state.flow&&this.data&&airflow.stats.ready&&rig&&state.flowDensity>0&&(U>.001||W>.001);
   this.group.visible=Boolean(active);if(!active)return false;
   // Wait for the coarse field to match the current controls before blending.
-  const desired=[U.toFixed(3),W.toFixed(3),state.steer.toFixed(2),state.drsCurrent.toFixed(3),state.flowDensity].join(':');
+  const desired=[U.toFixed(3),W.toFixed(3),state.steer.toFixed(2),state.drsCurrent.toFixed(3),state.flowDensity,(state.effWindAngle??state.windAngle??0).toFixed(1)].join(':');
   if(airflow.stats.inputKey!==desired){this.group.visible=false;return false;}
   const key=`${state.model}:${desired}`;if(key===this.key)return true;this.key=key;
-  const exact=Math.abs(U-50)<1e-6&&Math.abs(W-50)<1e-6&&Math.abs(state.steer)<.001&&Math.abs(state.drsCurrent)<.001;
+  const exact=Math.abs(U-50)<1e-6&&Math.abs(W-50)<1e-6&&Math.abs(state.steer)<.001&&Math.abs(state.drsCurrent)<.001&&Math.abs(state.effWindAngle??state.windAngle??0)<.001;
   const baseScale=U/50,coarse=new T.Vector3(),reference=new T.Vector3();
   const positions=[],colors=[],flight=[],alpha=[],point=new T.Vector3(),last=new T.Vector3(),vel=new T.Vector3(),direction=new T.Vector3(),color=new T.Color();const nearby=airflow.rayBins(rig.model);let count=0;const stops={boundary:0,masked:0,slow:0,collision:0,limit:0},boundaryAxes={x:0,y:0,z:0};
   const nx=Math.max(1,Math.round(21*Math.sqrt(state.flowDensity/100))),ny=Math.max(1,Math.round(4*Math.sqrt(state.flowDensity/100)));
@@ -31,7 +31,7 @@ export class UnderbodyFlow {
    for(let n=0;n<350;n++){
     if(!this.sample(point,vel)){reason=this.sampleStop||'masked';break;}
     if(!exact){const x=-point.z,y=-point.x,z=point.y-.005;
-     if(!airflow.sample(x,y,z,reference,airflow.data.base,true)||!airflow.sample(x,y,z,coarse)){reason='masked';break;}
+     if(!airflow.sample(x,y,z,reference,airflow.data.base,true,airflow.baseSpec||airflow.spec)||!airflow.sample(x,y,z,coarse)){reason='masked';break;}
      vel.multiplyScalar(baseScale).add(coarse).addScaledVector(reference,-baseScale);
     }
     const speed=vel.length();if(speed<Math.max(.005,Math.max(U,W)*.005)){reason='slow';break;}last.copy(point);direction.copy(vel).normalize();point.addScaledVector(direction,.02);

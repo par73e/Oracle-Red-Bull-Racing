@@ -1,0 +1,1064 @@
+{
+  "car": "rb16b",
+  "source": "OpenFOAM Foundation 14 libforces.so (last 100 iterations)",
+  "base": {
+    "drag": 2258.56,
+    "side": 24.8,
+    "downforce": 1252.54,
+    "downforcePtp": 56.25
+  },
+  "yawBase": {
+    "drag": 2349.96,
+    "side": 39.5,
+    "downforce": 1178.0,
+    "downforcePtp": 87.89
+  },
+  "axes": {
+    "air": [
+      {
+        "value": 0,
+        "drag": 62.17,
+        "side": -0.33,
+        "downforce": 70.18,
+        "downforcePtp": 0.74
+      },
+      {
+        "value": 5,
+        "drag": 64.19,
+        "side": -0.14,
+        "downforce": 64.13,
+        "downforcePtp": 4.18
+      },
+      {
+        "value": 10,
+        "drag": 72.47,
+        "side": -0.24,
+        "downforce": 79.96,
+        "downforcePtp": 2.01
+      },
+      {
+        "value": 15,
+        "drag": 86.45,
+        "side": -0.17,
+        "downforce": 88.93,
+        "downforcePtp": 2.1
+      },
+      {
+        "value": 20,
+        "drag": 103.1,
+        "side": -0.13,
+        "downforce": 100.94,
+        "downforcePtp": 1.65
+      },
+      {
+        "value": 25,
+        "drag": 122.0,
+        "side": -0.04,
+        "downforce": 114.72,
+        "downforcePtp": 0.85
+      },
+      {
+        "value": 30,
+        "drag": 143.15,
+        "side": -0.13,
+        "downforce": 129.88,
+        "downforcePtp": 0.5
+      },
+      {
+        "value": 35,
+        "drag": 166.59,
+        "side": -0.11,
+        "downforce": 146.54,
+        "downforcePtp": 1.8
+      },
+      {
+        "value": 40,
+        "drag": 191.82,
+        "side": -0.08,
+        "downforce": 165.14,
+        "downforcePtp": 3.71
+      },
+      {
+        "value": 45,
+        "drag": 218.57,
+        "side": -0.09,
+        "downforce": 182.5,
+        "downforcePtp": 6.03
+      },
+      {
+        "value": 50,
+        "drag": 248.51,
+        "side": -0.1,
+        "downforce": 200.61,
+        "downforcePtp": 8.61
+      },
+      {
+        "value": 55,
+        "drag": 282.03,
+        "side": 0.48,
+        "downforce": 219.11,
+        "downforcePtp": 11.3
+      },
+      {
+        "value": 60,
+        "drag": 319.49,
+        "side": 1.2,
+        "downforce": 239.61,
+        "downforcePtp": 13.91
+      },
+      {
+        "value": 65,
+        "drag": 361.02,
+        "side": 2.14,
+        "downforce": 262.56,
+        "downforcePtp": 16.32
+      },
+      {
+        "value": 70,
+        "drag": 406.64,
+        "side": 3.16,
+        "downforce": 287.72,
+        "downforcePtp": 18.45
+      },
+      {
+        "value": 75,
+        "drag": 456.4,
+        "side": 3.99,
+        "downforce": 315.1,
+        "downforcePtp": 20.89
+      },
+      {
+        "value": 80,
+        "drag": 510.25,
+        "side": 4.75,
+        "downforce": 345.28,
+        "downforcePtp": 23.57
+      },
+      {
+        "value": 85,
+        "drag": 568.09,
+        "side": 5.3,
+        "downforce": 377.5,
+        "downforcePtp": 25.24
+      },
+      {
+        "value": 90,
+        "drag": 629.85,
+        "side": 5.97,
+        "downforce": 411.4,
+        "downforcePtp": 26.17
+      },
+      {
+        "value": 95,
+        "drag": 695.63,
+        "side": 6.57,
+        "downforce": 447.01,
+        "downforcePtp": 26.75
+      },
+      {
+        "value": 100,
+        "drag": 765.02,
+        "side": 7.27,
+        "downforce": 484.0,
+        "downforcePtp": 27.55
+      },
+      {
+        "value": 105,
+        "drag": 838.32,
+        "side": 7.97,
+        "downforce": 522.66,
+        "downforcePtp": 28.82
+      },
+      {
+        "value": 110,
+        "drag": 915.5,
+        "side": 8.77,
+        "downforce": 563.11,
+        "downforcePtp": 30.42
+      },
+      {
+        "value": 115,
+        "drag": 996.35,
+        "side": 9.5,
+        "downforce": 605.35,
+        "downforcePtp": 32.24
+      },
+      {
+        "value": 120,
+        "drag": 1080.95,
+        "side": 10.26,
+        "downforce": 649.63,
+        "downforcePtp": 34.36
+      },
+      {
+        "value": 125,
+        "drag": 1169.37,
+        "side": 11.27,
+        "downforce": 696.02,
+        "downforcePtp": 36.54
+      },
+      {
+        "value": 130,
+        "drag": 1261.45,
+        "side": 12.31,
+        "downforce": 743.81,
+        "downforcePtp": 38.3
+      },
+      {
+        "value": 135,
+        "drag": 1357.28,
+        "side": 13.43,
+        "downforce": 793.3,
+        "downforcePtp": 39.63
+      },
+      {
+        "value": 140,
+        "drag": 1456.51,
+        "side": 14.58,
+        "downforce": 843.56,
+        "downforcePtp": 40.09
+      },
+      {
+        "value": 145,
+        "drag": 1560.14,
+        "side": 16.79,
+        "downforce": 892.11,
+        "downforcePtp": 39.67
+      },
+      {
+        "value": 150,
+        "drag": 1667.1,
+        "side": 18.07,
+        "downforce": 947.06,
+        "downforcePtp": 42.25
+      },
+      {
+        "value": 155,
+        "drag": 1756.81,
+        "side": 9.2,
+        "downforce": 1041.91,
+        "downforcePtp": 3564.49
+      },
+      {
+        "value": 160,
+        "drag": 1892.4,
+        "side": 20.69,
+        "downforce": 1063.9,
+        "downforcePtp": 48.14
+      },
+      {
+        "value": 165,
+        "drag": 2010.58,
+        "side": 22.02,
+        "downforce": 1125.11,
+        "downforcePtp": 50.89
+      },
+      {
+        "value": 170,
+        "drag": 2132.72,
+        "side": 23.49,
+        "downforce": 1187.78,
+        "downforcePtp": 53.8
+      },
+      {
+        "value": 175,
+        "drag": 2258.56,
+        "side": 24.8,
+        "downforce": 1252.54,
+        "downforcePtp": 56.25
+      },
+      {
+        "value": 180,
+        "drag": 2258.56,
+        "side": 24.8,
+        "downforce": 1252.54,
+        "downforcePtp": 56.25
+      },
+      {
+        "value": 185,
+        "drag": 2522.44,
+        "side": 27.78,
+        "downforce": 1386.93,
+        "downforcePtp": 60.64
+      },
+      {
+        "value": 190,
+        "drag": 2658.77,
+        "side": 29.56,
+        "downforce": 1457.02,
+        "downforcePtp": 64.16
+      },
+      {
+        "value": 195,
+        "drag": 2798.76,
+        "side": 30.47,
+        "downforce": 1529.08,
+        "downforcePtp": 68.11
+      },
+      {
+        "value": 200,
+        "drag": 2942.88,
+        "side": 32.22,
+        "downforce": 1602.88,
+        "downforcePtp": 71.46
+      },
+      {
+        "value": 205,
+        "drag": 3091.15,
+        "side": 33.68,
+        "downforce": 1679.25,
+        "downforcePtp": 76.06
+      },
+      {
+        "value": 210,
+        "drag": 3244.86,
+        "side": 35.93,
+        "downforce": 1757.14,
+        "downforcePtp": 79.65
+      },
+      {
+        "value": 215,
+        "drag": 3400.62,
+        "side": 37.72,
+        "downforce": 1836.74,
+        "downforcePtp": 84.2
+      },
+      {
+        "value": 220,
+        "drag": 3557.22,
+        "side": 38.81,
+        "downforce": 1917.79,
+        "downforcePtp": 89.14
+      },
+      {
+        "value": 225,
+        "drag": 3719.24,
+        "side": 40.31,
+        "downforce": 2000.8,
+        "downforcePtp": 93.68
+      },
+      {
+        "value": 230,
+        "drag": 3885.25,
+        "side": 41.8,
+        "downforce": 2086.05,
+        "downforcePtp": 97.83
+      },
+      {
+        "value": 235,
+        "drag": 4055.03,
+        "side": 43.47,
+        "downforce": 2173.72,
+        "downforcePtp": 102.14
+      },
+      {
+        "value": 240,
+        "drag": 4231.74,
+        "side": 46.03,
+        "downforce": 2263.96,
+        "downforcePtp": 107.78
+      },
+      {
+        "value": 245,
+        "drag": 4405.82,
+        "side": 47.29,
+        "downforce": 2354.14,
+        "downforcePtp": 112.25
+      },
+      {
+        "value": 250,
+        "drag": 4586.98,
+        "side": 49.52,
+        "downforce": 2447.05,
+        "downforcePtp": 117.53
+      },
+      {
+        "value": 255,
+        "drag": 4771.62,
+        "side": 51.63,
+        "downforce": 2542.39,
+        "downforcePtp": 122.41
+      },
+      {
+        "value": 260,
+        "drag": 4959.11,
+        "side": 53.51,
+        "downforce": 2637.84,
+        "downforcePtp": 125.25
+      },
+      {
+        "value": 265,
+        "drag": 5151.47,
+        "side": 55.52,
+        "downforce": 2736.16,
+        "downforcePtp": 131.62
+      },
+      {
+        "value": 270,
+        "drag": 5347.13,
+        "side": 57.54,
+        "downforce": 2836.96,
+        "downforcePtp": 137.01
+      },
+      {
+        "value": 275,
+        "drag": 5546.05,
+        "side": 59.86,
+        "downforce": 2937.96,
+        "downforcePtp": 141.32
+      },
+      {
+        "value": 280,
+        "drag": 5750.16,
+        "side": 61.75,
+        "downforce": 3043.23,
+        "downforcePtp": 148.28
+      },
+      {
+        "value": 285,
+        "drag": 5957.12,
+        "side": 64.06,
+        "downforce": 3149.13,
+        "downforcePtp": 154.27
+      },
+      {
+        "value": 290,
+        "drag": 6170.91,
+        "side": 70.01,
+        "downforce": 3260.31,
+        "downforcePtp": 158.58
+      },
+      {
+        "value": 295,
+        "drag": 6385.14,
+        "side": 70.95,
+        "downforce": 3375.91,
+        "downforcePtp": 167.64
+      },
+      {
+        "value": 300,
+        "drag": 6601.82,
+        "side": 73.51,
+        "downforce": 3487.43,
+        "downforcePtp": 173.11
+      },
+      {
+        "value": 305,
+        "drag": 6824.45,
+        "side": 76.47,
+        "downforce": 3601.32,
+        "downforcePtp": 179.95
+      },
+      {
+        "value": 310,
+        "drag": 7049.37,
+        "side": 79.36,
+        "downforce": 3716.6,
+        "downforcePtp": 185.66
+      },
+      {
+        "value": 315,
+        "drag": 7279.47,
+        "side": 82.19,
+        "downforce": 3834.16,
+        "downforcePtp": 191.45
+      },
+      {
+        "value": 320,
+        "drag": 7510.38,
+        "side": 84.13,
+        "downforce": 3954.14,
+        "downforcePtp": 198.62
+      },
+      {
+        "value": 325,
+        "drag": 7749.37,
+        "side": 84.77,
+        "downforce": 4075.55,
+        "downforcePtp": 205.84
+      },
+      {
+        "value": 330,
+        "drag": 7985.25,
+        "side": 89.43,
+        "downforce": 4197.76,
+        "downforcePtp": 211.77
+      },
+      {
+        "value": 335,
+        "drag": 8228.09,
+        "side": 92.15,
+        "downforce": 4322.65,
+        "downforcePtp": 218.7
+      },
+      {
+        "value": 340,
+        "drag": 8471.86,
+        "side": 93.9,
+        "downforce": 4448.35,
+        "downforcePtp": 225.85
+      },
+      {
+        "value": 345,
+        "drag": 8724.04,
+        "side": 97.52,
+        "downforce": 4575.96,
+        "downforcePtp": 230.11
+      },
+      {
+        "value": 350,
+        "drag": 8977.86,
+        "side": 100.5,
+        "downforce": 4705.81,
+        "downforcePtp": 236.8
+      }
+    ],
+    "ground": [
+      {
+        "value": 0,
+        "drag": 2349.77,
+        "side": 25.86,
+        "downforce": 1161.56,
+        "downforcePtp": 68.2
+      },
+      {
+        "value": 5,
+        "drag": 2351.49,
+        "side": 25.96,
+        "downforce": 1166.09,
+        "downforcePtp": 68.11
+      },
+      {
+        "value": 10,
+        "drag": 2352.88,
+        "side": 26.1,
+        "downforce": 1170.73,
+        "downforcePtp": 67.72
+      },
+      {
+        "value": 15,
+        "drag": 2354.86,
+        "side": 26.18,
+        "downforce": 1174.98,
+        "downforcePtp": 67.79
+      },
+      {
+        "value": 20,
+        "drag": 2356.51,
+        "side": 26.25,
+        "downforce": 1179.37,
+        "downforcePtp": 67.63
+      },
+      {
+        "value": 25,
+        "drag": 2358.4,
+        "side": 26.33,
+        "downforce": 1183.68,
+        "downforcePtp": 64.1
+      },
+      {
+        "value": 30,
+        "drag": 2359.65,
+        "side": 26.4,
+        "downforce": 1188.15,
+        "downforcePtp": 67.61
+      },
+      {
+        "value": 35,
+        "drag": 2361.19,
+        "side": 26.48,
+        "downforce": 1192.53,
+        "downforcePtp": 67.2
+      },
+      {
+        "value": 40,
+        "drag": 2362.63,
+        "side": 26.58,
+        "downforce": 1196.81,
+        "downforcePtp": 67.06
+      },
+      {
+        "value": 45,
+        "drag": 2364.1,
+        "side": 26.66,
+        "downforce": 1201.14,
+        "downforcePtp": 66.97
+      },
+      {
+        "value": 50,
+        "drag": 2365.5,
+        "side": 26.72,
+        "downforce": 1205.41,
+        "downforcePtp": 66.49
+      },
+      {
+        "value": 55,
+        "drag": 2366.86,
+        "side": 26.8,
+        "downforce": 1209.65,
+        "downforcePtp": 66.73
+      },
+      {
+        "value": 60,
+        "drag": 2368.19,
+        "side": 26.83,
+        "downforce": 1213.88,
+        "downforcePtp": 66.51
+      },
+      {
+        "value": 65,
+        "drag": 2369.42,
+        "side": 26.88,
+        "downforce": 1218.08,
+        "downforcePtp": 66.14
+      },
+      {
+        "value": 70,
+        "drag": 2370.69,
+        "side": 26.97,
+        "downforce": 1222.32,
+        "downforcePtp": 65.91
+      },
+      {
+        "value": 75,
+        "drag": 2371.97,
+        "side": 27.01,
+        "downforce": 1226.87,
+        "downforcePtp": 66.01
+      },
+      {
+        "value": 80,
+        "drag": 2373.17,
+        "side": 27.09,
+        "downforce": 1231.07,
+        "downforcePtp": 65.74
+      },
+      {
+        "value": 85,
+        "drag": 2374.34,
+        "side": 27.17,
+        "downforce": 1235.32,
+        "downforcePtp": 65.43
+      },
+      {
+        "value": 90,
+        "drag": 2375.45,
+        "side": 27.27,
+        "downforce": 1239.55,
+        "downforcePtp": 65.06
+      },
+      {
+        "value": 95,
+        "drag": 2376.41,
+        "side": 27.34,
+        "downforce": 1243.7,
+        "downforcePtp": 64.44
+      },
+      {
+        "value": 100,
+        "drag": 2377.68,
+        "side": 27.42,
+        "downforce": 1248.08,
+        "downforcePtp": 64.48
+      },
+      {
+        "value": 105,
+        "drag": 2379.17,
+        "side": 27.37,
+        "downforce": 1252.16,
+        "downforcePtp": 64.04
+      },
+      {
+        "value": 110,
+        "drag": 2379.65,
+        "side": 25.85,
+        "downforce": 1253.96,
+        "downforcePtp": 64.41
+      },
+      {
+        "value": 115,
+        "drag": 2382.77,
+        "side": 26.74,
+        "downforce": 1258.61,
+        "downforcePtp": 64.6
+      },
+      {
+        "value": 120,
+        "drag": 2384.46,
+        "side": 26.17,
+        "downforce": 1262.8,
+        "downforcePtp": 64.0
+      },
+      {
+        "value": 125,
+        "drag": 2384.71,
+        "side": 25.12,
+        "downforce": 1266.94,
+        "downforcePtp": 63.4
+      },
+      {
+        "value": 130,
+        "drag": 2385.02,
+        "side": 24.4,
+        "downforce": 1271.73,
+        "downforcePtp": 63.78
+      },
+      {
+        "value": 135,
+        "drag": 2383.79,
+        "side": 25.78,
+        "downforce": 1274.73,
+        "downforcePtp": 61.87
+      },
+      {
+        "value": 140,
+        "drag": 2383.66,
+        "side": 26.16,
+        "downforce": 1279.01,
+        "downforcePtp": 61.36
+      },
+      {
+        "value": 145,
+        "drag": 2384.69,
+        "side": 26.2,
+        "downforce": 1286.26,
+        "downforcePtp": 65.64
+      },
+      {
+        "value": 150,
+        "drag": 2384.36,
+        "side": 26.46,
+        "downforce": 1288.13,
+        "downforcePtp": 59.62
+      },
+      {
+        "value": 155,
+        "drag": 2385.1,
+        "side": 26.55,
+        "downforce": 1292.96,
+        "downforcePtp": 59.05
+      },
+      {
+        "value": 160,
+        "drag": 2385.85,
+        "side": 26.65,
+        "downforce": 1297.81,
+        "downforcePtp": 58.57
+      },
+      {
+        "value": 180,
+        "drag": 2258.56,
+        "side": 24.8,
+        "downforce": 1252.54,
+        "downforcePtp": 56.25
+      },
+      {
+        "value": 360,
+        "drag": 2485.63,
+        "side": 23.98,
+        "downforce": 1600.53,
+        "downforcePtp": 92.55
+      }
+    ],
+    "drs": [
+      {
+        "value": 0,
+        "drag": 2258.56,
+        "side": 24.8,
+        "downforce": 1252.54,
+        "downforcePtp": 56.25
+      },
+      {
+        "value": 100,
+        "drag": 1974.48,
+        "side": 19.95,
+        "downforce": 1034.14,
+        "downforcePtp": 28.11
+      }
+    ],
+    "steer": [
+      {
+        "value": -18,
+        "drag": 2419.82,
+        "side": 107.44,
+        "downforce": 1206.9,
+        "downforcePtp": 76.66
+      },
+      {
+        "value": 0,
+        "drag": 2258.56,
+        "side": 24.8,
+        "downforce": 1252.54,
+        "downforcePtp": 56.25
+      },
+      {
+        "value": 18,
+        "drag": 2441.97,
+        "side": -80.35,
+        "downforce": 1322.3,
+        "downforcePtp": 59.87
+      }
+    ],
+    "yaw": [
+      {
+        "value": -90,
+        "drag": 123.8,
+        "side": 6381.59,
+        "downforce": 725.58,
+        "downforcePtp": 29.02
+      },
+      {
+        "value": -85,
+        "drag": 364.12,
+        "side": 6434.16,
+        "downforce": 730.52,
+        "downforcePtp": 38.33
+      },
+      {
+        "value": -80,
+        "drag": -27156117.59,
+        "side": 529954251.41,
+        "downforce": 82090516.59,
+        "downforcePtp": 3001337589.23
+      },
+      {
+        "value": -75,
+        "drag": 824.36,
+        "side": 6557.86,
+        "downforce": 736.25,
+        "downforcePtp": 34.85
+      },
+      {
+        "value": -70,
+        "drag": 994.1,
+        "side": 6581.69,
+        "downforce": 686.1,
+        "downforcePtp": 59.88
+      },
+      {
+        "value": -65,
+        "drag": 1151.18,
+        "side": 6541.84,
+        "downforce": 577.29,
+        "downforcePtp": 6.16
+      },
+      {
+        "value": -60,
+        "drag": -3702.81,
+        "side": 6125.88,
+        "downforce": 7038.83,
+        "downforcePtp": 6518.09
+      },
+      {
+        "value": -55,
+        "drag": 1546.32,
+        "side": 6145.85,
+        "downforce": 543.97,
+        "downforcePtp": 62.42
+      },
+      {
+        "value": -50,
+        "drag": 1749.08,
+        "side": 5751.1,
+        "downforce": 542.0,
+        "downforcePtp": 80.24
+      },
+      {
+        "value": -45,
+        "drag": 1970.64,
+        "side": 5254.32,
+        "downforce": 478.23,
+        "downforcePtp": 69.82
+      },
+      {
+        "value": -40,
+        "drag": 2170.79,
+        "side": 4676.05,
+        "downforce": 460.83,
+        "downforcePtp": 47.45
+      },
+      {
+        "value": -35,
+        "drag": 2335.59,
+        "side": 4042.94,
+        "downforce": 515.94,
+        "downforcePtp": 25.52
+      },
+      {
+        "value": -30,
+        "drag": 2441.63,
+        "side": 3360.63,
+        "downforce": 595.17,
+        "downforcePtp": 13.49
+      },
+      {
+        "value": -25,
+        "drag": 2530.97,
+        "side": 2680.27,
+        "downforce": 723.84,
+        "downforcePtp": 15.18
+      },
+      {
+        "value": -20,
+        "drag": 2572.81,
+        "side": 2043.31,
+        "downforce": 854.54,
+        "downforcePtp": 44.37
+      },
+      {
+        "value": -15,
+        "drag": 2570.41,
+        "side": 1451.65,
+        "downforce": 1020.65,
+        "downforcePtp": 81.74
+      },
+      {
+        "value": -10,
+        "drag": 2503.86,
+        "side": 916.36,
+        "downforce": 1147.25,
+        "downforcePtp": 88.61
+      },
+      {
+        "value": -5,
+        "drag": 2404.63,
+        "side": 426.01,
+        "downforce": 1142.0,
+        "downforcePtp": 104.13
+      },
+      {
+        "value": 0,
+        "drag": 2349.96,
+        "side": 39.5,
+        "downforce": 1178.0,
+        "downforcePtp": 87.89
+      },
+      {
+        "value": 5,
+        "drag": 2401.65,
+        "side": -390.11,
+        "downforce": 1175.65,
+        "downforcePtp": 88.79
+      },
+      {
+        "value": 10,
+        "drag": 2498.01,
+        "side": -876.29,
+        "downforce": 1170.29,
+        "downforcePtp": 90.43
+      },
+      {
+        "value": 15,
+        "drag": 2561.39,
+        "side": -1424.57,
+        "downforce": 1042.63,
+        "downforcePtp": 79.12
+      },
+      {
+        "value": 20,
+        "drag": 2564.97,
+        "side": -2024.21,
+        "downforce": 885.67,
+        "downforcePtp": 49.06
+      },
+      {
+        "value": 25,
+        "drag": 2524.89,
+        "side": -2653.36,
+        "downforce": 690.24,
+        "downforcePtp": 6.65
+      },
+      {
+        "value": 30,
+        "drag": 2448.96,
+        "side": -3335.63,
+        "downforce": 543.7,
+        "downforcePtp": 13.61
+      },
+      {
+        "value": 35,
+        "drag": 2335.38,
+        "side": -4034.21,
+        "downforce": 444.59,
+        "downforcePtp": 17.26
+      },
+      {
+        "value": 40,
+        "drag": 2161.28,
+        "side": -4681.73,
+        "downforce": 384.36,
+        "downforcePtp": 29.62
+      },
+      {
+        "value": 45,
+        "drag": 1961.48,
+        "side": -5283.29,
+        "downforce": 424.34,
+        "downforcePtp": 57.34
+      },
+      {
+        "value": 50,
+        "drag": 1729.79,
+        "side": -5807.72,
+        "downforce": 501.88,
+        "downforcePtp": 42.66
+      },
+      {
+        "value": 55,
+        "drag": 1512.89,
+        "side": -6211.17,
+        "downforce": 537.25,
+        "downforcePtp": 35.07
+      },
+      {
+        "value": 60,
+        "drag": 1297.58,
+        "side": -6464.87,
+        "downforce": 598.54,
+        "downforcePtp": 25.17
+      },
+      {
+        "value": 65,
+        "drag": 1093.68,
+        "side": -6574.72,
+        "downforce": 693.09,
+        "downforcePtp": 11.72
+      },
+      {
+        "value": 70,
+        "drag": 879.04,
+        "side": -7100.78,
+        "downforce": 550.19,
+        "downforcePtp": 46.07
+      },
+      {
+        "value": 75,
+        "drag": 785.97,
+        "side": -6582.64,
+        "downforce": 802.47,
+        "downforcePtp": 29.42
+      },
+      {
+        "value": 80,
+        "drag": 575.34,
+        "side": -6531.17,
+        "downforce": 768.09,
+        "downforcePtp": 24.55
+      },
+      {
+        "value": 85,
+        "drag": 352.05,
+        "side": -6458.32,
+        "downforce": 700.4,
+        "downforcePtp": 37.41
+      },
+      {
+        "value": 90,
+        "drag": 110.82,
+        "side": -6397.03,
+        "downforce": 697.92,
+        "downforcePtp": 38.61
+      }
+    ]
+  }
+}

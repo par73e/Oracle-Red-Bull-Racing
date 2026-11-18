@@ -1,0 +1,137 @@
+{
+  "car": "rb16b",
+  "pose": "neutral",
+  "steer": 0,
+  "drs": 0,
+  "wheels": {
+    "FL": {
+      "center": [
+        -1.5547973875661278,
+        -0.8152328114995018,
+        0.32705214142799377
+      ],
+      "axis": [
+        3.04092607755603e-05,
+        -0.9974909035963957,
+        0.0707947478117049
+      ],
+      "radius": 0.33209948503645137
+    },
+    "FR": {
+      "center": [
+        -1.554797663131525,
+        0.8152337895803855,
+        0.32705190300941467
+      ],
+      "axis": [
+        1.1926067463623237e-07,
+        -0.9974909114582557,
+        -0.07079464356972301
+      ],
+      "radius": 0.3320900193939451
+    },
+    "RL": {
+      "center": [
+        1.9879180192947388,
+        -0.7863106727600098,
+        0.32668843388557434
+      ],
+      "axis": [
+        0,
+        -1,
+        0
+      ],
+      "radius": 0.3286973695503548
+    },
+    "RR": {
+      "center": [
+        1.9879176616668701,
+        0.7872869372367859,
+        0.3266885828971863
+      ],
+      "axis": [
+        0,
+        -1,
+        0
+      ],
+      "radius": 0.328757657087408
+    }
+  },
+  "sourceGlbSha256": "cc90e680e5abfd86d1cfda3e8a1a48212698eab1f749cd203bd0371cd25ed9d8",
+  "modelRevision": "2026-11-10-tail-detail1",
+  "proxySha256": {
+    "body": "c022920f24f7c71327abebd51a18c2003e26c85b78052fa3843d7dcd99e1b2e0",
+    "FL": "0d9e53395e2cfa8bcac29e3e0cbdab4f69acb42d462eabcd4e34a96a3c838e6b",
+    "FR": "5e910bb7fcb52ab7fe6eb14e68970c1b7a3b6d351b0e484307427eff0e163ca3",
+    "RL": "5948141628b8f6cac0cd5d6586184a8c1cb6d051bb3f843878b59eacf3007ef2",
+    "RR": "18493d634f7e440b40026ad542d6c985df90beebfb108bdef353d460972b26a1"
+  },
+  "anchor": "yaw-p035",
+  "family": "yaw",
+  "parameters": {
+    "airKmh": 180,
+    "groundKmh": 180,
+    "drsPercent": 0,
+    "steerDeg": 0,
+    "windAngleDeg": 35
+  },
+  "speedMps": 50.0,
+  "groundSpeedMps": 50.0,
+  "wheelSpeedMps": 50.0,
+  "windAngleDeg": 35,
+  "inflowVector": [
+    40.95760221444959,
+    -28.678821817552304,
+    0.0
+  ],
+  "noSlipRolling": true,
+  "grid": {
+    "shape": [
+      78,
+      60,
+      26
+    ],
+    "min": [
+      -5.5,
+      -4.5,
+      0.025
+    ],
+    "max": [
+      6.5,
+      4.5,
+      1.75
+    ]
+  },
+  "file": "/flow/rb16b/yaw/yaw-p035.bin",
+  "scale": 0.0018542733384576036,
+  "sampledPoints": 120524,
+  "unlocatedOrSolidGridPoints": 1156,
+  "excludedNumericalSamples": 0,
+  "rawFieldMax": 64.3595099320884,
+  "exclusionThresholdMps": 150.0,
+  "sampling": "cellPoint; isolated >3x max(inlet,wheel) samples excluded, never clipped",
+  "fieldMax": 64.35951232910156,
+  "cells": 269910,
+  "lastIteration": 650.0,
+  "residuals": {
+    "Ux": 5.783196e-06,
+    "Uy": 6.9696812e-06,
+    "Uz": 1.5375316e-05,
+    "p": 0.0010590417,
+    "omega": 4.226633e-07,
+    "k": 5.1856545e-06
+  },
+  "rawForcesN": {
+    "samples": 100,
+    "drag": 2335.3832159090002,
+    "side": -4034.2116190039997,
+    "downforce": 444.5929474882,
+    "dragPtp": 31.961355999999796,
+    "sidePtp": 59.66050150000001,
+    "downforcePtp": 17.258733430000007
+  },
+  "meshOk": true,
+  "solver": "OpenFOAM Foundation 14 kOmegaSST RANS (freestream yaw)",
+  "quality": "coarse voxel proxy; exploratory steady crosswind",
+  "sha256": "746b617489771546b58bfac6836c556f9f66060e7456b5c7d7926a9a4d704a20"
+}
