@@ -59,7 +59,7 @@
               <output id="hud-downforce-value">6355 N (0%)</output>
             </div>
             <div class="force-grid">
-              <span>合成相对来流</span><strong id="hud-rel-airflow">180 km/h · 0.0°</strong>
+              <span>合成相对来流</span><strong id="hud-rel-airflow">10 km/h · 0.0°</strong>
               <span>下压力 (Fz)</span><strong id="hud-downforce-pct">6355 N · 0%</strong>
               <span>空气阻力 (Fx)</span><strong id="hud-drag-value">2418 N · 0%</strong>
               <span>侧向气动力 (Fy)</span><strong id="hud-side-value">0 N</strong>
@@ -117,9 +117,9 @@
       <section class="panel" id="panel-conditions" aria-labelledby="panel-conditions-title" hidden>
         <div class="panel-head"><h2 id="panel-conditions-title">工况</h2><button class="panel-close icon-button" data-close-panel aria-label="收起工况面板"><svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="m5.5 5.5 9 9m0-9-9 9"/></svg></button></div>
         <div class="control-group">
-          <div class="label-row"><label for="speed">绝对风速（对地）</label><output id="speed-value" for="speed">5.0 m/s</output></div>
-          <input id="speed" type="range" min="0" max="15" step="0.5" value="5" aria-label="相对于地面的自然风速" />
-          <div class="range-labels"><span>0</span><span id="wind-speed">合成来流 198 km/h (55.0 m/s)</span><span>15 m/s</span></div>
+          <div class="label-row"><label for="speed">绝对风速（对地）</label><output id="speed-value" for="speed">0.0 m/s</output></div>
+          <input id="speed" type="range" min="0" max="15" step="0.5" value="0" aria-label="相对于地面的自然风速" />
+          <div class="range-labels"><span>0</span><span id="wind-speed">合成来流 198 km/h (50.0 m/s)</span><span>15 m/s</span></div>
         </div>
         <div class="control-group">
           <div class="label-row"><label for="wind-angle">来流风向</label><span class="label-tail"><output id="wind-angle-value" for="wind-angle">正迎风 0°</output><button id="center-wind" type="button" class="chip">正迎风</button></span></div>
@@ -127,9 +127,9 @@
           <div class="range-labels"><span>左侧 -90°</span><span id="wind-angle-side">正迎风</span><span>右侧 +90°</span></div>
         </div>
         <div class="control-group">
-          <div class="label-row"><label for="ground-speed">对地车速</label><output id="ground-speed-value" for="ground-speed">180 km/h</output></div>
-          <input id="ground-speed" type="range" min="0" max="350" step="5" value="180" aria-label="对地车速，车轮与地面同步运动" />
-          <div class="range-labels"><span>0</span><span>纯滚动 · 前轮 <output id="wheel-value">0 rpm</output></span><span>350</span></div>
+          <div class="label-row"><label for="ground-speed">对地车速</label><output id="ground-speed-value" for="ground-speed">10 km/h</output></div>
+          <input id="ground-speed" type="range" min="0" max="350" step="5" value="10" aria-label="对地车速，车轮与地面同步运动" />
+          <div class="range-labels"><span>0</span><span>纯滚动 · 前轮 <output id="wheel-value">80 rpm</output></span><span>350</span></div>
         </div>
         <div class="control-group">
           <div class="label-row"><label for="drs">DRS 尾翼</label><span class="label-tail"><output id="drs-value" for="drs">0%</output><button id="drs-toggle" class="chip" aria-pressed="false">打开</button></span></div>
@@ -170,28 +170,28 @@
     </aside>
 
     <footer class="hud chrome">
-      <div class="telemetry" role="group" aria-label="当前工况，悬停各项独立调节">
+      <div class="telemetry" role="group" aria-label="当前工况，点击快捷调节，悬停或按方向键 ↓ 精调">
         <div class="telemetry-item" data-telemetry="speed">
-          <button type="button" class="readout" aria-expanded="false">
+          <button type="button" class="readout" aria-expanded="false" aria-controls="adjust-speed" title="点击 +3 m/s，达到上限后回到 0">
             <span class="readout-label">风速</span>
-            <span class="readout-value" id="t-speed">5.0<small>m/s</small></span>
+            <span class="readout-value" id="t-speed">0.0<small>m/s</small></span>
           </button>
-          <div class="telemetry-popover" role="group" aria-label="对地自然风速调节">
+          <div id="adjust-speed" class="telemetry-popover" role="group" aria-label="对地自然风速调节">
             <div class="popover-head">
               <label for="hud-speed">对地风速</label>
-              <output id="hud-speed-value" for="hud-speed">5.0 m/s</output>
+              <output id="hud-speed-value" for="hud-speed">0.0 m/s</output>
             </div>
-            <input id="hud-speed" type="range" min="0" max="15" step="0.5" value="5" aria-label="相对于地面的自然风速" />
-            <div class="range-labels"><span>0</span><span id="hud-wind-speed">合成 198 km/h</span><span>15 m/s</span></div>
+            <input id="hud-speed" type="range" min="0" max="15" step="0.5" value="0" aria-label="相对于地面的自然风速" />
+            <div class="range-labels"><span>0</span><span id="hud-wind-speed">合成 10 km/h</span><span>15 m/s</span></div>
           </div>
         </div>
 
         <div class="telemetry-item" data-telemetry="wind-angle">
-          <button type="button" class="readout" aria-expanded="false">
+          <button type="button" class="readout" aria-expanded="false" aria-controls="adjust-wind-angle" title="点击 +15°，到 +90° 后回到 −90°">
             <span class="readout-label">风向</span>
             <span class="readout-value" id="t-wind-angle">0<small>°</small></span>
           </button>
-          <div class="telemetry-popover" role="group" aria-label="来流风向调节">
+          <div id="adjust-wind-angle" class="telemetry-popover" role="group" aria-label="来流风向调节">
             <div class="popover-head">
               <label for="hud-wind-angle">来流风向</label>
               <span class="label-tail"><output id="hud-wind-angle-value" for="hud-wind-angle">正迎风 0°</output><button id="hud-center-wind" type="button" class="chip">回正</button></span>
@@ -202,11 +202,11 @@
         </div>
 
         <div class="telemetry-item" data-telemetry="steer">
-          <button type="button" class="readout" aria-expanded="false">
+          <button type="button" class="readout" aria-expanded="false" aria-controls="adjust-steer" title="点击 +6°，到 +18° 后回到 −18°">
             <span class="readout-label">转向</span>
             <span class="readout-value" id="t-steer">0<small>°</small></span>
           </button>
-          <div class="telemetry-popover" role="group" aria-label="前轮转向调节">
+          <div id="adjust-steer" class="telemetry-popover" role="group" aria-label="前轮转向调节">
             <div class="popover-head">
               <label for="hud-steer">前轮转向</label>
               <span class="label-tail"><output id="hud-steer-value" for="hud-steer">0°</output><button id="hud-center-steering" type="button" class="chip">回正</button></span>
@@ -217,41 +217,26 @@
         </div>
 
         <div class="telemetry-item" data-telemetry="ground-speed">
-          <button type="button" class="readout" aria-expanded="false">
-            <span class="readout-label">对地速度</span>
-            <span class="readout-value" id="t-ground">180<small>km/h</small></span>
+          <button type="button" class="readout" aria-expanded="false" aria-controls="adjust-ground-speed" title="点击 +20 km/h，达到上限后回到 0">
+            <span class="readout-label">对地速度 / 前轮</span>
+            <span class="readout-pair">
+              <span class="readout-value" id="t-ground">10<small>km/h</small></span>
+              <span class="readout-value" id="t-rpm">80<small>rpm</small></span>
+            </span>
           </button>
-          <div class="telemetry-popover" role="group" aria-label="对地车速调节">
-            <div class="popover-head">
-              <label for="hud-ground-speed">对地车速</label>
-              <output id="hud-ground-speed-value" for="hud-ground-speed">180 km/h</output>
-            </div>
-            <input id="hud-ground-speed" type="range" min="0" max="350" step="5" value="180" aria-label="对地车速，车轮与地面同步运动" />
-            <div class="range-labels"><span>0</span><span id="hud-wheel-value">纯滚动 · 1294 rpm</span><span>350</span></div>
-          </div>
-        </div>
-
-        <div class="telemetry-item readout-rpm" data-telemetry="rpm">
-          <button type="button" class="readout" aria-expanded="false">
-            <span class="readout-label">轮速</span>
-            <span class="readout-value" id="t-rpm">0<small>rpm</small></span>
-          </button>
-          <div class="telemetry-popover" role="group" aria-label="车轮转速调节">
-            <div class="popover-head">
-              <label for="hud-rpm">车轮转速</label>
-              <output id="hud-rpm-value" for="hud-rpm">0 rpm</output>
-            </div>
-            <input id="hud-rpm" type="range" min="0" max="350" step="5" value="180" aria-label="车轮转速，与对地车速纯滚动同步" />
-            <div class="range-labels"><span>0</span><span id="hud-rpm-ground">对地 180 km/h</span><span id="hud-rpm-max">2516 rpm</span></div>
+          <div id="adjust-ground-speed" class="telemetry-popover" role="group" aria-label="对地车速与前轮转速调节">
+            <div class="popover-head"><label for="hud-ground-speed">对地车速与前轮转速</label></div>
+            <input id="hud-ground-speed" type="range" min="0" max="350" step="5" value="10" aria-label="对地车速，车轮与地面同步运动" />
+            <div class="range-labels"><span>对地 <output id="hud-ground-speed-value" for="hud-ground-speed">10 km/h</output></span><span>前轮 <output id="hud-wheel-value" for="hud-ground-speed">80 rpm</output></span></div>
           </div>
         </div>
 
         <div class="telemetry-item" data-telemetry="drs">
-          <button type="button" class="readout" aria-expanded="false">
+          <button type="button" class="readout" aria-expanded="false" aria-controls="adjust-drs" title="点击切换 DRS 全开 / 全关">
             <span class="readout-label">DRS</span>
             <span class="readout-value" id="t-drs">0<small>%</small></span>
           </button>
-          <div class="telemetry-popover" role="group" aria-label="DRS尾翼调节">
+          <div id="adjust-drs" class="telemetry-popover" role="group" aria-label="DRS尾翼调节">
             <div class="popover-head">
               <label for="hud-drs">DRS 尾翼</label>
               <span class="label-tail"><output id="hud-drs-value" for="hud-drs">0%</output><button id="hud-drs-toggle" type="button" class="chip" aria-pressed="false">打开</button></span>

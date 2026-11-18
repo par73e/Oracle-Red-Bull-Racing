@@ -19,6 +19,7 @@ THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const $ = id => document.getElementById(id);
 const viewport = $('viewport');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const DEFAULT_GROUND_SPEED = 10;
 const DEFAULT_CONFIG = Object.freeze({
   model: 'rb16b',
   environment: 'wind',
@@ -27,14 +28,14 @@ const DEFAULT_CONFIG = Object.freeze({
   drs: 0,
   drsCurrent: 0,
   steer: 0,
-  ambientWindMps: 5,
-  speed: 198,
+  ambientWindMps: 0,
+  speed: DEFAULT_GROUND_SPEED,
   windAngle: 0,
   effWindAngle: 0,
   spin: 0,
-  groundSpeed: 180,
+  groundSpeed: DEFAULT_GROUND_SPEED,
   wheelRpm: 0,
-  wheelSpeedMps: 50,
+  wheelSpeedMps: DEFAULT_GROUND_SPEED / 3.6,
   flow: true,
   flowDensity: 100,
   autoHide: false,
@@ -859,9 +860,18 @@ function updatePopoverPosition(item) {
   pop.style.setProperty('--popover-lift', `${lift}px`);
 }
 
+const telemetrySteps = {
+  speed: { key: 'ambientWindMps', step: 3 },
+  'wind-angle': { key: 'windAngle', step: 15 },
+  steer: { key: 'steer', step: 6 },
+  'ground-speed': { key: 'groundSpeed', step: 20 },
+};
+
 document.querySelectorAll('.telemetry-item').forEach(item => {
   const btn = item.querySelector('.readout');
   const range = item.querySelector('input[type="range"]');
+  const shortcut = telemetrySteps[item.dataset.telemetry];
+  const drsShortcut = item.dataset.telemetry === 'drs';
   const openItem = () => {
     document.querySelectorAll('.telemetry-item.is-open').forEach(other => {
       if (other !== item && !other.classList.contains('is-dragging')) {
@@ -876,19 +886,41 @@ document.querySelectorAll('.telemetry-item').forEach(item => {
   const closeItem = () => {
     item.classList.remove('is-open', 'is-dragging');
     btn?.setAttribute('aria-expanded', 'false');
-    if (item.contains(document.activeElement)) document.activeElement.blur();
   };
-  item.addEventListener('pointerenter', () => {
-    openItem();
+  item.addEventListener('pointerenter', e => {
+    if (e.pointerType !== 'touch') openItem();
   });
-  item.addEventListener('pointerleave', () => {
-    if (!item.classList.contains('is-dragging')) closeItem();
+  item.addEventListener('pointerleave', e => {
+    if (e.pointerType !== 'touch' && !item.classList.contains('is-dragging') && !item.querySelector(':focus-visible')) closeItem();
+  });
+  item.addEventListener('focusout', e => {
+    if (!item.contains(e.relatedTarget) && !item.matches(':hover') && !item.classList.contains('is-dragging')) closeItem();
+  });
+  item.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && item.classList.contains('is-open')) {
+      e.stopPropagation();
+      btn?.focus();
+      closeItem();
+    } else if (e.key === 'ArrowDown' && e.target === btn && range) {
+      e.preventDefault();
+      openItem();
+      range.focus();
+    }
   });
   btn?.addEventListener('click', e => {
     e.stopPropagation();
     if (e.pointerType === 'touch') {
       if (item.classList.contains('is-open')) closeItem();
       else openItem();
+      return;
+    }
+    if (shortcut) {
+      const { key, step } = shortcut;
+      const max = Number(range.max);
+      state[key] = state[key] >= max ? Number(range.min) : Math.min(max, state[key] + step);
+      showState();
+    } else if (drsShortcut) {
+      toggleDrs();
     } else {
       openItem();
     }
@@ -1029,7 +1061,7 @@ function showState() {
   const windDeg = Math.round(state.windAngle || 0);
   const windShort = `${windDeg > 0 ? '+' : ''}${windDeg}`;
   const effYawText = formatWindSide(windDeg);
-  const radius = rig?.config.wheels.FL.radius || .369;
+  const radius = rig?.config.wheels.FL.radius ?? configs?.[state.model]?.wheels.FL.radius ?? (state.model === 'rb16b' ? .3321 : .369);
   state.wheelSpeedMps = state.groundSpeed / 3.6;
   state.wheelRpm = state.wheelSpeedMps / radius / (Math.PI * 2) * 60;
   const rpmRounded = Math.round(state.wheelRpm);
@@ -1062,25 +1094,20 @@ function showState() {
     drsToggle.setAttribute('aria-pressed', String(state.drs > .5));
   }
 
-  const maxRpm = Math.round((350 / 3.6) / radius / (Math.PI * 2) * 60);
   if ($('hud-speed')) $('hud-speed').value = windMps;
   if ($('hud-wind-angle')) $('hud-wind-angle').value = windDeg;
   if ($('hud-ground-speed')) $('hud-ground-speed').value = state.groundSpeed;
   if ($('hud-drs')) $('hud-drs').value = drsPct;
   if ($('hud-steer')) $('hud-steer').value = state.steer;
-  if ($('hud-rpm')) $('hud-rpm').value = state.groundSpeed;
 
   if ($('hud-speed-value')) $('hud-speed-value').textContent = `${windMpsText} m/s`;
   if ($('hud-wind-speed')) $('hud-wind-speed').textContent = `合成 ${Math.round(rel.relSpeedKmh)} km/h`;
   if ($('hud-wind-angle-value')) $('hud-wind-angle-value').textContent = formatWindLabel(windDeg);
   if ($('hud-wind-side')) $('hud-wind-side').textContent = effYawText;
   if ($('hud-ground-speed-value')) $('hud-ground-speed-value').textContent = `${state.groundSpeed} km/h`;
-  if ($('hud-wheel-value')) $('hud-wheel-value').textContent = `纯滚动 · ${rpmRounded} rpm`;
+  if ($('hud-wheel-value')) $('hud-wheel-value').textContent = `${rpmRounded} rpm`;
   if ($('hud-drs-value')) $('hud-drs-value').textContent = `${drsPct}%`;
   if ($('hud-steer-value')) $('hud-steer-value').textContent = `${steerText}°`;
-  if ($('hud-rpm-value')) $('hud-rpm-value').textContent = `${rpmRounded} rpm`;
-  if ($('hud-rpm-ground')) $('hud-rpm-ground').textContent = `对地 ${state.groundSpeed} km/h`;
-  if ($('hud-rpm-max')) $('hud-rpm-max').textContent = `${maxRpm} rpm`;
 
   const hudDrsToggle = $('hud-drs-toggle');
   if (hudDrsToggle) {
@@ -1232,17 +1259,20 @@ $('steer').addEventListener('input', e => { state.steer = Number(e.target.value)
 $('speed').addEventListener('input', e => { state.ambientWindMps = Number(e.target.value); showState(); });
 $('wind-angle')?.addEventListener('input', e => { state.windAngle = Number(e.target.value); showState(); });
 $('center-wind')?.addEventListener('click', () => { state.windAngle = 0; showState(); });
-$('drs-toggle').addEventListener('click', () => { state.drs = state.drs > .5 ? 0 : 1; showState(); });
+function toggleDrs() {
+  state.drs = state.drs > .5 ? 0 : 1;
+  showState();
+}
+$('drs-toggle').addEventListener('click', toggleDrs);
 $('center-steering').addEventListener('click', () => { state.steer = 0; showState(); });
 $('hud-speed')?.addEventListener('input', e => { state.ambientWindMps = Number(e.target.value); showState(); });
 $('hud-wind-angle')?.addEventListener('input', e => { state.windAngle = Number(e.target.value); showState(); });
 $('hud-center-wind')?.addEventListener('click', () => { state.windAngle = 0; showState(); });
 $('hud-ground-speed')?.addEventListener('input', e => { state.groundSpeed = Number(e.target.value); showState(); });
 $('hud-drs')?.addEventListener('input', e => { state.drs = Number(e.target.value) / 100; showState(); });
-$('hud-drs-toggle')?.addEventListener('click', () => { state.drs = state.drs > .5 ? 0 : 1; showState(); });
+$('hud-drs-toggle')?.addEventListener('click', toggleDrs);
 $('hud-steer')?.addEventListener('input', e => { state.steer = Number(e.target.value); showState(); });
 $('hud-center-steering')?.addEventListener('click', () => { state.steer = 0; showState(); });
-$('hud-rpm')?.addEventListener('input', e => { state.groundSpeed = Number(e.target.value); showState(); });
 $('reset').addEventListener('click', () => {
   applyOperatingDefaults();
   showState();

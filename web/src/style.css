@@ -315,7 +315,7 @@ canvas {
 .downforce-dock .telemetry-popover {
   top: calc(100% + var(--popover-lift));
   bottom: auto;
-  transform: translate(calc(-50% + var(--popover-shift)), -8px);
+  transform: translate(-50%, -8px);
 }
 
 .downforce-dock .telemetry-popover::after {
@@ -324,7 +324,7 @@ canvas {
 }
 
 .downforce-dock .telemetry-item.is-open > .telemetry-popover {
-  transform: translate(calc(-50% + var(--popover-shift)), 0);
+  transform: translate(-50%, 0);
 }
 
 .interface-controls {
@@ -796,10 +796,17 @@ input[type="range"]::-moz-range-thumb {
   font-variant-numeric: tabular-nums;
 }
 
-[data-telemetry="speed"] > .readout,
-[data-telemetry="ground-speed"] > .readout,
-[data-telemetry="rpm"] > .readout {
+[data-telemetry="speed"] > .readout {
   width: 68px;
+}
+
+[data-telemetry="ground-speed"] > .readout {
+  width: 120px;
+}
+
+.readout-pair {
+  display: flex;
+  gap: 6px;
 }
 
 [data-telemetry="wind-angle"] > .readout,
@@ -824,7 +831,7 @@ input[type="range"]::-moz-range-thumb {
   --popover-shift: 0px;
   --popover-lift: 10px;
   position: absolute;
-  left: 50%;
+  left: calc(50% + var(--popover-shift));
   bottom: calc(100% + var(--popover-lift));
   width: 224px;
   padding: 12px 14px;
@@ -836,7 +843,7 @@ input[type="range"]::-moz-range-thumb {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translate(calc(-50% + var(--popover-shift)), 8px);
+  transform: translate(-50%, 8px);
   transition: opacity 0.16s cubic-bezier(0.22, 1, 0.36, 1), transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.16s;
 }
 
@@ -853,7 +860,7 @@ input[type="range"]::-moz-range-thumb {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transform: translate(calc(-50% + var(--popover-shift)), 0);
+  transform: translate(-50%, 0);
 }
 
 .popover-head {
@@ -1385,8 +1392,7 @@ dialog p:last-child {
     flex-wrap: wrap;
     gap: 4px;
   }
-  .camera-hint,
-  .readout-rpm {
+  .camera-hint {
     display: none;
   }
   .view-switch {
