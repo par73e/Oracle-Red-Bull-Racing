@@ -146,9 +146,9 @@ canvas {
   text-decoration: none;
   color: var(--text);
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 5px;
-  padding: 0 4px 0 0;
+  padding: 0 2px 0 0;
   white-space: nowrap;
   flex: none;
   background: none;
@@ -156,11 +156,17 @@ canvas {
   cursor: pointer;
 }
 
-.wordmark span {
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  color: var(--text-secondary);
+.brand-mark {
+  display: block;
+  height: 22px;
+  width: auto;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+  transition: transform 0.16s ease, filter 0.16s ease;
+}
+
+.wordmark:hover .brand-mark {
+  transform: scale(1.05);
+  filter: drop-shadow(0 1px 4px rgba(255, 204, 0, 0.35));
 }
 
 .model-switch {
@@ -1074,6 +1080,63 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* Loading & Error Overlays */
+.first-load-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 48%, rgba(9, 12, 17, 0.56), rgba(9, 12, 17, 0.8) 72%);
+  backdrop-filter: blur(2px);
+  pointer-events: none;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.first-load-veil.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.first-load-notice {
+  max-width: min(320px, calc(100vw - 48px));
+  padding: 16px 26px 18px;
+  background: rgba(13, 17, 23, 0.88);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+  text-align: center;
+}
+
+.first-load-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.first-load-kicker i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+
+.first-load-title {
+  margin: 10px 0 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+
 #loading {
   position: absolute;
   left: 50%;

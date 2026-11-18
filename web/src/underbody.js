@@ -1,11 +1,12 @@
 import * as T from 'three';
 import { TraceScratch } from './airflow.js';
+import { cachedArrayBuffer } from './asset-cache.js';
 
 // The fine baseline plus coarse-field deltas is an exploratory surrogate, not a new solve.
 export class UnderbodyFlow {
  constructor(parent, material){this.material=material;this.group=new T.Group();this.group.name='UNDERBODY_BASELINE';parent.add(this.group);this.geometry=new T.BufferGeometry();this.lines=new T.LineSegments(this.geometry,material);this.lines.frustumCulled=false;this.group.add(this.lines);this.serial=0;this.data=null;this.key='';this.count=0;this.status='loading';this._scratch=new TraceScratch(65536);}
  async load(car){const serial=++this.serial;this.data=null;this.key='';this.status='loading';this.group.visible=false;
-  try{const [m,b]=await Promise.all([fetch(`/flow/${car}/underbody.json`),fetch(`/flow/${car}/underbody.bin`)]);if(!m.ok||!b.ok)throw Error('missing');const meta=await m.json(),data=new Int16Array(await b.arrayBuffer());if(serial!==this.serial)return;if(data.length!==meta.shape.reduce((a,v)=>a*v,1)*4)throw Error('shape');this.meta=meta;this.data=data;this.status='ready';}
+  try{const cacheMode=import.meta.env.DEV?'no-store':'default';const [m,buf]=await Promise.all([fetch(`/flow/${car}/underbody.json`,{cache:cacheMode}),cachedArrayBuffer(`/flow/${car}/underbody.bin`)]);if(!m.ok)throw Error('missing');const meta=await m.json(),data=new Int16Array(buf);if(serial!==this.serial)return;if(data.length!==meta.shape.reduce((a,v)=>a*v,1)*4)throw Error('shape');this.meta=meta;this.data=data;this.status='ready';}
   catch{if(serial===this.serial){this.data=null;this.status='unavailable';}}
  }
  sample(p,out){const {shape,min,max,scale}=this.meta;const sx=shape[0],sy=shape[1],sz=shape[2];

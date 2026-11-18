@@ -1,10 +1,11 @@
 // Full slider-axis CFD, loaded lazily. Simultaneous changes are an additive
 // surrogate around the 180 km/h, neutral, DRS-closed baseline.
+import { cachedArrayBuffer } from './asset-cache.js';
 export class SweepFields {
  constructor(onChange){this.onChange=onChange;this.serial=0;this.revision=0;this.cache=new Map();this.pending=new Map();this.lastRefresh=0;this.manifest=null;}
  async load(car,baseline){this.serial++;this.revision++;this.car=car;this.cache.clear();this.pending.clear();this.manifest=null;this.cache.set('base',baseline);await this.refresh();}
  async refresh(){if(!this.car||this.refreshing)return;this.refreshing=true;const serial=this.serial;this.lastRefresh=performance.now();
-  try{const [r,q]=await Promise.all([fetch(`/flow/${this.car}/sweep/manifest.json`,{cache:'no-store'}),fetch('/flow/sweep-status.json',{cache:'no-store'})]);if(!r.ok)return;const m=await r.json(),queue=q.ok?await q.json():null;if(serial!==this.serial)return;const changed=m.completedUnique!==this.manifest?.completedUnique||queue?.state!==this.queue?.state;this.queue=queue;this.manifest=m;this.records=new Map(m.fields.map(a=>[a.key,a]));if(changed){this.revision++;this.onChange();}}catch{}finally{this.refreshing=false;}
+  try{const cacheMode=import.meta.env.DEV?'no-store':'default';const [r,q]=await Promise.all([fetch(`/flow/${this.car}/sweep/manifest.json`,{cache:cacheMode}),fetch('/flow/sweep-status.json',{cache:cacheMode})]);if(!r.ok)return;const m=await r.json(),queue=q.ok?await q.json():null;if(serial!==this.serial)return;const changed=m.completedUnique!==this.manifest?.completedUnique||queue?.state!==this.queue?.state;this.queue=queue;this.manifest=m;this.records=new Map(m.fields.map(a=>[a.key,a]));if(changed){this.revision++;this.onChange();}}catch{}finally{this.refreshing=false;}
  }
  selection(u,g,steer,drs){
   if(!this.manifest?.complete&&performance.now()-this.lastRefresh>10000)this.refresh();
@@ -24,6 +25,6 @@ export class SweepFields {
   return {weights,data,exact:Object.keys(weights).length===1&&Math.abs(Object.values(weights)[0]-1)<1e-7};
  }
  request(key){if(this.pending.has(key))return;const a=this.records.get(key),serial=this.serial;
-  const p=(async()=>{try{const r=await fetch(a.file);if(!r.ok)throw Error('missing');const b=await r.arrayBuffer();if(b.byteLength!==a.grid.shape.reduce((n,v)=>n*v,1)*6)throw Error('size');const raw=new Int16Array(b),field=new Float32Array(raw.length),s=a.scale;for(let i=0;i<raw.length;i++)field[i]=raw[i]*s;if(serial===this.serial){this.cache.set(key,field);this.revision++;this.onChange();}}catch{this.lastRefresh=0;}finally{if(serial===this.serial)this.pending.delete(key);}})();this.pending.set(key,p);
+  const p=(async()=>{try{const b=await cachedArrayBuffer(a.file);if(b.byteLength!==a.grid.shape.reduce((n,v)=>n*v,1)*6)throw Error('size');const raw=new Int16Array(b),field=new Float32Array(raw.length),s=a.scale;for(let i=0;i<raw.length;i++)field[i]=raw[i]*s;if(serial===this.serial){this.cache.set(key,field);this.revision++;this.onChange();}}catch{this.lastRefresh=0;}finally{if(serial===this.serial)this.pending.delete(key);}})();this.pending.set(key,p);
  }
 }

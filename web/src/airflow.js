@@ -1,6 +1,9 @@
 import * as T from 'three';
 import { SweepFields } from './sweep-field.js';
 import { YawFields } from './yaw-field.js';
+import { cachedArrayBuffer, deleteCachedAsset } from './asset-cache.js';
+const FLOW_LOAD_ATTEMPTS=5;
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
 
 export const FLOW_ANCHORS=['base','low','high','open','left','right','locked','fast','spin'];
 export const ROLLING_ANCHORS=['road-stop','road-slow','road-fast','still-air'];
@@ -48,15 +51,62 @@ export class TraceScratch {
  commit(geometry){const n=this.len;geometry.dispose();const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(this.pos.slice(0,n*3),3));g.setAttribute('color',new T.Float32BufferAttribute(this.col.slice(0,n*3),3));g.setAttribute('flight',new T.Float32BufferAttribute(this.flt.slice(0,n),1));g.setAttribute('lineAlpha',new T.Float32BufferAttribute(this.alp.slice(0,n),1));return g;}
 }
 export class Airflow {
- constructor(parent,{onStatus=()=>{}}={}){this.sweep=new SweepFields(()=>{this.lastKey='';});this.yaw=new YawFields(()=>{this.lastKey='';});this.parent=parent;this.onStatus=onStatus;this.serial=0;this.data=null;this.enabled=true;this.elapsed=0;this.lastKey='';this.grid=null;this.baseGrid=null;this.baseSpec=null;this.yawGrid=null;this.group=new T.Group();this.group.name='CFD_FLOW';parent.add(this.group);this.ray=new T.Raycaster();this.ray.firstHitOnly=true;this.colliders=new WeakMap();this.colliderMaterial=new T.MeshBasicMaterial({side:T.DoubleSide});this.lastBuild=0;this._rayContext=null;this._scratch=new TraceScratch(131072);this.stats={ready:false,lines:0,peakMps:0,blocked:0};
+ constructor(parent,{onStatus=()=>{}}={}){this.sweep=new SweepFields(()=>{this.lastKey='';});this.yaw=new YawFields(()=>{this.lastKey='';});this.parent=parent;this.onStatus=onStatus;this.serial=0;this.revision=0;this.car=null;this.anchorMeta=null;this.anchorPending=new Map();this._secondaryFn=null;this.data=null;this.enabled=true;this.elapsed=0;this.lastKey='';this.grid=null;this.baseGrid=null;this.baseSpec=null;this.yawGrid=null;this.group=new T.Group();this.group.name='CFD_FLOW';parent.add(this.group);this.ray=new T.Raycaster();this.ray.firstHitOnly=true;this.colliders=new WeakMap();this.colliderMaterial=new T.MeshBasicMaterial({side:T.DoubleSide});this.lastBuild=0;this._rayContext=null;this._scratch=new TraceScratch(131072);this.stats={ready:false,lines:0,peakMps:0,blocked:0};
   this.material=new T.ShaderMaterial({transparent:true,depthWrite:false,depthTest:true,uniforms:{clock:{value:0},opacity:{value:1}},vertexShader:`attribute vec3 color;attribute float flight;attribute float lineAlpha;varying vec3 tint;varying float travel;varying float fade;void main(){tint=color;travel=flight;fade=lineAlpha;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,fragmentShader:`uniform float clock,opacity;varying vec3 tint;varying float travel;varying float fade;void main(){float p=fract((clock-travel)*4.);float pulse=exp(-pow((p-.22)*8.,2.));gl_FragColor=vec4(tint,opacity*fade*(.55+.45*pulse));}`});
   this.geometry=new T.BufferGeometry();this.lines=new T.LineSegments(this.geometry,this.material);this.lines.frustumCulled=false;this.group.add(this.lines);
  }
- async load(car){const serial=++this.serial;this.data=null;this.stats.ready=false;this.group.visible=false;this.onStatus('正在加载气流数据…');
-  try{const responses=await Promise.all([fetch(`/flow/${car}/manifest.json`),fetch(`/flow/${car}/rolling/manifest.json`)]);if(responses.some(r=>!r.ok))throw Error('工况清单不可用');const [manifest,rolling]=await Promise.all(responses.map(r=>r.json()));manifest.anchors=[...manifest.anchors,...rolling.anchors];const map={};for(const key of ROLLING_FLOW_ANCHORS){const a=manifest.anchors.find(v=>v.anchor===key);if(!a)throw Error(`${car.toUpperCase()} 的 ${key} 工况尚未准备好`);map[key]=a;}
-   const results=await Promise.all(ROLLING_FLOW_ANCHORS.map(async key=>{const a=map[key],r=await fetch(a.file);if(!r.ok)throw Error('流场文件加载失败');const buffer=await r.arrayBuffer();if(buffer.byteLength!==a.grid.shape.reduce((p,n)=>p*n,1)*6)throw Error('流场文件缺失或尺寸不符，请重试');const raw=new Int16Array(buffer);const field=new Float32Array(raw.length);for(let i=0;i<raw.length;i++)field[i]=raw[i]*a.scale;return [key,field];}));
-   if(serial!==this.serial)return;this.data=Object.fromEntries(results);this.meta=manifest;this.baseSpec=map.base.grid;this.spec=this.baseSpec;this.baseGrid=new Float32Array(this.data.base.length);this.grid=this.baseGrid;this.yawGrid=null;this.lastKey='';this.stats.ready=true;this.stats.error=null;await Promise.all([this.sweep.load(car,this.data.base),this.yaw.load(car).catch(()=>{})]);this.onStatus('粗网格 CFD · 实时插值预览');
-  }catch(e){if(serial!==this.serial)return;this.stats.error=e.message;this.onStatus('气流暂不可用 · '+(/[\u4e00-\u9fff]/.test(e.message)?e.message:'数据加载失败，请检查网络后重试')); }
+ async fetchAnchor(key,a){
+  const expected=a.grid.shape.reduce((p,n)=>p*n,1)*6;
+  let buffer=null;
+  for(let attempt=0;attempt<3;attempt++){
+   try{buffer=await cachedArrayBuffer(a.file);}catch(e){buffer=null;if(attempt===2)throw e;await wait(600*(attempt+1));continue;}
+   if(buffer.byteLength===expected)break;
+   // A truncated or stale cached copy must not poison later visits.
+   await deleteCachedAsset(a.file);buffer=null;
+   if(attempt<2)await wait(400*(attempt+1));
+  }
+  if(!buffer)throw Error('流场文件缺失或尺寸不符，请重试');
+  const raw=new Int16Array(buffer);const field=new Float32Array(raw.length);
+  for(let i=0;i<raw.length;i++)field[i]=raw[i]*a.scale;
+  return field;
+ }
+ ensureAnchor(key,car=this.car,serial=this.serial){
+  if(this.data?.[key])return Promise.resolve(this.data[key]);
+  const a=this.anchorMeta?.[key];if(!a)return Promise.resolve(null);
+  const existing=this.anchorPending.get(key);if(existing)return existing;
+  const p=(async()=>{try{const field=await this.fetchAnchor(key,a);if(serial===this.serial&&this.data){this.data[key]=field;this.revision++;this.lastKey='';}return field;}catch{return null;}finally{if(serial===this.serial)this.anchorPending.delete(key);}})();
+  this.anchorPending.set(key,p);return p;
+ }
+ startSecondary(){if(!this._secondaryFn)return Promise.resolve();const fn=this._secondaryFn;this._secondaryFn=null;return fn();}
+ async load(car,{deferSecondary=true,autoSecondary=true}={}){const serial=++this.serial;this.car=car;this.data=null;this.anchorMeta=null;this.anchorPending.clear();this._secondaryFn=null;this.stats.ready=false;this.group.visible=false;this.onStatus('正在加载气流数据…');
+  let lastError=null;
+  for(let attempt=1;attempt<=FLOW_LOAD_ATTEMPTS;attempt++){
+  if(serial!==this.serial)return;
+  if(attempt>1){this.onStatus(`正在重新连接气流数据（${attempt}/${FLOW_LOAD_ATTEMPTS}）…`);await wait(Math.min(6000,800*2**(attempt-2)));if(serial!==this.serial)return;}
+  try{const cacheMode=import.meta.env.DEV?'no-store':(attempt>1?'no-cache':'default');
+   const responses=await Promise.all([fetch(`/flow/${car}/manifest.json`,{cache:cacheMode}),fetch(`/flow/${car}/rolling/manifest.json`,{cache:cacheMode})]);
+   if(responses.some(r=>!r.ok))throw Error('工况清单不可用');
+   const [manifest,rolling]=await Promise.all(responses.map(r=>r.json()));manifest.anchors=[...manifest.anchors,...rolling.anchors];
+   const map={};for(const key of ROLLING_FLOW_ANCHORS){const a=manifest.anchors.find(v=>v.anchor===key);if(!a)throw Error(`${car.toUpperCase()} 的 ${key} 工况尚未准备好`);map[key]=a;}
+   const baseField=await this.fetchAnchor('base',map.base);
+   if(serial!==this.serial)return;
+   this.anchorMeta=map;this.data={base:baseField};this.meta=manifest;this.baseSpec=map.base.grid;this.spec=this.baseSpec;this.baseGrid=new Float32Array(baseField.length);this.grid=this.baseGrid;this.yawGrid=null;this.lastKey='';this.revision++;this.stats.ready=true;this.stats.error=null;
+   this.onStatus('粗网格 CFD · 实时插值预览');
+   const bg=async()=>{
+    await Promise.all([this.sweep.load(car,baseField),this.yaw.load(car,{preloadBaseYaw:false}).catch(()=>{})]);
+    const rest=ROLLING_FLOW_ANCHORS.filter(k=>k!=='base');
+    for(let i=0;i<rest.length;i+=3){
+     if(serial!==this.serial)return;
+     await Promise.all(rest.slice(i,i+3).map(k=>this.ensureAnchor(k,car,serial)));
+    }
+   };
+   if(!deferSecondary)await bg();
+   else if(autoSecondary)void bg();
+   else this._secondaryFn=bg;
+   return;
+  }catch(e){if(serial!==this.serial)return;lastError=e;}
+  }
+  if(serial!==this.serial)return;{const e=lastError||Error('');this.stats.error=e.message;this.onStatus('气流暂不可用 · '+(/[\u4e00-\u9fff]/.test(e.message)?e.message:'数据加载失败，请检查网络后重试'));}
  }
  setEnabled(enabled){this.enabled=enabled;this.group.visible=enabled&&this.stats.ready;}
  sampleRaw(x,y,z,out,grid=this.grid,requireValid=false,spec=this.spec){const {shape,min,max}=spec;const gx=(x-min[0])/(max[0]-min[0])*(shape[0]-1),gy=(y-min[1])/(max[1]-min[1])*(shape[1]-1),gz=(z-min[2])/(max[2]-min[2])*(shape[2]-1);
@@ -88,7 +138,9 @@ export class Airflow {
   const effSteer=state.steer*cosB,effDrs=state.drsCurrent*cosB;
   const sweep=this.sweep.selection(U,W,effSteer,effDrs);if(sweep?.loading){this.lastKey='';this.onStatus('正在加载此档位的 CFD 数据…');return;}
   const yawSel=useYaw?this.yaw.selection(windAngle):null;if(yawSel?.loading){this.lastKey='';this.onStatus('正在加载侧风 CFD 数据…');return;}
-  const weights=sweep?.weights||rollingWeights(U,W,effSteer,effDrs),fields=sweep?.data||this.data,active=Object.entries(weights).filter(([,v])=>Math.abs(v)>1e-7);const started=performance.now();
+  let weights=sweep?.weights||rollingWeights(U,W,effSteer,effDrs);const fields=sweep?.data||this.data;
+  if(!sweep){const missing=Object.keys(weights).filter(k=>Math.abs(weights[k])>1e-7&&!fields[k]);if(missing.length){missing.forEach(k=>this.ensureAnchor(k));weights=fields.base?{base:U/50}:{};}}
+  const active=Object.entries(weights).filter(([,v])=>Math.abs(v)>1e-7);const started=performance.now();
   const hasHeadDelta=useYaw&&(Math.abs(U-50)>.01||Math.abs(W-50)>.01||Math.abs(effSteer)>.01||Math.abs(effDrs)>.001);
    if(yawSel){
    const ySpec=yawSel.spec,yLen=ySpec.shape[0]*ySpec.shape[1]*ySpec.shape[2]*3;

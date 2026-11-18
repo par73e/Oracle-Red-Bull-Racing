@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { cachedArrayBuffer, hasCachedAsset } from './asset-cache.js';
 import { bindRig, applyRig, inspectRig } from './rig.js';
 import { Airflow } from './airflow.js';
 import { AeroForces, resolveRelativeWind } from './aero-forces.js';
@@ -17,31 +19,53 @@ THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const $ = id => document.getElementById(id);
 const viewport = $('viewport');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const state = {
+const DEFAULT_CONFIG = Object.freeze({
+  model: 'rb16b',
+  environment: 'wind',
+  view: 'hero',
+  freeMode: false,
   drs: 0,
+  drsCurrent: 0,
   steer: 0,
-  ambientWindMps: 0,
-  speed: 180,
+  ambientWindMps: 5,
+  speed: 198,
   windAngle: 0,
   effWindAngle: 0,
   spin: 0,
-  drsCurrent: 0,
-  model: 'rb16b',
-  view: 'hero',
-  freeMode: false,
-  panel: null,
-  environment: 'wind',
   groundSpeed: 180,
   wheelRpm: 0,
   wheelSpeedMps: 50,
   flow: true,
   flowDensity: 100,
   autoHide: false,
+});
+
+const state = {
+  ...DEFAULT_CONFIG,
+  panel: null,
   autoHidden: false,
   manualHidden: false,
 };
 
-const STORAGE_KEY = 'aero-studio:config:v1';
+function applyOperatingDefaults({ includeFlow = false } = {}) {
+  Object.assign(state, {
+    drs: DEFAULT_CONFIG.drs,
+    drsCurrent: DEFAULT_CONFIG.drsCurrent,
+    steer: DEFAULT_CONFIG.steer,
+    ambientWindMps: DEFAULT_CONFIG.ambientWindMps,
+    speed: DEFAULT_CONFIG.speed,
+    windAngle: DEFAULT_CONFIG.windAngle,
+    effWindAngle: DEFAULT_CONFIG.effWindAngle,
+    spin: DEFAULT_CONFIG.spin,
+    groundSpeed: DEFAULT_CONFIG.groundSpeed,
+    wheelRpm: DEFAULT_CONFIG.wheelRpm,
+    wheelSpeedMps: DEFAULT_CONFIG.wheelSpeedMps,
+    flowDensity: DEFAULT_CONFIG.flowDensity,
+    ...(includeFlow ? { flow: DEFAULT_CONFIG.flow } : {}),
+  });
+}
+
+const STORAGE_KEY = 'aero-studio:config:v2';
 const VALID_ENVS = new Set(['studio', 'wind', 'eau-rouge']);
 const VALID_VIEWS = new Set(['hero', 'front', 'side', 'drs', 'floor']);
 let persistenceReady = false;
@@ -138,6 +162,7 @@ let lastTime = performance.now(), statsTime = lastTime, frameCount = 0, fps = 0;
 let wasNarrow = innerWidth <= 620;
 
 const loader = new GLTFLoader();
+loader.setMeshoptDecoder(MeshoptDecoder);
 const scene = new THREE.Scene();
 scene.background = new THREE.Color('#11161d');
 const camera = new THREE.PerspectiveCamera(34, 1, .025, 700);
@@ -190,7 +215,17 @@ const airflow = new Airflow(carTurntable, { onStatus: updateFlowStatus });
 const aeroForces = new AeroForces();
 const underbody = new UnderbodyFlow(carTurntable, airflow.material);
 const sidepod = new SidepodFlow(carTurntable, airflow.material);
-const flowJobs = new FlowJobs(airflow, underbody, sidepod);
+let secondaryStartedFor = 0;
+function startSecondaryLayers(serial, carId) {
+  if (serial !== loadSerial || secondaryStartedFor === serial) return;
+  secondaryStartedFor = serial;
+  airflow.startSecondary();
+  underbody.load(carId);
+  sidepod.load(carId);
+}
+const flowJobs = new FlowJobs(airflow, underbody, sidepod, {
+  onWorkerReady: carId => startSecondaryLayers(loadSerial, carId),
+});
 airflow.setEnabled(state.flow);
 if (!state.flow) updateFlowStatus('流线已隐藏');
 worlds.set(state.environment, state.model === 'rb19' ? 2023 : 2021);
@@ -257,6 +292,9 @@ scene.add(eauRougeFloor);
 const orbit = new OrbitControls(camera, renderer.domElement);
 orbit.enableDamping = true;
 orbit.dampingFactor = .07;
+orbit.rotateSpeed = 1.65;
+orbit.panSpeed = 1.25;
+orbit.zoomSpeed = 1.2;
 orbit.minDistance = .35;
 orbit.maxDistance = 18;
 orbit.maxPolarAngle = Math.PI * .995;
@@ -359,40 +397,56 @@ function setAutoHidden(hidden) {
 renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
 
 let pointerTrack = null;
-window.addEventListener('pointerdown', e => {
-  if ($('credits')?.open) return;
-  const onCanvas = e.target === renderer.domElement;
-  pointerTrack = {
-    id: e.pointerId,
-    x: e.clientX,
-    y: e.clientY,
-    lastX: e.clientX,
-    lastY: e.clientY,
-    button: e.button,
-    panMode: e.button === 2 || e.button === 1 || e.shiftKey || e.ctrlKey,
-    onCanvas,
-    startedOutsideDrawer: !e.target.closest?.('#drawer, .rail, .flow-state, #credits'),
-    moved: false,
-  };
-}, { passive: true });
+const EDGE_LOCK_MARGIN = 12;
 
-window.addEventListener('pointermove', e => {
-  if (!pointerTrack || e.pointerId !== pointerTrack.id) return;
-  const dx = e.clientX - pointerTrack.lastX;
-  const dy = e.clientY - pointerTrack.lastY;
-  pointerTrack.lastX = e.clientX;
-  pointerTrack.lastY = e.clientY;
-  if (!pointerTrack.moved && Math.hypot(e.clientX - pointerTrack.x, e.clientY - pointerTrack.y) > 4) {
-    pointerTrack.moved = true;
-    if (pointerTrack.onCanvas) {
-      transition = null;
-      if (state.autoHide && !state.manualHidden) {
-        setAutoHidden(true);
-      }
+function isCanvasPointerLocked() {
+  return document.pointerLockElement === renderer.domElement;
+}
+
+function lockCanvasPointer() {
+  if (isCanvasPointerLocked() || !renderer.domElement.requestPointerLock) return;
+  try {
+    const res = renderer.domElement.requestPointerLock({ unadjustedMovement: true });
+    if (res && typeof res.catch === 'function') {
+      res.catch(() => {
+        try {
+          const fallback = renderer.domElement.requestPointerLock();
+          if (fallback && typeof fallback.catch === 'function') fallback.catch(() => {});
+        } catch {}
+      });
     }
+  } catch {
+    try {
+      const fallback = renderer.domElement.requestPointerLock();
+      if (fallback && typeof fallback.catch === 'function') fallback.catch(() => {});
+    } catch {}
   }
-  if (state.freeMode && pointerTrack.onCanvas && pointerTrack.moved) {
-    if (pointerTrack.panMode) {
+}
+
+function exitCanvasPointerLock() {
+  if (isCanvasPointerLocked()) {
+    try { document.exitPointerLock(); } catch {}
+  }
+}
+
+function maybeLockPointerAtEdge(clientX, clientY, dx, dy) {
+  if (!pointerTrack?.onCanvas || !pointerTrack.moved || pointerTrack.lockRequested || pointerTrack.pointerType !== 'mouse') return;
+  const w = Math.max(1, window.innerWidth);
+  const h = Math.max(1, window.innerHeight);
+  const atLeft = clientX <= EDGE_LOCK_MARGIN && clientX < pointerTrack.x && dx <= 0;
+  const atRight = clientX >= w - 1 - EDGE_LOCK_MARGIN && clientX > pointerTrack.x && dx >= 0;
+  const atTop = clientY <= EDGE_LOCK_MARGIN && clientY < pointerTrack.y && dy <= 0;
+  const atBottom = clientY >= h - 1 - EDGE_LOCK_MARGIN && clientY > pointerTrack.y && dy >= 0;
+  if (atLeft || atRight || atTop || atBottom) {
+    pointerTrack.lockRequested = true;
+    lockCanvasPointer();
+  }
+}
+
+function applyPointerDelta(dx, dy, panMode) {
+  if (!dx && !dy) return;
+  if (state.freeMode) {
+    if (panMode) {
       const forward = new THREE.Vector3();
       camera.getWorldDirection(forward);
       const right = new THREE.Vector3().crossVectors(forward, camera.up).normalize();
@@ -403,20 +457,105 @@ window.addEventListener('pointermove', e => {
       camera.position.add(panDelta);
       orbit.target.add(panDelta);
     } else {
-      const sensitivity = (THREE.MathUtils.degToRad(camera.fov) / Math.max(240, viewport.clientHeight)) * 1.35;
+      const sensitivity = (THREE.MathUtils.degToRad(camera.fov) / Math.max(240, viewport.clientHeight)) * 2.05;
       lookState.targetYaw -= dx * sensitivity;
       lookState.targetPitch = THREE.MathUtils.clamp(lookState.targetPitch - dy * sensitivity, -MAX_PITCH, MAX_PITCH);
     }
+    return;
+  }
+  if (!isCanvasPointerLocked()) return;
+  pointerTrack && (pointerTrack.lockedUsed = true);
+  if (panMode) {
+    orbit._pan(dx * orbit.panSpeed, dy * orbit.panSpeed);
+  } else {
+    const h = Math.max(1, renderer.domElement.clientHeight);
+    orbit._rotateLeft(2 * Math.PI * (dx * orbit.rotateSpeed) / h);
+    orbit._rotateUp(2 * Math.PI * (dy * orbit.rotateSpeed) / h);
+  }
+  orbit.update();
+}
+
+document.addEventListener('pointerlockchange', () => {
+  const locked = isCanvasPointerLocked();
+  orbit.enabled = !locked && !state.freeMode;
+  if (pointerTrack) {
+    pointerTrack.skipNextLockDelta = locked;
+    if (!locked) {
+      orbit._rotateStart?.set(pointerTrack.lastX, pointerTrack.lastY);
+      orbit._panStart?.set(pointerTrack.lastX, pointerTrack.lastY);
+    }
+  }
+});
+
+window.addEventListener('pointerdown', e => {
+  if ($('credits')?.open) return;
+  const onCanvas = e.target === renderer.domElement;
+  if (onCanvas && state.freeMode) {
+    try { renderer.domElement.setPointerCapture(e.pointerId); } catch {}
+  }
+  pointerTrack = {
+    id: e.pointerId,
+    pointerType: e.pointerType,
+    x: e.clientX,
+    y: e.clientY,
+    lastX: e.clientX,
+    lastY: e.clientY,
+    button: e.button,
+    panMode: e.button === 2 || e.button === 1 || e.shiftKey || e.ctrlKey,
+    onCanvas,
+    startedOutsideDrawer: !e.target.closest?.('#drawer, .rail, .flow-state, #credits'),
+    moved: false,
+    lockRequested: false,
+    skipNextLockDelta: false,
+    lockedUsed: false,
+  };
+}, { passive: true });
+
+window.addEventListener('pointermove', e => {
+  if (!pointerTrack || e.pointerId !== pointerTrack.id) return;
+  const locked = isCanvasPointerLocked();
+  const dx = locked ? (e.movementX || 0) : (e.clientX - pointerTrack.lastX);
+  const dy = locked ? (e.movementY || 0) : (e.clientY - pointerTrack.lastY);
+  if (!locked) {
+    pointerTrack.lastX = e.clientX;
+    pointerTrack.lastY = e.clientY;
+  }
+  if (locked && pointerTrack.skipNextLockDelta) {
+    pointerTrack.skipNextLockDelta = false;
+    if (Math.hypot(dx, dy) > 80) return;
+  }
+  if (!pointerTrack.moved && (locked || Math.hypot(e.clientX - pointerTrack.x, e.clientY - pointerTrack.y) > 4)) {
+    pointerTrack.moved = true;
+    if (pointerTrack.onCanvas) {
+      transition = null;
+      if (state.autoHide && !state.manualHidden) {
+        setAutoHidden(true);
+      }
+    }
+  }
+  if (!locked) maybeLockPointerAtEdge(e.clientX, e.clientY, dx, dy);
+  if (pointerTrack.onCanvas && pointerTrack.moved) {
+    applyPointerDelta(dx, dy, pointerTrack.panMode);
   }
 }, { passive: true });
 
 window.addEventListener('pointerup', e => {
   if (!pointerTrack || e.pointerId !== pointerTrack.id) return;
-  const { moved: wasMoved, button, onCanvas, startedOutsideDrawer } = pointerTrack;
+  const { moved: wasMoved, button, onCanvas, startedOutsideDrawer, lockedUsed } = pointerTrack;
   pointerTrack = null;
-  if (wasMoved && onCanvas && state.freeMode) {
-    captureCameraPose();
-    saveState();
+  exitCanvasPointerLock();
+  try {
+    if (renderer.domElement.hasPointerCapture?.(e.pointerId)) {
+      renderer.domElement.releasePointerCapture(e.pointerId);
+    }
+  } catch {}
+  if (wasMoved && onCanvas) {
+    if (state.freeMode) {
+      captureCameraPose();
+      saveState();
+    } else if (lockedUsed) {
+      scheduleCameraPoseSave();
+    }
   }
   if (!wasMoved && state.autoHidden) {
     setAutoHidden(false);
@@ -426,7 +565,15 @@ window.addEventListener('pointerup', e => {
   }
 }, { passive: true });
 
-window.addEventListener('pointercancel', () => { pointerTrack = null; }, { passive: true });
+window.addEventListener('pointercancel', e => {
+  exitCanvasPointerLock();
+  try {
+    if (renderer.domElement.hasPointerCapture?.(e.pointerId)) {
+      renderer.domElement.releasePointerCapture(e.pointerId);
+    }
+  } catch {}
+  pointerTrack = null;
+}, { passive: true });
 
 renderer.domElement.addEventListener('wheel', e => {
   if (!state.freeMode) return;
@@ -950,6 +1097,18 @@ function showState() {
   saveState();
 }
 
+const loadedCarsInSession = new Set();
+
+function setFirstLoadVeil(active, config = null) {
+  const veil = $('first-load-veil');
+  if (!veil) return;
+  if (active && config) {
+    const badge = $('first-load-model');
+    if (badge) badge.textContent = `${config.name} ${config.year}`;
+  }
+  veil.classList.toggle('is-hidden', !active);
+}
+
 function disposeModel(model) {
   const materials = new Set(), textures = new Set();
   model.traverse(o => {
@@ -967,16 +1126,38 @@ async function loadModel(id) {
   if (!configs?.[id]) throw new Error('找不到车型资料');
   const serial = ++loadSerial;
   const config = configs[id];
+  let loadSettled = false;
   $('error').hidden = true;
   $('loading').classList.remove('hidden');
   $('loading-text').textContent = `正在加载 ${config.name}…`;
+  setFirstLoadVeil(false);
   document.querySelectorAll('[data-model]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.model === id)));
   state.model = id;
   saveState();
   try {
-    const loaded = await loader.loadAsync(`${config.file}?v=${config.revision || config.glb_bytes}`, progress => {
-      if (serial === loadSerial && progress.total) $('loading-text').textContent = `${config.name} / ${Math.round(progress.loaded / progress.total * 100)}%`;
-    });
+    const modelFile = config.web_file || config.file;
+    const modelVersion = config.web_revision || config.revision || config.web_glb_bytes || config.glb_bytes;
+    const modelUrl = `${modelFile}?v=${modelVersion}`;
+    const expectedBytes = config.web_glb_bytes || config.glb_bytes || 0;
+    if (!loadedCarsInSession.has(id)) {
+      hasCachedAsset(modelUrl).then(cached => {
+        if (serial === loadSerial && !loadSettled && !cached) setFirstLoadVeil(true, config);
+      }).catch(() => {});
+    }
+    airflow.load(id, { autoSecondary: false });
+    aeroForces.load(id).then(() => updateForcesDisplay(true)).catch(() => {});
+    const [buffer] = await Promise.all([
+      cachedArrayBuffer(modelUrl, {
+        onProgress: (loadedBytes, headerTotal) => {
+          if (serial !== loadSerial) return;
+          const denom = expectedBytes || headerTotal;
+          if (denom) $('loading-text').textContent = `${config.name} / ${Math.min(100, Math.round(loadedBytes / denom * 100))}%`;
+        },
+      }),
+      MeshoptDecoder.ready,
+    ]);
+    if (serial !== loadSerial) return;
+    const loaded = await loader.parseAsync(buffer, '/');
     if (serial !== loadSerial) { disposeModel(loaded.scene); return; }
     const nextRig = bindRig(loaded.scene, config);
     loaded.scene.traverse(o => {
@@ -994,20 +1175,23 @@ async function loadModel(id) {
     rig = nextRig;
     carTurntable.add(currentModel);
     setEnvironment(state.environment);
-    airflow.load(id);
-    aeroForces.load(id).then(() => updateForcesDisplay(true)).catch(() => {});
-    underbody.load(id);
-    sidepod.load(id);
+    // Fallback timer ensures secondary layers still load if flow is initially toggled off
+    setTimeout(() => startSecondaryLayers(serial, id), 800);
     showState();
     state.spin = 0;
     applyRig(rig, { drs: state.drsCurrent, steer: state.steer, spin: state.spin });
     renderer.shadowMap.needsUpdate = true;
     if ($('model-name')) $('model-name').innerHTML = `${config.name}<span>.</span>`;
     $('era').textContent = `${config.year} / ${id === 'rb19' ? 'GROUND EFFECT' : 'HYBRID ERA'}`;
+    loadSettled = true;
+    loadedCarsInSession.add(id);
+    setFirstLoadVeil(false);
     $('loading').classList.add('hidden');
     window.dispatchEvent(new CustomEvent('aero:modelready', { detail: id }));
   } catch (error) {
     if (serial !== loadSerial) return;
+    loadSettled = true;
+    setFirstLoadVeil(false);
     $('loading').classList.add('hidden');
     $('error').hidden = false;
     $('error-message').textContent = `模型暂时未能打开：${error.message}`;
@@ -1058,7 +1242,7 @@ $('hud-steer')?.addEventListener('input', e => { state.steer = Number(e.target.v
 $('hud-center-steering')?.addEventListener('click', () => { state.steer = 0; showState(); });
 $('hud-rpm')?.addEventListener('input', e => { state.groundSpeed = Number(e.target.value); showState(); });
 $('reset').addEventListener('click', () => {
-  Object.assign(state, { drs: 0, steer: 0, ambientWindMps: 0, speed: 180, windAngle: 0, effWindAngle: 0, spin: 0, groundSpeed: 180, wheelRpm: 0, flowDensity: 100 });
+  applyOperatingDefaults();
   showState();
 });
 document.querySelectorAll('[data-environment]').forEach(b => b.addEventListener('click', () => setEnvironment(b.dataset.environment)));
@@ -1069,13 +1253,44 @@ $('flow-toggle').addEventListener('click', () => {
   if (!state.flow) updateFlowStatus('流线已隐藏');
   showState();
 });
-$('brand-home')?.addEventListener('click', e => {
-  e.preventDefault();
+
+async function resetToInitialState() {
   setPanel(null);
   closeAllTelemetryPopovers();
-  setView('hero', false, false);
+  clearSavedCameraPose();
+  const activeModel = state.model || DEFAULT_CONFIG.model;
+  const envChanged = state.environment !== DEFAULT_CONFIG.environment;
+  applyOperatingDefaults({ includeFlow: true });
+  state.autoHide = DEFAULT_CONFIG.autoHide;
+  $('auto-hide-toggle')?.setAttribute('aria-pressed', String(state.autoHide));
+  setAutoHidden(false);
+  state.environment = DEFAULT_CONFIG.environment;
+  state.view = DEFAULT_CONFIG.view;
+  state.freeMode = DEFAULT_CONFIG.freeMode;
+  airflow.setEnabled(state.flow);
+  showState();
+  if (!currentModel) {
+    await loadModel(activeModel);
+    return;
+  }
+  if (rig) {
+    applyRig(rig, { drs: state.drsCurrent, steer: state.steer, spin: state.spin });
+    renderer.shadowMap.needsUpdate = true;
+  }
+  if (envChanged) {
+    setEnvironment(DEFAULT_CONFIG.environment);
+    return;
+  }
+  setView(DEFAULT_CONFIG.view, false, false);
+}
+
+$('brand-home')?.addEventListener('click', e => {
+  e.preventDefault();
+  resetToInitialState().catch(() => {});
 });
 $('flow-retry').addEventListener('click', () => airflow.load(state.model));
+// Recover automatically when the network comes back instead of waiting for a manual retry.
+window.addEventListener('online', () => { if (airflow.stats.error && !airflow.stats.ready) airflow.load(state.model); });
 $('retry').addEventListener('click', () => loadModel(state.model).catch(() => {}));
 $('credits-button').addEventListener('click', () => $('credits').showModal());
 $('close-credits').addEventListener('click', () => $('credits').close());
@@ -1272,7 +1487,7 @@ window.aeroStudio = {
 };
 
 try {
-  const response = await fetch('/models/manifest.json');
+  const response = await fetch('/models/manifest.json', { cache: import.meta.env.DEV ? 'no-store' : 'default' });
   if (!response.ok) throw new Error('模型清单尚未生成');
   const manifest = await response.json();
   configs = Object.fromEntries(manifest.map(c => [c.id, c]));

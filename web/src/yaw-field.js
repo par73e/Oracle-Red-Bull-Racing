@@ -1,4 +1,5 @@
 // ±90° crosswind/yaw CFD field loader (5° steps), loaded lazily with live queue polling.
+import { cachedArrayBuffer } from './asset-cache.js';
 export const YAW_STEP = 5;
 
 export function yawKeyFor(deg) {
@@ -37,7 +38,7 @@ export class YawFields {
     this.records = new Map();
   }
 
-  async load(car) {
+  async load(car, { preloadBaseYaw = false } = {}) {
     this.serial++;
     this.revision++;
     this.car = car;
@@ -46,7 +47,7 @@ export class YawFields {
     this.manifest = null;
     this.records = new Map();
     await this.refresh();
-    if (this.records.has('yaw-000')) {
+    if (preloadBaseYaw && this.records.has('yaw-000')) {
       this.request('yaw-000');
     }
   }
@@ -57,9 +58,10 @@ export class YawFields {
     const serial = this.serial;
     this.lastRefresh = performance.now();
     try {
+      const cacheMode = import.meta.env.DEV ? 'no-store' : 'default';
       const [r, q] = await Promise.all([
-        fetch(`/flow/${this.car}/yaw/manifest.json`, { cache: 'no-store' }),
-        fetch('/flow/yaw-status.json', { cache: 'no-store' }),
+        fetch(`/flow/${this.car}/yaw/manifest.json`, { cache: cacheMode }),
+        fetch('/flow/yaw-status.json', { cache: cacheMode }),
       ]);
       if (!r.ok) return;
       const m = await r.json();
@@ -228,9 +230,7 @@ export class YawFields {
     const serial = this.serial;
     const p = (async () => {
       try {
-        const r = await fetch(a.file);
-        if (!r.ok) throw Error('missing');
-        const b = await r.arrayBuffer();
+        const b = await cachedArrayBuffer(a.file);
         if (b.byteLength !== a.grid.shape.reduce((n, v) => n * v, 1) * 6) throw Error('size');
         const raw = new Int16Array(b);
         const field = new Float32Array(raw.length);

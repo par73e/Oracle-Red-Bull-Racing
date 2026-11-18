@@ -513,9 +513,12 @@ function mergeStatic(root){
   this.depthScene=new T.Scene();this.depthScene.add(new T.Mesh(new T.PlaneGeometry(2,2),new T.ShaderMaterial({colorWrite:false,depthWrite:true,depthTest:true,depthFunc:T.AlwaysDepth,uniforms:{depthMap:{value:this.target.depthTexture}},vertexShader:'varying vec2 uv0;void main(){uv0=uv;gl_Position=vec4(position.xy,0.,1.);}',fragmentShader:'uniform sampler2D depthMap;varying vec2 uv0;void main(){gl_FragDepth=texture2D(depthMap,uv0).r;gl_FragColor=vec4(0.);}' })));
   // Outdoor sky/ground radiance replaces indoor studio reflections on track.
   const sky=new T.Scene();sky.background=new T.Color('#b7c7cf');sky.add(new T.HemisphereLight(0xdce7ed,0x526044,2));const ground=new T.Mesh(new T.PlaneGeometry(200,200),new T.MeshBasicMaterial({color:'#4a5942'}));ground.rotation.x=-Math.PI/2;ground.position.y=-5;sky.add(ground);const pmrem=new T.PMREMGenerator(renderer);this.skyTarget=pmrem.fromScene(sky,.08);pmrem.dispose();
-  new RGBELoader().load('/environments/spa/cloud-sky.hdr',texture=>{texture.mapping=T.EquirectangularReflectionMapping;this.skyPhoto=texture;const generator=new T.PMREMGenerator(renderer),target=generator.fromEquirectangular(texture);generator.dispose();this.skyTarget.dispose();this.skyTarget=target;if(this.kind==='eau-rouge'){this.scene.background=texture;this.scene.environment=target.texture;}});
+  this.skyLoaded=false;this.skyLoading=false;
  }
- set(kind,year=2023){if(this.kind===kind&&this.root)return;this.kind=kind;this.year=year;
+ ensureSkyHdr(){if(this.skyLoaded||this.skyLoading)return;this.skyLoading=true;
+  new RGBELoader().load('/environments/spa/cloud-sky.hdr',texture=>{texture.mapping=T.EquirectangularReflectionMapping;this.skyPhoto=texture;const generator=new T.PMREMGenerator(this.renderer),target=generator.fromEquirectangular(texture);generator.dispose();this.skyTarget.dispose();this.skyTarget=target;this.skyLoaded=true;this.skyLoading=false;if(this.kind==='eau-rouge'){this.scene.background=texture;this.scene.environment=target.texture;}},undefined,()=>{this.skyLoading=false;});
+ }
+ set(kind,year=2023){if(this.kind===kind&&this.root)return;this.kind=kind;this.year=year;if(kind==='eau-rouge')this.ensureSkyHdr();
   if(this.root){this.scene.remove(this.root);this.root.userData.dispose?.();const textures=new Set(),materials=new Set(),geometries=new Set();this.root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material]){materials.add(m);for(const value of Object.values(m))if(value?.isTexture)textures.add(value);}});textures.forEach(t=>t.dispose());materials.forEach(m=>m.dispose());geometries.forEach(g=>g.dispose());}
   this.root=kind==='studio'?new T.Group():kind==='wind'?windTunnel():createSpaScene();if(!this.root.userData.keepMeshes)mergeStatic(this.root);this.scene.add(this.root);
   if(kind==='wind'&&this.root.userData.turntable)this.root.userData.turntable.rotation.y=this.turntableYaw;

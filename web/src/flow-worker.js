@@ -23,7 +23,7 @@ function applySnapshot(s){meshes.forEach((o,i)=>{o.matrix.fromArray(s.matrices,i
  rig.model.updateMatrixWorld(true);
 }
 function pack(layer,visible=layer.group.visible){const attributes={};for(const key of ['position','color','flight','lineAlpha'])attributes[key]=visible&&layer.geometry.drawRange.count!==0?layer.geometry.attributes[key]?.array||new Float32Array():new Float32Array();return {visible,attributes,count:visible?layer.count:0,mode:layer.mode,stops:layer.stops,boundaryAxes:layer.boundaryAxes,regions:layer.regions,layers:layer.layers,seedPoints:layer.seedPoints,blockedSeeds:layer.blockedSeeds,fallbackSamples:layer.fallbackSamples};}
-self.onmessage=({data:m})=>{try{if(m.type==='init'){init(m);return;}if(m.type!=='compute')return;
+self.onmessage=({data:m})=>{try{if(m.type==='init'){init(m);return;}if(m.type==='layer'){const target=m.kind==='bottom'?bottom:side;target.meta=m.meta;target.data=m.data;target.status=m.data?'ready':'unavailable';return;}if(m.type!=='compute')return;
  const start=performance.now();applySnapshot(m.rig);Object.assign(cache,m.fields);selection=m.selection;yawSelection=m.yawSelection?{...m.yawSelection,data:cache}:null;
  flow.lastKey='';flow.lastBuild=0;bottom.key='';side.key='';side.pendingKey='';
  const now=m.id*1000;flow.update(m.state,rig,0,now);bottom.update(m.state,rig,flow);side.update(m.state,rig,flow,now,true);

@@ -1,4 +1,4 @@
-import { Matrix3, Matrix4, Vector3, MathUtils } from 'three';
+import { BufferAttribute, Matrix3, Matrix4, Vector3, MathUtils } from 'three';
 import { trackRodAngle } from './mechanics.js';
 
 const Y = new Vector3(0, 1, 0);
@@ -16,6 +16,19 @@ function bindFairing(model, config, find) {
     find(spec.tie_mesh).traverse(mesh => {
       if (!mesh.isMesh) return;
       mesh.geometry = mesh.geometry.clone();
+      for (const attrName of ['position', 'normal', 'tangent']) {
+        const attr = mesh.geometry.attributes[attrName];
+        if (attr && (!(attr.array instanceof Float32Array) || attr.isInterleavedBufferAttribute)) {
+          const floatArr = new Float32Array(attr.count * attr.itemSize);
+          for (let i = 0; i < attr.count; i++) {
+            floatArr[i * attr.itemSize] = attr.getX(i);
+            floatArr[i * attr.itemSize + 1] = attr.getY(i);
+            if (attr.itemSize > 2) floatArr[i * attr.itemSize + 2] = attr.getZ(i);
+            if (attr.itemSize > 3) floatArr[i * attr.itemSize + 3] = attr.getW(i);
+          }
+          mesh.geometry.setAttribute(attrName, new BufferAttribute(floatArr, attr.itemSize));
+        }
+      }
       const position = mesh.geometry.attributes.position, normal = mesh.geometry.attributes.normal;
       const tangent = mesh.geometry.attributes.tangent;
       const toRoot = new Matrix4().copy(root.matrixWorld).invert().multiply(mesh.matrixWorld);

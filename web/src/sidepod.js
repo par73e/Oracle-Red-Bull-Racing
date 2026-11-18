@@ -1,12 +1,13 @@
 import * as T from 'three';
 import { UnderbodyFlow } from './underbody.js';
+import { cachedArrayBuffer } from './asset-cache.js';
 
 // Locally refined baseline. Other poses reuse coarse-field differences and
 // are explicitly approximate; invalid data or actual mesh crossings stop paths.
 export class SidepodFlow extends UnderbodyFlow {
  constructor(parent,material){super(parent,material);this.group.name='SIDEPOD_SUSPENSION_FLOW';this.lastBuild=0;this.pendingKey='';this.changedAt=0;}
  async load(car){const serial=++this.serial;this.data=null;this.meta=null;this.key='';this.pendingKey='';this.status='loading';this.group.visible=false;
-  try{const [m,b]=await Promise.all([fetch(`/flow/${car}/sidepod.json`),fetch(`/flow/${car}/sidepod.bin`)]);if(!m.ok||!b.ok)throw Error('missing');const meta=await m.json(),data=new Int16Array(await b.arrayBuffer());if(serial!==this.serial)return;if(data.length!==meta.shape.reduce((a,v)=>a*v,1)*4)throw Error('shape');this.meta=meta;this.data=data;this.status='ready';}
+  try{const cacheMode=import.meta.env.DEV?'no-store':'default';const [m,buf]=await Promise.all([fetch(`/flow/${car}/sidepod.json`,{cache:cacheMode}),cachedArrayBuffer(`/flow/${car}/sidepod.bin`)]);if(!m.ok)throw Error('missing');const meta=await m.json(),data=new Int16Array(buf);if(serial!==this.serial)return;if(data.length!==meta.shape.reduce((a,v)=>a*v,1)*4)throw Error('shape');this.meta=meta;this.data=data;this.status='ready';}
   catch{if(serial===this.serial){this.data=null;this.status='unavailable';}}
  }
  update(state,rig,airflow,now=performance.now(),immediate=false){

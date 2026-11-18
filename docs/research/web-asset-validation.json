@@ -16,8 +16,8 @@
   },
   {
     "model": "rb16b",
-    "bytes": 33208412,
-    "triangles": 303017,
+    "bytes": 33167920,
+    "triangles": 300041,
     "nodes": 357,
     "images": 33,
     "errors": 0,
@@ -25,7 +25,7 @@
     "missingRigNodes": [],
     "informationalCounts": {
       "NODE_EMPTY": 6,
-      "UNUSED_OBJECT": 1176,
+      "UNUSED_OBJECT": 1183,
       "IMAGE_NPOT_DIMENSIONS": 2
     },
     "messages": []

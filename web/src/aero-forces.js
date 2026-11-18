@@ -100,7 +100,8 @@ export class AeroForces {
   async refresh(serial = this.serial) {
     this.lastRefresh = performance.now();
     try {
-      const r = await fetch(`/flow/${this.car}/forces.json`, { cache: 'no-store' });
+      const cacheMode = import.meta.env?.DEV ? 'no-store' : 'default';
+      const r = await fetch(`/flow/${this.car}/forces.json`, { cache: cacheMode });
       if (!r.ok) return;
       const payload = await r.json();
       if (payload?.axes) {

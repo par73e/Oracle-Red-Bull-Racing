@@ -317,7 +317,10 @@
       "modifications": "Materials, articulated wheels and DRS hydraulic approximation, uniform scale; RB19 floor reconstruction"
     },
     "glb_bytes": 25792736,
-    "texture_encoding": "PNG 8-bit; source resolution retained"
+    "texture_encoding": "PNG 8-bit; source resolution retained",
+    "web_file": "/models/rb19.web.glb",
+    "web_glb_bytes": 6841408,
+    "web_revision": "2026-11-10-tail-detail1-027f9d0810fd"
   },
   {
     "id": "rb16b",
@@ -483,9 +486,11 @@
             "bore_rx": 0.013437648404240608,
             "bore_rz": 0.027594662371873857,
             "cap_limit": 0.025,
-            "covered_root": true
+            "covered_root": true,
+            "native_fairing": false
           },
           "axis_mode": "Vertical yaw, source static camber retained; wheel-end tips blended to the simplified joint.",
+          "fixed_fairing": null,
           "fixed_meshes": [
             "suspension2_fl",
             "suspension3_fl",
@@ -527,9 +532,11 @@
             "bore_rx": 0.013437670681476594,
             "bore_rz": 0.02759467205762863,
             "cap_limit": 0.025,
-            "covered_root": true
+            "covered_root": true,
+            "native_fairing": false
           },
           "axis_mode": "Vertical yaw, source static camber retained; wheel-end tips blended to the simplified joint.",
+          "fixed_fairing": null,
           "fixed_meshes": [
             "suspension2_fr",
             "suspension3_fr",
@@ -632,55 +639,17 @@
         "DISK_LR",
         "DISK_RR"
       ],
-      "drs_mounts": {
-        "revision": "2026-11-10-tail-detail1",
-        "mounts": {
-          "BASE": {
-            "surface_foot": [
-              0,
-              2.326108455657959,
-              1.0229908227920532
-            ],
-            "joint": [
-              0,
-              2.3499999046325684,
-              1.0399999618530273
-            ],
-            "centerline_error": 0,
-            "material": "AERO_DRS_Woven_Carbon",
-            "tow_width_metres": 0.0008
-          },
-          "TIP": {
-            "surface_foot": [
-              0,
-              2.473750114440918,
-              1.003319501876831
-            ],
-            "joint": [
-              0,
-              2.440000057220459,
-              1.0499999523162842
-            ],
-            "centerline_error": 0,
-            "material": "AERO_DRS_Woven_Carbon",
-            "tow_width_metres": 0.0008
-          }
-        },
-        "removed": [
-          "DRS_BASE_MOLDED_CARBON",
-          "DRS_BASE_CARBON_EAR_-1",
-          "DRS_BASE_CARBON_EAR_1",
-          "DRS_TIP_MOLDED_CARBON",
-          "DRS_TIP_CARBON_EAR_-1",
-          "DRS_TIP_CARBON_EAR_1",
-          "DRS_BASE_PIN_RETAINER_-1",
-          "DRS_BASE_PIN_RETAINER_1",
-          "DRS_TIP_PIN_RETAINER_-1",
-          "DRS_TIP_PIN_RETAINER_1",
-          "DRS_BASE_PIN",
-          "DRS_TIP_PIN"
-        ],
-        "scope": "Symmetric molded presentation mounts, fine woven carbon and detailed metal pin retainers; not team CAD."
+      "carbon_retextured_parts": [
+        "suspension_bl_SUB1",
+        "suspension_br_SUB1",
+        "suspension3_bl_SUB1",
+        "suspension3_br_SUB1",
+        "diffuser_bm_SUB0"
+      ],
+      "exhaust": {
+        "material": "heat-tinted metal outside, soot-dark inside",
+        "inner_faces": 168,
+        "outer_faces": 300
       }
     },
     "license": {
@@ -690,7 +659,10 @@
       "source": "https://skfb.ly/py9Uu",
       "modifications": "Materials, articulated wheels and DRS hydraulic approximation, uniform scale; RB19 floor reconstruction"
     },
-    "glb_bytes": 33208412,
-    "texture_encoding": "PNG 8-bit; source resolution retained"
+    "glb_bytes": 33167920,
+    "texture_encoding": "PNG 8-bit; source resolution retained",
+    "web_file": "/models/rb16b.web.glb",
+    "web_glb_bytes": 6789480,
+    "web_revision": "2026-11-10-tail-detail1-97d6a61b3103"
   }
 ]

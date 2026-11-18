@@ -431,6 +431,60 @@ else:
     quality_fixes['brake_disc']={'color':'brake_disc_d.dds','normal':'brake_disc_n.dds','metallic':0,'roughness':.8}
     quality_fixes['visible_disc_meshes']=['DISK_LF','DISK_RF','DISK_LR','DISK_RR']
 
+    # Replace pale/blank detail patches on RB16B carbon wishbones, pull-rods, and rear crash structure with woven carbon.
+    carbon_mat=bpy.data.materials.get('redbull_carbon1')
+    carbon_fixed=[]
+    for part_name in ['suspension_bl_SUB1','suspension_br_SUB1','suspension3_bl_SUB1','suspension3_br_SUB1','diffuser_bm_SUB0']:
+        part=parts.get(part_name)
+        if not part or not carbon_mat:continue
+        part.data.materials.clear();part.data.materials.append(carbon_mat)
+        uv=part.data.uv_layers.active or part.data.uv_layers.new(name='UVMap')
+        wm=part.matrix_world;nmat=wm.to_3x3().inverted().transposed();scale=86.0
+        for poly in part.data.polygons:
+            poly.material_index=0
+            wn=(nmat@poly.normal).normalized()
+            ax,ay,az=abs(wn.x),abs(wn.y),abs(wn.z)
+            for li in poly.loop_indices:
+                p=wm@part.data.vertices[part.data.loops[li].vertex_index].co
+                if ax>=ay and ax>=az:uv.data[li].uv=(p.y*scale,p.z*scale)
+                elif ay>=ax and ay>=az:uv.data[li].uv=(p.x*scale,p.z*scale)
+                else:uv.data[li].uv=(p.x*scale,p.y*scale)
+        carbon_fixed.append(part_name)
+    quality_fixes['carbon_retextured_parts']=carbon_fixed
+
+    # Replace pale-gray exhaust & wastegate pipes inside safetycell_SUB0 with heat-tinted metal outside and soot inside.
+    sc0=parts.get('safetycell_SUB0')
+    if sc0:
+        heat=basic_material('RB16B_Exhaust_HeatAlloy',(.145,.128,.116),.42,.88)
+        soot=basic_material('RB16B_Exhaust_InnerSoot',(.009,.010,.012),.9)
+        base_idx=len(sc0.data.materials)
+        for m in [heat,soot]:sc0.data.materials.append(m)
+        mdata=sc0.data;parents=list(range(len(mdata.vertices)))
+        def find_v(i):
+            while parents[i]!=i:parents[i]=parents[parents[i]];i=parents[i]
+            return i
+        for e in mdata.edges:parents[find_v(e.vertices[0])]=find_v(e.vertices[1])
+        comps={}
+        for v in mdata.vertices:comps.setdefault(find_v(v.index),[]).append(v.index)
+        exhaust_verts=set();wm=sc0.matrix_world;nmat=wm.to_3x3().inverted().transposed()
+        for idxs in comps.values():
+            pts=[wm@mdata.vertices[i].co for i in idxs]
+            lo_x,hi_x=min(p.x for p in pts),max(p.x for p in pts)
+            lo_y,hi_y=min(p.y for p in pts),max(p.y for p in pts)
+            lo_z,hi_z=min(p.z for p in pts),max(p.z for p in pts)
+            if math.sqrt((hi_x-lo_x)**2+(hi_y-lo_y)**2+(hi_z-lo_z)**2)<.025:continue
+            if abs((lo_x+hi_x)/2)<.056 and hi_y>1.85 and lo_z>.52 and hi_z<.71:exhaust_verts.update(idxs)
+        ex_inner=0;ex_outer=0
+        for p in mdata.polygons:
+            if not all(vi in exhaust_verts for vi in p.vertices):continue
+            c=sum((wm@mdata.vertices[vi].co for vi in p.vertices),Vector())/len(p.vertices)
+            wn=(nmat@p.normal).normalized()
+            z_axis=.640 if c.z>.595 else .561
+            radial=Vector((c.x,0,c.z-z_axis))
+            if wn.dot(radial)<-.005:p.material_index=base_idx+1;ex_inner+=1
+            else:p.material_index=base_idx;ex_outer+=1
+        quality_fixes['exhaust']={'material':'heat-tinted metal outside, soot-dark inside','inner_faces':ex_inner,'outer_faces':ex_outer}
+
 # glTF does not embed DDS; make portable PNG copies of the actually used images.
 converted={}
 processed_materials=set()
