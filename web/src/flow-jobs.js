@@ -3,7 +3,8 @@ import { describeModel, snapshotRig } from './flow-worker-protocol.js';
 import { rollingWeights } from './airflow.js';
 import { FlowPreview } from './flow-preview.js';
 
-const SETTLE_MS = 140;
+const DIRECTION_SETTLE_MS = 140;
+const FIELD_POLL_MS = 75;
 const BLEND_MS = 160;
 const TRACE_TIMEOUT_MS = 5000;
 const windAngleOf = state => state.effWindAngle ?? state.windAngle ?? 0;
@@ -51,6 +52,7 @@ export class FlowJobs {
     this.ready = false;
     this.sent = this.result = null;
     this.nextSelectionAt = 0;
+    this.appliedSelection = null;
   }
 
   retry() {
@@ -64,7 +66,9 @@ export class FlowJobs {
     this.failed = true;
     this.recoveries = (this.recoveries || 0) + 1;
     if (timedOut || this.recoveries > 2) {
-      this.failureStatus = '精细流线暂不可用 · 当前为交互预览，请重试';
+      this.failureStatus = this.appliedKey == null
+        ? '精细流线暂不可用 · 当前为交互预览，请重试'
+        : '流线更新失败 · 保留最近一次结果，请重试';
       this.flow.onStatus(this.failureStatus);
       return;
     }
@@ -119,16 +123,18 @@ export class FlowJobs {
     }, description.flatMap(mesh => mesh.index ? [mesh.position.buffer, mesh.index.buffer] : [mesh.position.buffer]));
   }
 
-  commitResult(key, now) {
+  commitResult(now) {
     const pending = this.result;
     this.result = null;
-    if (!pending || pending.job.key !== key || pending.job.poseVersion !== this.poseVersion) return;
+    // Publish completed intermediate poses while sliders and the DRS animation
+    // advance. A result from before a wind-direction change must never return.
+    if (!pending || pending.job.directionVersion !== this.directionVersion) return;
     const { message, job } = pending;
-    if (this.appliedKey !== key) this.blendStarted = now;
+    if (this.appliedKey == null) this.blendStarted = now;
     applyLayer(this.flow, message.flow);
     applyLayer(this.bottom, message.bottom);
     applyLayer(this.side, message.side);
-    this.appliedKey = key;
+    this.appliedKey = job.key;
     this.appliedSelection = job.selectionKey;
     this.detailAngle = job.angle;
     this.flow.stats = {
@@ -168,19 +174,24 @@ export class FlowJobs {
 
     const angle = windAngleOf(state);
     const key = inputKey(state);
-    if (key !== this.key) {
-      this.key = key;
-      this.changedAt = now;
-      this.poseVersion = (this.poseVersion ?? 0) + 1;
+    const directionChanged = this.key == null || angle !== this.angle;
+    if (directionChanged) {
+      this.angle = angle;
+      this.directionChangedAt = now;
+      this.directionVersion = (this.directionVersion ?? 0) + 1;
       this.appliedKey = null;
       this.hideLayers();
+      yaw?.cancelRequestsExcept(new Set());
+    }
+    if (key !== this.key && this.appliedKey == null) {
       const started = performance.now();
       this.preview.update(state, angle, rig);
       this.previewMs = performance.now() - started;
-      yaw?.cancelRequestsExcept(new Set());
     }
-    this.commitResult(key, now);
-    const hasDetail = this.appliedKey === key;
+    this.key = key;
+    this.commitResult(now);
+    const hasDetail = this.appliedKey != null;
+    const detailIsCurrent = this.appliedKey === key;
     const blend = !hasDetail ? 0 : this.reducedMotion ? 1 : Math.min(1, (now - this.blendStarted) / BLEND_MS);
     flow.material.uniforms.opacity.value = blend;
     this.preview.show(1 - blend);
@@ -196,12 +207,12 @@ export class FlowJobs {
     if (now - sweep.lastRefresh > 30000 && !sweep.manifest?.complete) sweep.refresh();
     if (yaw && now - yaw.lastRefresh > 30000 && !yaw.manifest?.complete) yaw.refresh();
 
-    if (now - this.changedAt < SETTLE_MS) {
-      flow.onStatus(hasDetail ? this.detailStatus : '交互预览 · 随当前工况更新');
+    if (now - this.directionChangedAt < DIRECTION_SETTLE_MS) {
+      flow.onStatus('交互预览 · 随当前工况更新');
       return;
     }
     if (!this.ready) {
-      flow.onStatus('交互预览 · 正在准备精细流线');
+      flow.onStatus(hasDetail ? '正在准备流线更新…' : '交互预览 · 正在准备精细流线');
       return;
     }
     if (!this.bottomSent && bottom.status === 'ready' && bottom.data) {
@@ -212,12 +223,20 @@ export class FlowJobs {
       this.worker.postMessage({ type: 'layer', kind: 'side', data: side.data, meta: side.meta });
       this.sideSent = true;
     }
-    if (this.sent || now < (this.nextSelectionAt ?? 0)) return;
-    this.nextSelectionAt = now + 75;
+    if (!detailIsCurrent && hasDetail) flow.onStatus('正在更新流线…');
+    // Coalesce rapid changes behind one in-flight trace. Throttle only asset
+    // polling for the same input, so changing poses can trace on the next frame.
+    if (this.sent || (key === this.lastSelectionInput && now < this.nextSelectionAt)) return;
+    this.lastSelectionInput = key;
+    this.nextSelectionAt = now + FIELD_POLL_MS;
     const useYaw = Math.abs(angle) >= 1e-6 && state.speed > 0;
     const yawField = useYaw ? yaw?.selection(angle) : null;
     if (useYaw && (!yawField || yawField.loading || yawField.error)) {
-      flow.onStatus(yawField?.error ? '精细侧风流线暂不可用 · 当前为交互预览，请重试' : '交互预览 · 正在加载当前角度的侧风数据');
+      if (hasDetail) {
+        flow.onStatus(yawField?.error ? '侧风数据暂不可用 · 保留最近一次结果，请重试' : '正在加载当前角度的侧风数据…');
+      } else {
+        flow.onStatus(yawField?.error ? '精细侧风流线暂不可用 · 当前为交互预览，请重试' : '交互预览 · 正在加载当前角度的侧风数据');
+      }
       return;
     }
 
@@ -236,7 +255,7 @@ export class FlowJobs {
     // At zero airspeed, the baseline scaled by U would erase wheel-only flow.
     // Keep its local preview until the required rolling field arrives.
     if (!U && missing.length) {
-      flow.onStatus('交互预览 · 正在加载车轮气流数据');
+      flow.onStatus(hasDetail ? '正在加载车轮气流数据…' : '交互预览 · 正在加载车轮气流数据');
       return;
     }
     const yawSelection = yawField && {
@@ -245,7 +264,7 @@ export class FlowJobs {
     };
     const selectionKey = JSON.stringify([weights, axisSweep, yawSelection?.weights, yawSelection?.exact, this.bottomSent, this.sideSent]);
     // Background warm-up should not cause a trace of an unchanged selection.
-    if (hasDetail && this.appliedSelection === selectionKey) {
+    if (detailIsCurrent && this.appliedSelection === selectionKey) {
       flow.onStatus(this.detailStatus);
       yaw?.warmNearby?.(angle);
       return;
@@ -261,7 +280,7 @@ export class FlowJobs {
     }
     const id = ++this.jobId;
     const serial = this.serial;
-    this.sent = { id, key, angle, selectionKey, poseVersion: this.poseVersion };
+    this.sent = { id, key, angle, selectionKey, directionVersion: this.directionVersion };
     this.watchdog = setTimeout(() => this.recover(serial, true), TRACE_TIMEOUT_MS);
     this.worker.postMessage({
       type: 'compute', id, key, state: { ...state }, rig: snapshotRig(rig, this.meshes, this.versions),

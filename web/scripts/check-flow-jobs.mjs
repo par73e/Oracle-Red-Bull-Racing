@@ -92,30 +92,49 @@ assert.equal(flow.group.visible, true);
 assert.equal(jobs.preview.lines.visible, false);
 assert.equal(jobs.detailAngle, 70);
 
-// Each slider updates the same reusable preview buffers before the next draw.
+// At fixed yaw, keep the full geometry visible and stream completed poses
+// while the next slider values are still arriving.
 const previewGeometry = jobs.preview.lines.geometry;
-update(1600, { drsCurrent: .2 });
-assertPreview(70);
-for (const [now, patch, attribute] of [
-  [1620, { drsCurrent: .8 }, 'position'],
-  [1640, { steer: 16 }, 'position'],
-  [1660, { wheelSpeedMps: 22 }, 'position'],
-  [1680, { speed: 135 }, 'flight'],
-]) {
-  const previous = previewGeometry.attributes[attribute].array.slice();
+const previewVersion = previewGeometry.attributes.position.version;
+const assertDetail = () => {
+  assert.equal(jobs.preview.lines.visible, false);
+  for (const layer of [flow, bottom, side]) assert.equal(layer.group.visible, true);
+  assert.equal(flow.material.uniforms.opacity.value, 1);
+};
+let previous = crosswind;
+for (const [i, patch] of [
+  { drsCurrent: .2 }, { drsCurrent: .8 }, { steer: 16 },
+  { wheelSpeedMps: 22 }, { speed: 135 }, { flowDensity: 100 },
+].entries()) {
+  const now = 1540 + i * 20;
+  if (previous !== crosswind) complete(worker, previous);
   update(now, patch);
-  assertPreview(70);
-  assert.notDeepEqual(previewGeometry.attributes[attribute].array, previous);
+  assertDetail();
+  assert.equal(jobs.appliedKey, previous.key, 'Apply the intermediate pose even as the input advances');
+  assert.equal(flow.geometry.attributes.position.array[0], Math.fround(previous.state.drsCurrent));
+  const current = worker.jobs.at(-1);
+  assert.notEqual(current, previous, 'Schedule changed input without waiting for it to settle');
+  for (const key of Object.keys(patch)) assert.equal(current.state[key], patch[key]);
+  assert.equal(current.state.windAngle, 70);
+  assert(current.yawSelection);
+  previous = current;
 }
-assert.equal(worker.jobs.length, 2);
-update(1850);
+assert.equal(previewGeometry.attributes.position.version, previewVersion, 'Do not rebuild hidden previews');
+update(1660, { drsCurrent: .9 });
+update(1680, { drsCurrent: .95 });
+assert.equal(worker.jobs.at(-1), previous, 'Coalesce input while a trace is in flight');
+complete(worker, previous);
+update(1700);
 const finalPose = worker.jobs.at(-1);
-for (const key of ['windAngle', 'speed', 'wheelSpeedMps', 'steer', 'drsCurrent']) assert.equal(finalPose.state[key], state[key]);
+assert.equal(finalPose.state.drsCurrent, .95);
 complete(worker, finalPose);
-update(1870);
-assert.equal(flow.geometry.attributes.position.array[0], Math.fround(.8));
+update(1720);
+assertDetail();
+assert.equal(jobs.appliedKey, finalPose.key);
+assert.equal(flow.geometry.attributes.position.array[0], Math.fround(.95));
+const completed = worker.jobs.length;
 update(1960);
-assert.equal(worker.jobs.length, 3, 'Unchanged input must not trace again');
+assert.equal(worker.jobs.length, completed, 'Unchanged input must not trace again');
 flow.sweep.selection = () => ({ weights: { base: 1 }, data: base });
 update(2040);
 const upgradedField = worker.jobs.at(-1);
@@ -160,4 +179,4 @@ update(2610);
 assertPreview(85);
 assert(recovered.terminated);
 jobs.retry();
-console.log('Immediate preview direction and parameters, final-pose scheduling, timeouts, retries and car isolation passed');
+console.log('Wind previews, live detailed poses, coalescing, timeouts, retries and car isolation passed');
