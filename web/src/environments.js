@@ -120,36 +120,40 @@ function windTunnel() {
   deck.position.y = -.19;
   root.add(deck);
 
-  // Structural portal frames and ceiling light banks along the tunnel hall
+  // Keep the hall architecture outside the 18 m orbit around the car.
+  const hallHalfWidth = 23.4;
+  const hallBeamY = 22.35;
   for (let z = -22; z <= 18; z += 8) {
-    for (const x of [-13.4, 13.4]) {
-      box(root, .42, 14.6, .48, x, 7.1, z, darkStructure);
-      box(root, .85, 1.4, .44, x - Math.sign(x) * .28, 13.6, z, darkStructure);
+    for (const x of [-hallHalfWidth, hallHalfWidth]) {
+      box(root, .42, 22.6, .48, x, 11.1, z, darkStructure);
+      box(root, .85, 1.4, .44, x - Math.sign(x) * .28, hallBeamY - .75, z, darkStructure);
     }
-    box(root, 27.2, .46, .48, 0, 14.35, z, darkStructure);
+    box(root, 2 * hallHalfWidth + .4, .46, .48, 0, hallBeamY, z, darkStructure);
   }
-  for (const x of [-11.5, 11.5]) {
-    box(root, .22, .26, 48, x, 13.95, -2, darkStructure);
+  const bankOffset = hallHalfWidth - 1.9;
+  for (const x of [-bankOffset, bankOffset]) {
+    box(root, .22, .26, 48, x, hallBeamY - .40, -2, darkStructure);
     for (let z = -24; z <= 16; z += 8) {
-      box(root, 4.3, .16, .62, x, 14.08, z, panel);
-      box(root, 4.0, .06, .42, x, 13.98, z, light);
+      box(root, 4.3, .16, .62, x, hallBeamY - .27, z, panel);
+      box(root, 4.0, .06, .42, x, hallBeamY - .37, z, light);
     }
   }
-  // Overhead centerline PIV / aero sensor gantry rail
+  // Overhead centerline PIV / aero sensor gantry rail.
   for (const x of [-1.55, 1.55]) {
-    box(root, .12, .18, 26, x, 11.8, 0, darkStructure);
+    box(root, .12, .18, 26, x, 21, 0, darkStructure);
   }
   for (let z = -10; z <= 10; z += 4) {
-    box(root, 3.2, .1, .12, 0, 11.8, z, metal);
+    box(root, 3.2, .1, .12, 0, 21, z, metal);
   }
 
-  // Control room observation window on left hall wall
-  box(root, .32, 3.1, 10.6, -13.25, 2.35, 0, panel);
-  box(root, .18, 2.3, 9.8, -13.15, 2.38, 0, glass);
+  // Control room observation window on the left hall wall.
+  const windowX = -hallHalfWidth;
+  box(root, .32, 3.1, 10.6, windowX + .15, 2.35, 0, panel);
+  box(root, .18, 2.3, 9.8, windowX + .25, 2.38, 0, glass);
   for (let z = -4.8; z <= 4.8; z += 2.4) {
-    box(root, .28, 2.4, .1, -13.12, 2.38, z, darkStructure);
+    box(root, .28, 2.4, .1, windowX + .28, 2.38, z, darkStructure);
   }
-  box(root, .06, .08, 9.6, -13.1, 1.22, 0, warmGlow);
+  box(root, .06, .08, 9.6, windowX + .30, 1.22, 0, warmGlow);
 
   // Rolling road belt texture with realistic wear tracks and optical edge markers
   const canvas = document.createElement('canvas');
@@ -284,22 +288,25 @@ function windTunnel() {
     box(root, .025, .024, .36, x, -.011, 5.85, metal);
   }
 
-  // Upstream plenum bulkhead framing the circular fan throat (centred at y=2.4, z=13.85)
+  // Place the upstream plenum and fan beyond the orbit as one assembly.
+  const plenum = new T.Group();
+  plenum.position.z = 9;
+  root.add(plenum);
   const fy = 2.4, fz = 13.85;
-  box(root, 12.6, 1.25, .36, 0, 5.45, 14.22, concrete);
-  box(root, 12.6, .34, .36, 0, -.02, 14.22, concrete);
+  box(plenum, 12.6, 1.25, .36, 0, 5.45, 14.22, concrete);
+  box(plenum, 12.6, .34, .36, 0, -.02, 14.22, concrete);
   for (const s of [-1, 1]) {
-    box(root, 3.9, 4.72, .36, s * 4.3, 2.49, 14.22, concrete);
-    box(root, .28, 5.9, .54, s * 2.46, 2.75, 14.14, darkStructure);
-    box(root, .28, 5.9, .54, s * 6.18, 2.75, 14.14, darkStructure);
+    box(plenum, 3.9, 4.72, .36, s * 4.3, 2.49, 14.22, concrete);
+    box(plenum, .28, 5.9, .54, s * 2.46, 2.75, 14.14, darkStructure);
+    box(plenum, .28, 5.9, .54, s * 6.18, 2.75, 14.14, darkStructure);
     // Recessed acoustic splitter louvers proud of the bulkhead front face
-    box(root, 3.15, 4.15, .12, s * 4.32, 2.48, 14.01, darkRecess);
+    box(plenum, 3.15, 4.15, .12, s * 4.32, 2.48, 14.01, darkRecess);
     for (let ly = .65; ly <= 4.3; ly += .33) {
-      const louver = box(root, 3.05, .07, .18, s * 4.32, ly, 13.96, panel);
+      const louver = box(plenum, 3.05, .07, .18, s * 4.32, ly, 13.96, panel);
       louver.rotation.x = .22;
     }
     for (const lx of [s * 3.3, s * 5.34]) {
-      box(root, .06, 4.1, .2, lx, 2.48, 13.97, metal);
+      box(plenum, .06, 4.1, .2, lx, 2.48, 13.97, metal);
     }
   }
   // Corner gussets framing the circular bellmouth opening
@@ -308,7 +315,7 @@ function windTunnel() {
       const gusset = new T.Mesh(new T.BoxGeometry(1.18, 1.18, .34), darkStructure);
       gusset.position.set(sx * 1.92, fy + sy * 1.92, 14.18);
       gusset.rotation.z = Math.PI / 4;
-      root.add(gusset);
+      plenum.add(gusset);
     }
   }
 
@@ -319,17 +326,17 @@ function windTunnel() {
   );
   ductWall.rotation.x = Math.PI / 2;
   ductWall.position.set(0, fy, 14.32);
-  root.add(ductWall);
+  plenum.add(ductWall);
 
   const plenumBack = new T.Mesh(new T.CylinderGeometry(2.26, 2.26, .08, 64), darkRecess);
   plenumBack.rotation.x = Math.PI / 2;
   plenumBack.position.set(0, fy, 15.16);
-  root.add(plenumBack);
+  plenum.add(plenumBack);
 
-  // Upstream axial fan assembly (position & dynamic references preserved)
+  // Upstream axial fan assembly.
   const fan = new T.Group();
   fan.position.set(0, fy, fz);
-  root.add(fan);
+  plenum.add(fan);
   root.userData.fan = fan;
 
   // Contoured aerodynamic bellmouth shroud (rotation.x = +PI/2 maps local +Y to +Z)
@@ -490,7 +497,7 @@ function windTunnel() {
 
   // Dedicated tunnel accent lighting so the turbine blades & nose cone have crisp 3D shading
   const fanKeyLight = new T.DirectionalLight(0xe6f0ff, 1.45);
-  fanKeyLight.position.set(-6, 7, 4);
+  fanKeyLight.position.set(-6, 7, 4 + plenum.position.z);
   fanKeyLight.target = fan;
   root.add(fanKeyLight);
 

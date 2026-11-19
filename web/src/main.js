@@ -292,6 +292,9 @@ eauRougeFloor.receiveShadow = true;
 eauRougeFloor.visible = false;
 scene.add(eauRougeFloor);
 
+const ORBIT_MAX_POLAR = Math.PI * .995;
+const SPA_OVERVIEW_MAX_POLAR = THREE.MathUtils.degToRad(48);
+
 const orbit = new OrbitControls(camera, renderer.domElement);
 orbit.enableDamping = true;
 orbit.dampingFactor = .07;
@@ -300,10 +303,13 @@ orbit.panSpeed = 1.25;
 orbit.zoomSpeed = 1.2;
 orbit.minDistance = .35;
 orbit.maxDistance = 18;
-orbit.maxPolarAngle = Math.PI * .995;
+orbit.maxPolarAngle = ORBIT_MAX_POLAR;
 orbit.screenSpacePanning = true;
 orbit.enabled = !state.freeMode;
 
+// A sub-pixel residual at normal viewport sizes. Damping otherwise approaches
+// its endpoint asymptotically, leaving a tiny camera drift after input stops.
+const CAMERA_SETTLE_EPSILON = 5e-5;
 const MAX_PITCH = Math.PI * .495;
 const lookState = {
   yaw: 0,
@@ -328,7 +334,11 @@ function syncLookFromTarget(pos = camera.position, target = orbit.target) {
 }
 
 function applyLookOrientation(dt = 0) {
-  if (reducedMotion || dt <= 0) {
+  const settled = reducedMotion || dt <= 0 || (
+    Math.abs(lookState.targetYaw - lookState.yaw) <= CAMERA_SETTLE_EPSILON &&
+    Math.abs(lookState.targetPitch - lookState.pitch) <= CAMERA_SETTLE_EPSILON
+  );
+  if (settled) {
     lookState.yaw = lookState.targetYaw;
     lookState.pitch = lookState.targetPitch;
   } else {
@@ -345,6 +355,7 @@ function applyLookOrientation(dt = 0) {
     camera.position.z + fz * lookState.focusDistance
   );
   camera.lookAt(orbit.target);
+  return settled;
 }
 
 function updateCameraHint() {
@@ -389,12 +400,38 @@ function closeAllTelemetryPopovers() {
   });
 }
 
+const WHEEL_QUIET_MS = 180;
+let lastCameraWheelAt = -Infinity;
+let cameraStillLastFrame = false;
+
 function setAutoHidden(hidden) {
   const next = Boolean(hidden && state.autoHide && !state.manualHidden);
   if (state.autoHidden === next) return;
   state.autoHidden = next;
   $('app').classList.toggle('auto-hidden', next);
   if (next) closeAllTelemetryPopovers();
+}
+
+function noteCameraActivity() {
+  cameraStillLastFrame = false;
+  setAutoHidden(true);
+}
+
+function updateAutoReveal(now, cameraSettled) {
+  const still = cameraSettled && !pointerTrack?.onCanvas && !freeKeys.size &&
+    now - lastCameraWheelAt >= WHEEL_QUIET_MS;
+  if (state.autoHidden && still && cameraStillLastFrame) setAutoHidden(false);
+  cameraStillLastFrame = still;
+}
+
+function settleOrbitDamping(distance) {
+  const { _sphericalDelta: rotation, _panOffset: pan } = orbit;
+  if (Math.abs(rotation.theta) > CAMERA_SETTLE_EPSILON ||
+      Math.abs(rotation.phi) > CAMERA_SETTLE_EPSILON ||
+      pan.lengthSq() > (distance * CAMERA_SETTLE_EPSILON) ** 2) return false;
+  rotation.set(0, 0, 0);
+  pan.set(0, 0, 0);
+  return true;
 }
 
 renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
@@ -529,15 +566,11 @@ window.addEventListener('pointermove', e => {
   }
   if (!pointerTrack.moved && (locked || Math.hypot(e.clientX - pointerTrack.x, e.clientY - pointerTrack.y) > 4)) {
     pointerTrack.moved = true;
-    if (pointerTrack.onCanvas) {
-      transition = null;
-      if (state.autoHide && !state.manualHidden) {
-        setAutoHidden(true);
-      }
-    }
+    if (pointerTrack.onCanvas) transition = null;
   }
   if (!locked) maybeLockPointerAtEdge(e.clientX, e.clientY, dx, dy);
-  if (pointerTrack.onCanvas && pointerTrack.moved) {
+  if (pointerTrack.onCanvas && pointerTrack.moved && (dx || dy)) {
+    noteCameraActivity();
     applyPointerDelta(dx, dy, pointerTrack.panMode);
   }
 }, { passive: true });
@@ -579,6 +612,10 @@ window.addEventListener('pointercancel', e => {
 }, { passive: true });
 
 renderer.domElement.addEventListener('wheel', e => {
+  if (e.deltaY && !e.ctrlKey) {
+    lastCameraWheelAt = performance.now();
+    noteCameraActivity();
+  }
   if (!state.freeMode) return;
   e.preventDefault();
   transition = null;
@@ -621,16 +658,21 @@ window.addEventListener('keydown', e => {
     transition = null;
     markFreeCameraActive();
     freeKeys.add(e.code);
-    if (state.autoHide && !state.manualHidden) setAutoHidden(true);
+    noteCameraActivity();
   }
 });
 window.addEventListener('keyup', e => {
-  if (freeKeys.delete(e.code) && state.freeMode) {
+  if (!freeKeys.delete(e.code)) return;
+  if (state.freeMode) {
     captureCameraPose();
     saveState();
   }
 });
-window.addEventListener('blur', () => freeKeys.clear());
+window.addEventListener('blur', () => {
+  freeKeys.clear();
+  pointerTrack = null;
+  exitCanvasPointerLock();
+});
 window.addEventListener('pagehide', () => {
   if (cameraSaveTimer) {
     clearTimeout(cameraSaveTimer);
@@ -719,14 +761,22 @@ function applyFraming() {
   }
 }
 
+function orbitMaxPolarAt(distance) {
+  if (state.environment !== 'eau-rouge' || state.freeMode || state.view === 'floor') return ORBIT_MAX_POLAR;
+  // Raise the distant orbit above Spa's wooded slopes and grandstand.
+  const overview = THREE.MathUtils.smoothstep(distance, 18, 80);
+  return THREE.MathUtils.lerp(ORBIT_MAX_POLAR, SPA_OVERVIEW_MAX_POLAR, overview);
+}
+
 function applyInstantOrbitPose(pos, target) {
   const prevDamping = orbit.enableDamping;
   orbit.enableDamping = false;
   camera.position.copy(pos);
   orbit.target.copy(target);
+  orbit.maxPolarAngle = orbitMaxPolarAt(pos.distanceTo(target));
   orbit.update();
   orbit.enableDamping = prevDamping;
-  syncLookFromTarget(pos, target);
+  syncLookFromTarget();
 }
 
 function setView(name, instant = false, keepFreeBadge = false, resetSavedPose = true) {
@@ -961,6 +1011,7 @@ function setEnvironment(name) {
       ? '原创全尺寸风洞场景 · 气流来自自由外流算例'
       : '纯白影棚打光 · 聚焦赛车曲面与流线细节';
   orbit.maxDistance = name === 'eau-rouge' ? 120 : 18;
+  orbit.maxPolarAngle = ORBIT_MAX_POLAR;
   floor.position.y = name === 'studio' ? -.035 : -.003;
   floor.material.opacity = name === 'studio' ? .42 : .24;
   floor.visible = name !== 'eau-rouge';
@@ -1188,6 +1239,15 @@ async function loadModel(id) {
     if (serial !== loadSerial) return;
     const loaded = await loader.parseAsync(buffer, '/');
     if (serial !== loadSerial) { disposeModel(loaded.scene); return; }
+    if (id === 'rb16b') {
+      // The export includes both fastened and unfastened harness geometry.
+      // Display the fastened variant on its own to avoid overlapping straps.
+      const unfastenedHarness = [];
+      loaded.scene.traverse(o => {
+        if (o.isMesh && o.name.startsWith('CINTURE_OFF_')) unfastenedHarness.push(o);
+      });
+      unfastenedHarness.forEach(o => o.removeFromParent());
+    }
     const nextRig = bindRig(loaded.scene, config);
     loaded.scene.traverse(o => {
       if (o.isMesh) {
@@ -1195,6 +1255,12 @@ async function loadModel(id) {
         o.receiveShadow = true;
         if (o.geometry.attributes.position.count > 30) o.geometry.computeBoundsTree();
         for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+          // Both RB16B harness materials are fully opaque. Imported blending
+          // let the cockpit draw over the straps as the camera angle changed.
+          if (id === 'rb16b' && (m.name === 'gp21_cinture.001' || m.name === 'chrome.001')) {
+            m.transparent = false;
+            m.depthWrite = true;
+          }
           for (const value of Object.values(m)) if (value?.isTexture) value.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
         }
       }
@@ -1360,6 +1426,7 @@ persistenceReady = true;
 renderer.setAnimationLoop(now => {
   const elapsed = Math.max(0, (now - lastTime) / 1000), dt = Math.min(elapsed, .05);
   lastTime = now;
+  let cameraSettled = false;
   if (transition) {
     const t = Math.min((now - transition.start) / 850, 1);
     const ease = t * t * (3 - 2 * t);
@@ -1378,10 +1445,14 @@ renderer.setAnimationLoop(now => {
     }
   } else if (state.freeMode) {
     moveFreeCamera(dt);
-    applyLookOrientation(dt);
+    cameraSettled = applyLookOrientation(dt);
   } else {
+    const distance = orbit.getDistance();
+    orbit.maxPolarAngle = orbitMaxPolarAt(distance);
+    cameraSettled = settleOrbitDamping(distance);
     orbit.update();
   }
+  updateAutoReveal(now, cameraSettled);
   state.drsCurrent = reducedMotion ? state.drs : THREE.MathUtils.damp(state.drsCurrent, state.drs, 9, Math.min(elapsed, .5));
   if (Math.abs(state.drsCurrent - state.drs) < .001) state.drsCurrent = state.drs;
   state.spin += state.wheelSpeedMps * dt;
@@ -1467,7 +1538,7 @@ window.aeroStudio = {
     workerPending: Boolean(flowJobs.sent),
   }, state: { ...state } }; },
   get forces() { return aeroForces.estimate(state); },
-  get turntable() { return { carYawDeg: THREE.MathUtils.radToDeg(carTurntable.rotation.y), environmentYawDeg: THREE.MathUtils.radToDeg(worlds.turntableYaw), fanPosition: worlds.root?.userData.fan?.position?.toArray() || null }; },
+  get turntable() { return { carYawDeg: THREE.MathUtils.radToDeg(carTurntable.rotation.y), environmentYawDeg: THREE.MathUtils.radToDeg(worlds.turntableYaw), fanPosition: worlds.root?.userData.fan?.getWorldPosition(new THREE.Vector3()).toArray() || null }; },
   get sidepod() { return { available: Boolean(sidepod.data), visible: sidepod.group.visible, mode: sidepod.mode, lines: sidepod.count, regions: sidepod.regions, layers: sidepod.layers, fallbackSamples: sidepod.fallbackSamples, blockedSeeds: sidepod.blockedSeeds, case: sidepod.meta?.case, time: sidepod.meta?.time }; },
   get underbody() { return { available: Boolean(underbody.data), visible: underbody.group.visible, mode: underbody.mode, lines: underbody.count, stops: underbody.stops, boundaryAxes: underbody.boundaryAxes, case: underbody.meta?.case, time: underbody.meta?.time }; },
   setEnvironment,
