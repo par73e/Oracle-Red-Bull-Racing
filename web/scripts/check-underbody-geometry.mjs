@@ -19,6 +19,7 @@ for(const car of ['rb19','rb16b']){
   {name:'DRS open',speed:180,wheelSpeedMps:50,steer:0,drs:1,drsCurrent:1},
   {name:'lower speed',speed:100,wheelSpeedMps:100/3.6,steer:0,drs:0,drsCurrent:0},
   {name:'very low speed',speed:1,wheelSpeedMps:1/3.6,steer:0,drs:0,drsCurrent:0},
+  {name:'maximum headwind',speed:404,wheelSpeedMps:350/3.6,steer:0,drs:0,drsCurrent:0},
   {name:'high speed',speed:350,wheelSpeedMps:350/3.6,steer:-18,drs:1,drsCurrent:1},
   {name:'slow road combined',speed:180,wheelSpeedMps:25,steer:12,drs:.5,drsCurrent:.5},
   {name:'still-air driving',speed:0,wheelSpeedMps:50,steer:0,drs:0,drsCurrent:0},
@@ -29,6 +30,14 @@ for(const car of ['rb19','rb16b']){
   assert.equal(visible,true,`${car} ${item.name} hidden`);assert.ok(bottom.count>0,`${car} ${item.name} has no lines`);
   const values=bottom.geometry.attributes.position.array;if(item.name==='baseline'){baselineGeometry=Array.from(values);assert.equal(bottom.mode,'baseline');}else{assert.equal(bottom.mode,'surrogate');if(item.name==='DRS open')assert.notDeepEqual(Array.from(values),baselineGeometry,`${car} DRS produced identical trajectories`);}const ray=new T.Raycaster(),a=new T.Vector3(),b=new T.Vector3(),direction=new T.Vector3();ray.firstHitOnly=true;let crossings=0;
   for(let i=0;i<values.length;i+=6){a.fromArray(values,i);b.fromArray(values,i+3);direction.copy(b).sub(a);const distance=direction.length();ray.set(a,direction.divideScalar(distance));ray.near=.00002;ray.far=distance-.00002;if(ray.intersectObject(model,true).length)crossings++;}
+  if(item.name==='maximum headwind'){
+   let rearSegments=0;
+   for(let i=2;i<values.length;i+=6)if(values[i]<0)rearSegments++;
+   assert.ok(bottom.fallbackSamples>0,`${car} did not exercise missing coarse samples`);
+   assert.ok(rearSegments>=2000,`${car} bottom flow cut short: ${rearSegments} rear-half segments`);
+   console.log(`${car}: ${rearSegments} bottom segments behind the center at maximum headwind`);
+  }
+  if(item.name==='baseline'||item.name==='still-air driving')assert.equal(bottom.fallbackSamples,0);
   console.log(`${car} ${item.name}: ${bottom.count} lines, ${values.length/6} segments, ${crossings} full-mesh intersections`);assert.equal(crossings,0);
  }
 }

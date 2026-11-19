@@ -243,16 +243,11 @@ export class Airflow {
   const wheels=Object.entries(rig.wheels).map(([key,w])=>{const center=w.spinNode.getWorldPosition(new T.Vector3()),quat=w.spinNode.getWorldQuaternion(new T.Quaternion());if(hasParent){center.applyMatrix4(_invParent);quat.premultiply(_invQuat);}return {center,axis:new T.Vector3(1,0,0).applyQuaternion(quat),radius:w.radius,width:rig.config.id==='rb19'?(key.startsWith('R')?.47:.43):.45};});
   const insideWheel=p=>wheels.some(w=>{mid.copy(p).sub(w.center);const along=mid.dot(w.axis);return Math.abs(along)<w.width/2+.012&&mid.lengthSq()-along*along<(w.radius+.009)**2;});
   const seeds=[];
-  if(Math.abs(windAngle)<1e-6){
+  const absAngle = Math.abs(windAngle);
+  const beta = T.MathUtils.degToRad(windAngle), cb = Math.cos(beta), sb = Math.sin(beta);
+  if(absAngle<1e-6){
    if(U>.02&&density>0){const nx=Math.max(1,Math.round(21*Math.sqrt(density/100))),ny=Math.max(1,Math.round(7*Math.sqrt(density/100)));for(let j=0;j<ny;j++)for(let i=0;i<nx;i++)seeds.push(new T.Vector3(-1.5+3*(i+.5)/nx,.08+.96*(j+.5)/ny,3.85));}
-   // Sample the solved field locally ahead of the rear wing as well as at the
-   // inlet. Upstream trajectories can terminate on the car long before reaching
-   // this region; seed density is a visualization choice, not physical density.
-   if(U>.02&&density>0){const nx=Math.max(1,Math.round(15*Math.sqrt(density/100))),ny=Math.max(1,Math.round(6*Math.sqrt(density/100)));
-    for(let j=0;j<ny;j++)for(let i=0;i<nx;i++)seeds.push(new T.Vector3(-.95+1.9*(i+.5)/nx,.64+.68*(j+.5)/ny,-1.72));
-   }
   }else if(U>.02&&density>0){
-   const beta=windAngle*Math.PI/180,cb=Math.cos(beta),sb=Math.sin(beta);
    // Downstream wind in display frame: (sin(beta), 0, -cos(beta)); upstream is opposite.
    const ux=-sb,uz=cb,tx=cb,tz=sb;
    const upDist=3.8*Math.abs(cb)+3.4*Math.abs(sb),halfW=1.45*Math.abs(cb)+2.85*Math.abs(sb);
@@ -262,15 +257,31 @@ export class Airflow {
    }
    // Local near-body upper rake so crosswind separation over sidepods & wings stays visible.
    const upNear=1.55*Math.abs(cb)+1.15*Math.abs(sb),hwNear=1.1*Math.abs(cb)+2.4*Math.abs(sb);
-   const nx2=Math.max(1,Math.round(14*Math.sqrt(density/100))),ny2=Math.max(1,Math.round(5*Math.sqrt(density/100)));
+   const nearWeight=T.MathUtils.smoothstep(absAngle,0,35);
+   const nx2=Math.round(14*nearWeight*Math.sqrt(density/100)),ny2=Math.max(1,Math.round(5*Math.sqrt(density/100)));
    for(let j=0;j<ny2;j++){const y=.52+.72*(j+.5)/ny2;
     for(let i=0;i<nx2;i++){const s=-hwNear+2*hwNear*(i+.5)/nx2;seeds.push(new T.Vector3(ux*upNear+tx*s,y,uz*upNear+tz*s));}
+   }
+  }
+  // Keep the local rake upstream of the rear wing through shallow yaw.
+  // At larger angles the side rake reaches the tail directly, so taper the
+  // extra seeds to avoid piling up traces in the same region.
+  if (U > .02 && density > 0 && absAngle < 65) {
+   const densityScale = Math.sqrt(density / 100);
+   const rearWeight = 1 - T.MathUtils.smoothstep(absAngle, 15, 65);
+   const columns = Math.round(Math.max(1, 15 * densityScale) * rearWeight);
+   const rows = Math.max(1, Math.round(6 * densityScale));
+   const halfWidth = T.MathUtils.lerp(.95, .55, Math.abs(sb));
+   const seedX = -.66 * sb, seedZ = -1.72 + .66 * (cb - 1);
+   for (let j = 0; j < rows; j++) for (let i = 0; i < columns; i++) {
+    const offset = -halfWidth + 2 * halfWidth * (i + .5) / columns;
+    seeds.push(new T.Vector3(seedX + cb * offset, .64 + .68 * (j + .5) / rows, seedZ + sb * offset));
    }
   }
   // Additional wheel neighbourhood seeds expose the rotation-driven component,
   // including stationary-car wheel rotation. They are not invented trajectories.
   const wheelSeeds=Math.round(10*density/100);for(const w of wheels)for(let i=0;i<wheelSeeds;i++){const a=i*Math.PI*2/wheelSeeds;seeds.push(w.center.clone().add(new T.Vector3(.26*Math.sign(w.center.x),Math.sin(a)*(w.radius+.1),Math.cos(a)*(w.radius+.1))));}
-  const maxSteps=Math.abs(windAngle)<1e-6?190:220,inv120=1/120,ds=.065,invFade=ds/.22;
+  const maxSteps=absAngle<1e-6?190:220,inv120=1/120,ds=.065,invFade=ds/.22;
   for(const seed of seeds){const start=scratch.len;point.copy(seed);let travel=0,segments=0;
    for(let step=0;step<maxSteps;step++){
     if(!this.sample(-point.z,-point.x,point.y-.005,velocity))break;const speed=velocity.length();if(speed<Math.max(.07,Math.max(U,W)*.005))break;

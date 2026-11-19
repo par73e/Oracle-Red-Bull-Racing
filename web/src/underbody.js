@@ -26,21 +26,44 @@ export class UnderbodyFlow {
   const active=state.flow&&this.data&&airflow.stats.ready&&rig&&state.flowDensity>0&&(U>.001||W>.001);
   this.group.visible=Boolean(active);if(!active)return false;
   // Wait for the coarse field to match the current controls before blending.
-  const desired=[U.toFixed(3),W.toFixed(3),state.steer.toFixed(2),state.drsCurrent.toFixed(3),state.flowDensity,(state.effWindAngle??state.windAngle??0).toFixed(1)].join(':');
+  const windAngle=state.effWindAngle??state.windAngle??0;
+  const desired=[U.toFixed(3),W.toFixed(3),state.steer.toFixed(2),state.drsCurrent.toFixed(3),state.flowDensity,windAngle.toFixed(1)].join(':');
   if(airflow.stats.inputKey!==desired){this.group.visible=false;return false;}
   const key=`${state.model}:${desired}`;if(key===this.key)return true;this.key=key;
-  const exact=Math.abs(U-50)<1e-6&&Math.abs(W-50)<1e-6&&Math.abs(state.steer)<.001&&Math.abs(state.drsCurrent)<.001&&Math.abs(state.effWindAngle??state.windAngle??0)<.001;
+  const exact=Math.abs(U-50)<1e-6&&Math.abs(W-50)<1e-6&&Math.abs(state.steer)<.001&&Math.abs(state.drsCurrent)<.001&&Math.abs(windAngle)<.001;
   const baseScale=U/50,coarse=new T.Vector3(),reference=new T.Vector3();
+  const axialScale = baseScale * Math.max(0, Math.cos(T.MathUtils.degToRad(windAngle)));
+  let fallbackSamples=0;
   const scratch=this._scratch;scratch.reset();const point=new T.Vector3(),last=new T.Vector3(),vel=new T.Vector3(),direction=new T.Vector3(),color=new T.Color();const {nearby}=airflow.getRayContext(rig.model);let count=0;const stops={boundary:0,masked:0,slow:0,collision:0,limit:0},boundaryAxes={x:0,y:0,z:0};
   const nx=Math.max(1,Math.round(21*Math.sqrt(state.flowDensity/100))),ny=Math.max(1,Math.round(4*Math.sqrt(state.flowDensity/100)));
+  // Preserve the front rake through shallow yaw, then move it toward the
+  // windward side. The rake stays within the fine grid with the same seed budget.
+  const rakeAngle = windAngle * T.MathUtils.smoothstep(Math.abs(windAngle), 5, 20);
+  const rakeRadians = T.MathUtils.degToRad(rakeAngle);
+  const rakeCos = Math.cos(rakeRadians), rakeSin = Math.sin(rakeRadians);
+  const lateralWeight = Math.abs(rakeAngle) / 90;
+  const seedX = -.95 * rakeAngle / 90;
+  const seedZ = 1.78 * (1 - lateralWeight);
+  const halfWidth = T.MathUtils.lerp(.72, 1.5, lateralWeight);
   const inv120=1/120,invFade=.02/.14;
   for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){
-   const start=scratch.len;let reason='limit';point.set(-(-.72+1.44*(i+.5)/nx),.035+.07*(j+.5)/ny+.005,1.78);let travel=0,segments=0;
+   const offset = halfWidth - 2 * halfWidth * (i + .5) / nx;
+   point.set(seedX + rakeCos * offset, .035 + .07 * (j + .5) / ny + .005, seedZ + rakeSin * offset);
+   const start=scratch.len;let reason='limit',travel=0,segments=0;
    for(let n=0;n<350;n++){
     if(!this.sample(point,vel)){reason=this.sampleStop||'masked';break;}
     if(!exact){const x=-point.z,y=-point.x,z=point.y-.005;
-     if(!airflow.sample(x,y,z,reference,airflow.data.base,true,airflow.baseSpec||airflow.spec)||!airflow.sample(x,y,z,coarse)){reason='masked';break;}
-     vel.multiplyScalar(baseScale).add(coarse).addScaledVector(reference,-baseScale);
+     const haveDelta = airflow.sample(x,y,z,reference,airflow.data.base,true,airflow.baseSpec||airflow.spec)
+       && airflow.sample(x,y,z,coarse);
+     if (haveDelta) {
+       vel.multiplyScalar(baseScale).add(coarse).addScaledVector(reference,-baseScale);
+     } else {
+       // The coarse cell can be masked inside a passage the fine field resolves.
+       // Retain the resolved axial flow where a coarse correction is unavailable.
+       if (axialScale <= Number.EPSILON) { reason='masked'; break; }
+       vel.multiplyScalar(axialScale);
+       fallbackSamples++;
+     }
     }
     const speed=vel.length();if(speed<Math.max(.005,Math.max(U,W)*.005)){reason='slow';break;}last.copy(point);direction.copy(vel).normalize();point.addScaledVector(direction,.02);
     if(airflow.hasRayHit(last,direction,.022,nearby(last))){reason='collision';break;}
@@ -52,6 +75,6 @@ export class UnderbodyFlow {
    for(let n=0;n<segments;n++){scratch.alp[start+2*n]=Math.min(1,n*invFade,(segments-n)*invFade);scratch.alp[start+2*n+1]=Math.min(1,(n+1)*invFade,(segments-n-1)*invFade);}
    count++;
   }
-  this.geometry=scratch.commit(this.geometry);this.lines.geometry=this.geometry;this.count=count;this.stops=stops;this.boundaryAxes=boundaryAxes;this.mode=exact?'baseline':'surrogate';return true;
+  this.geometry=scratch.commit(this.geometry);this.lines.geometry=this.geometry;this.count=count;this.fallbackSamples=fallbackSamples;this.stops=stops;this.boundaryAxes=boundaryAxes;this.mode=exact?'baseline':'surrogate';return true;
  }
 }

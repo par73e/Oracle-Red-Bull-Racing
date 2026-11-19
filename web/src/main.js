@@ -1414,6 +1414,18 @@ renderer.domElement.addEventListener('webglcontextlost', e => {
   $('error-message').textContent = '图形上下文已中断，请刷新页面重新打开模型。';
 });
 
+const app = $('app');
+const hud = app.querySelector('.hud');
+const controlDrawer = $('drawer');
+const hudOverlayLayout = new ResizeObserver(entries => {
+  for (const entry of entries) {
+    const property = entry.target === hud ? '--hud-height' : '--drawer-height';
+    app.style.setProperty(property, `${entry.borderBoxSize[0].blockSize}px`);
+  }
+});
+hudOverlayLayout.observe(hud, { box: 'border-box' });
+hudOverlayLayout.observe(controlDrawer, { box: 'border-box' });
+
 window.addEventListener('resize', applyFraming);
 document.querySelectorAll('[data-model]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.model === state.model)));
 if ($('era')) $('era').textContent = state.model === 'rb19' ? '2023 / GROUND EFFECT' : '2021 / HYBRID ERA';
@@ -1486,7 +1498,7 @@ renderer.setAnimationLoop(now => {
         : state.speed === 0 && state.wheelSpeedMps < .001
           ? '静止：来流与车轮均为零'
           : underbodyVisible
-            ? (underbody.mode === 'baseline' ? '底盘加密基线 · 仍有网格差异，未充分收敛' : '底盘：加密基线叠加粗网格工况变化 · 近似预览')
+            ? (underbody.mode === 'baseline' ? '底盘加密基线 · 仍有网格差异，未充分收敛' : '底盘：基于加密流场的工况近似预览')
             : '正在准备底盘气流…';
   if (statusNodes.underbody && statusNodes.underbody.textContent !== underbodyMessage) statusNodes.underbody.textContent = underbodyMessage;
 
@@ -1540,7 +1552,7 @@ window.aeroStudio = {
   get forces() { return aeroForces.estimate(state); },
   get turntable() { return { carYawDeg: THREE.MathUtils.radToDeg(carTurntable.rotation.y), environmentYawDeg: THREE.MathUtils.radToDeg(worlds.turntableYaw), fanPosition: worlds.root?.userData.fan?.getWorldPosition(new THREE.Vector3()).toArray() || null }; },
   get sidepod() { return { available: Boolean(sidepod.data), visible: sidepod.group.visible, mode: sidepod.mode, lines: sidepod.count, regions: sidepod.regions, layers: sidepod.layers, fallbackSamples: sidepod.fallbackSamples, blockedSeeds: sidepod.blockedSeeds, case: sidepod.meta?.case, time: sidepod.meta?.time }; },
-  get underbody() { return { available: Boolean(underbody.data), visible: underbody.group.visible, mode: underbody.mode, lines: underbody.count, stops: underbody.stops, boundaryAxes: underbody.boundaryAxes, case: underbody.meta?.case, time: underbody.meta?.time }; },
+  get underbody() { return { available: Boolean(underbody.data), visible: underbody.group.visible, mode: underbody.mode, lines: underbody.count, fallbackSamples: underbody.fallbackSamples, stops: underbody.stops, boundaryAxes: underbody.boundaryAxes, case: underbody.meta?.case, time: underbody.meta?.time }; },
   setEnvironment,
   setPanel,
   get environment() { return { name: worlds.kind, metadata: worlds.root?.userData.metadata, forestReady: worlds.root?.userData.forestReady, forestError: worlds.root?.userData.forestError, treeCount: worlds.root?.userData.treeCount, forestTriangles: worlds.root?.userData.forestTriangles }; },

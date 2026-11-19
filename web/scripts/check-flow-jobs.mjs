@@ -16,9 +16,10 @@ const field = new Float32Array(3);
 const base = { base: field, open: field, right: field, low: field, 'road-slow': field, 'still-air': field };
 let yawState = 'loading';
 const yawRequests = [];
+const statusUpdates = [];
 const flow = {
   ...layer(), serial: 1, elapsed: 0, material, data: base, stats: { ready: true },
-  onStatus(value) { this.statusText = value; },
+  onStatus(value) { statusUpdates.push(value); this.statusText = value; },
   sweep: { lastRefresh: Infinity, selection: () => null },
   yaw: {
     lastRefresh: Infinity, cancelRequestsExcept() {},
@@ -35,7 +36,9 @@ const rig = { model: new T.Group(), wheels: {}, config: { id: 'rb19' } };
 const state = { model: 'rb19', flow: true, flowDensity: 150, speed: 180, wheelSpeedMps: 50, steer: 0, drsCurrent: 0, windAngle: 0 };
 function update(now, patch) {
   Object.assign(state, patch);
+  statusUpdates.length = 0;
   jobs.update(state, rig, .016, now);
+  assert(statusUpdates.length <= 1, `Publish at most one HUD status per frame: ${statusUpdates.join(' / ')}`);
 }
 function complete(worker, job) {
   const result = { visible: true, attributes: { position: new Float32Array([job.state.drsCurrent, 0, 0]) }, stats: { inputKey: job.key, yawActive: Boolean(job.yawSelection) } };
@@ -91,6 +94,19 @@ update(1520);
 assert.equal(flow.group.visible, true);
 assert.equal(jobs.preview.lines.visible, false);
 assert.equal(jobs.detailAngle, 70);
+assert.match(flow.statusText, /^粗网格 CFD/, 'Show the completed status even between field polls');
+
+yawState = 'loading';
+update(1525, { steer: 1 });
+assert.equal(flow.statusText, '正在加载当前角度的侧风数据…');
+update(1530);
+assert.equal(flow.statusText, '正在加载当前角度的侧风数据…', 'Keep loading text between field polls');
+yawState = 'error';
+update(1532, { steer: 2 });
+assert.match(flow.statusText, /暂不可用/);
+update(1535);
+assert.match(flow.statusText, /暂不可用/, 'Keep the retry status visible between field polls');
+yawState = 'ready';
 
 // At fixed yaw, keep the full geometry visible and stream completed poses
 // while the next slider values are still arriving.
@@ -110,6 +126,7 @@ for (const [i, patch] of [
   if (previous !== crosswind) complete(worker, previous);
   update(now, patch);
   assertDetail();
+  assert.equal(flow.statusText, '正在更新精细流线…');
   assert.equal(jobs.appliedKey, previous.key, 'Apply the intermediate pose even as the input advances');
   assert.equal(flow.geometry.attributes.position.array[0], Math.fround(previous.state.drsCurrent));
   const current = worker.jobs.at(-1);
@@ -122,6 +139,7 @@ for (const [i, patch] of [
 assert.equal(previewGeometry.attributes.position.version, previewVersion, 'Do not rebuild hidden previews');
 update(1660, { drsCurrent: .9 });
 update(1680, { drsCurrent: .95 });
+assert.equal(flow.statusText, '正在更新精细流线…', 'Keep one loading label while the worker is busy');
 assert.equal(worker.jobs.at(-1), previous, 'Coalesce input while a trace is in flight');
 complete(worker, previous);
 update(1700);

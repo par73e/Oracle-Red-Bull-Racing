@@ -128,7 +128,7 @@ export class FlowJobs {
     this.result = null;
     // Publish completed intermediate poses while sliders and the DRS animation
     // advance. A result from before a wind-direction change must never return.
-    if (!pending || pending.job.directionVersion !== this.directionVersion) return;
+    if (!pending || pending.job.directionVersion !== this.directionVersion) return false;
     const { message, job } = pending;
     if (this.appliedKey == null) this.blendStarted = now;
     applyLayer(this.flow, message.flow);
@@ -146,6 +146,7 @@ export class FlowJobs {
       : message.flow.stats.yawActive ? '粗网格 CFD · 侧风组合近似'
       : message.flow.stats.axisSweep ? '粗网格 CFD · 多参数组合近似'
       : '粗网格 CFD · 当前档位尚在计算，暂用近似工况';
+    return true;
   }
 
   update(state, rig, dt, now) {
@@ -189,7 +190,7 @@ export class FlowJobs {
       this.previewMs = performance.now() - started;
     }
     this.key = key;
-    this.commitResult(now);
+    const committed = this.commitResult(now);
     const hasDetail = this.appliedKey != null;
     const detailIsCurrent = this.appliedKey === key;
     const blend = !hasDetail ? 0 : this.reducedMotion ? 1 : Math.min(1, (now - this.blendStarted) / BLEND_MS);
@@ -223,10 +224,18 @@ export class FlowJobs {
       this.worker.postMessage({ type: 'layer', kind: 'side', data: side.data, meta: side.meta });
       this.sideSent = true;
     }
-    if (!detailIsCurrent && hasDetail) flow.onStatus('正在更新流线…');
-    // Coalesce rapid changes behind one in-flight trace. Throttle only asset
-    // polling for the same input, so changing poses can trace on the next frame.
-    if (this.sent || (key === this.lastSelectionInput && now < this.nextSelectionAt)) return;
+    const tracingStatus = hasDetail ? '正在更新精细流线…' : '交互预览 · 正在计算当前工况的精细流线';
+    // Keep the same label when a trace is submitted and while it is in flight.
+    if (this.sent) {
+      flow.onStatus(tracingStatus);
+      return;
+    }
+    // Throttle only asset polling for unchanged inputs. Keep loading or retry
+    // text intact between polls, but show a newly completed current result now.
+    if (key === this.lastSelectionInput && now < this.nextSelectionAt) {
+      if (committed && detailIsCurrent) flow.onStatus(this.detailStatus);
+      return;
+    }
     this.lastSelectionInput = key;
     this.nextSelectionAt = now + FIELD_POLL_MS;
     const useYaw = Math.abs(angle) >= 1e-6 && state.speed > 0;
@@ -269,7 +278,7 @@ export class FlowJobs {
       yaw?.warmNearby?.(angle);
       return;
     }
-    flow.onStatus(hasDetail ? '正在更新精细流线…' : '交互预览 · 正在计算当前工况的精细流线');
+    flow.onStatus(tracingStatus);
     const started = performance.now();
     const fields = {};
     for (const name of Object.keys(weights)) {
