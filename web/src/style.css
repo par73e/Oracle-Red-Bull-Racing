@@ -578,7 +578,8 @@ canvas {
   color: var(--text);
 }
 
-.label-row output {
+.label-row output,
+.switch-row output {
   font-size: 12px;
   font-weight: 650;
   color: var(--text);
@@ -824,6 +825,10 @@ input[type="range"]::-moz-range-thumb {
 
 [data-telemetry="drs"] > .readout {
   width: 48px;
+}
+
+[data-telemetry="drs"] > .readout[aria-pressed="true"] .readout-value {
+  color: var(--ok);
 }
 
 [data-telemetry="downforce"] > .readout {

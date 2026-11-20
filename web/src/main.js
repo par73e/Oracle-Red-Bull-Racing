@@ -8,6 +8,7 @@ import { bindRig, applyRig, inspectRig } from './rig.js';
 import { Airflow } from './airflow.js';
 import { AeroForces, resolveRelativeWind } from './aero-forces.js';
 import { FlowJobs } from './flow-jobs.js';
+import { isStationaryHeadwind, isRoad010Headwind } from './stationary-fields.js';
 import { UnderbodyFlow } from './underbody.js';
 import { SidepodFlow } from './sidepod.js';
 import { Environments } from './environments.js';
@@ -20,6 +21,7 @@ const $ = id => document.getElementById(id);
 const viewport = $('viewport');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const DEFAULT_GROUND_SPEED = 10;
+const drsEndpoint = value => Number.isFinite(value) && value >= .5 ? 1 : 0;
 const DEFAULT_CONFIG = Object.freeze({
   model: 'rb16b',
   environment: 'wind',
@@ -90,7 +92,7 @@ function hydrateSavedState() {
     if (Number.isFinite(saved.ambientWindMps)) state.ambientWindMps = THREE.MathUtils.clamp(saved.ambientWindMps, 0, 15);
     if (Number.isFinite(saved.windAngle)) state.windAngle = THREE.MathUtils.clamp(saved.windAngle, -90, 90);
     if (Number.isFinite(saved.groundSpeed)) state.groundSpeed = THREE.MathUtils.clamp(saved.groundSpeed, 0, 350);
-    if (Number.isFinite(saved.drs)) state.drs = THREE.MathUtils.clamp(saved.drs, 0, 1);
+    state.drs = drsEndpoint(saved.drs);
     if (Number.isFinite(saved.steer)) state.steer = THREE.MathUtils.clamp(saved.steer, -18, 18);
     if (typeof saved.flow === 'boolean') state.flow = saved.flow;
     if (Number.isFinite(saved.flowDensity)) state.flowDensity = THREE.MathUtils.clamp(saved.flowDensity, 0, 150);
@@ -201,7 +203,7 @@ function updateFlowStatus(message) {
       ? 'error'
       : message.includes('正在')
         ? 'loading'
-        : !state.flow || message.includes('静止')
+        : !state.flow || message.startsWith('静止 ·') || message.includes('暂无')
           ? 'idle'
           : 'ready';
     if (dotEl.dataset.tone !== tone) dotEl.dataset.tone = tone;
@@ -921,7 +923,7 @@ document.querySelectorAll('.telemetry-item').forEach(item => {
   const btn = item.querySelector('.readout');
   const range = item.querySelector('input[type="range"]');
   const shortcut = telemetrySteps[item.dataset.telemetry];
-  const drsShortcut = item.dataset.telemetry === 'drs';
+  if (!item.querySelector('.telemetry-popover')) return;
   const openItem = () => {
     document.querySelectorAll('.telemetry-item.is-open').forEach(other => {
       if (other !== item && !other.classList.contains('is-dragging')) {
@@ -969,8 +971,6 @@ document.querySelectorAll('.telemetry-item').forEach(item => {
       const max = Number(range.max);
       state[key] = state[key] >= max ? Number(range.min) : Math.min(max, state[key] + step);
       showState();
-    } else if (drsShortcut) {
-      toggleDrs();
     } else {
       openItem();
     }
@@ -1107,7 +1107,8 @@ function showState() {
   state.effWindAngle = rel.effWindAngleDeg;
   const windMps = state.ambientWindMps;
   const windMpsText = windMps.toFixed(1);
-  const drsPct = Math.round(state.drs * 100);
+  const drsOpen = state.drs === 1;
+  const drsPct = drsOpen ? 100 : 0;
   const steerText = `${state.steer > 0 ? '+' : ''}${state.steer}`;
   const windDeg = Math.round(state.windAngle || 0);
   const windShort = `${windDeg > 0 ? '+' : ''}${windDeg}`;
@@ -1119,13 +1120,14 @@ function showState() {
 
   $('flow-density').value = state.flowDensity;
   $('flow-density-value').textContent = `${state.flowDensity}%`;
-  $('drs').value = drsPct;
   $('steer').value = state.steer;
   $('speed').value = windMps;
   if ($('wind-angle')) $('wind-angle').value = windDeg;
   $('ground-speed').value = state.groundSpeed;
 
-  $('drs-value').textContent = `${drsPct}%`;
+  $('drs-value').textContent = drsOpen ? '全开 · 100%' : '关闭 · 0%';
+  $('drs-toggle').setAttribute('aria-checked', String(drsOpen));
+  $('hud-drs-toggle').setAttribute('aria-pressed', String(drsOpen));
   $('speed-value').textContent = `${windMpsText} m/s`;
   if ($('wind-angle-value')) $('wind-angle-value').textContent = formatWindLabel(windDeg);
   if ($('wind-angle-side')) $('wind-angle-side').textContent = effYawText;
@@ -1139,16 +1141,9 @@ function showState() {
     flowToggle.setAttribute('aria-checked', String(state.flow));
     flowToggle.setAttribute('aria-pressed', String(state.flow));
   }
-  const drsToggle = $('drs-toggle');
-  if (drsToggle) {
-    drsToggle.textContent = state.drs > .5 ? '关闭' : '打开';
-    drsToggle.setAttribute('aria-pressed', String(state.drs > .5));
-  }
-
   if ($('hud-speed')) $('hud-speed').value = windMps;
   if ($('hud-wind-angle')) $('hud-wind-angle').value = windDeg;
   if ($('hud-ground-speed')) $('hud-ground-speed').value = state.groundSpeed;
-  if ($('hud-drs')) $('hud-drs').value = drsPct;
   if ($('hud-steer')) $('hud-steer').value = state.steer;
 
   if ($('hud-speed-value')) $('hud-speed-value').textContent = `${windMpsText} m/s`;
@@ -1157,14 +1152,7 @@ function showState() {
   if ($('hud-wind-side')) $('hud-wind-side').textContent = effYawText;
   if ($('hud-ground-speed-value')) $('hud-ground-speed-value').textContent = `${state.groundSpeed} km/h`;
   if ($('hud-wheel-value')) $('hud-wheel-value').textContent = `${rpmRounded} rpm`;
-  if ($('hud-drs-value')) $('hud-drs-value').textContent = `${drsPct}%`;
   if ($('hud-steer-value')) $('hud-steer-value').textContent = `${steerText}°`;
-
-  const hudDrsToggle = $('hud-drs-toggle');
-  if (hudDrsToggle) {
-    hudDrsToggle.textContent = state.drs > .5 ? '关闭' : '打开';
-    hudDrsToggle.setAttribute('aria-pressed', String(state.drs > .5));
-  }
 
   if ($('t-speed')) $('t-speed').innerHTML = `${windMpsText}<small>m/s</small>`;
   if ($('t-wind-angle')) $('t-wind-angle').innerHTML = `${windShort}<small>°</small>`;
@@ -1320,13 +1308,12 @@ $('interface-toggle').addEventListener('click', e => {
 });
 
 $('flow-density').addEventListener('input', e => { state.flowDensity = Number(e.target.value); showState(); });
-$('drs').addEventListener('input', e => { state.drs = Number(e.target.value) / 100; showState(); });
 $('steer').addEventListener('input', e => { state.steer = Number(e.target.value); showState(); });
 $('speed').addEventListener('input', e => { state.ambientWindMps = Number(e.target.value); showState(); });
 $('wind-angle')?.addEventListener('input', e => { state.windAngle = Number(e.target.value); showState(); });
 $('center-wind')?.addEventListener('click', () => { state.windAngle = 0; showState(); });
 function toggleDrs() {
-  state.drs = state.drs > .5 ? 0 : 1;
+  state.drs = state.drs === 1 ? 0 : 1;
   showState();
 }
 $('drs-toggle').addEventListener('click', toggleDrs);
@@ -1335,8 +1322,10 @@ $('hud-speed')?.addEventListener('input', e => { state.ambientWindMps = Number(e
 $('hud-wind-angle')?.addEventListener('input', e => { state.windAngle = Number(e.target.value); showState(); });
 $('hud-center-wind')?.addEventListener('click', () => { state.windAngle = 0; showState(); });
 $('hud-ground-speed')?.addEventListener('input', e => { state.groundSpeed = Number(e.target.value); showState(); });
-$('hud-drs')?.addEventListener('input', e => { state.drs = Number(e.target.value) / 100; showState(); });
-$('hud-drs-toggle')?.addEventListener('click', toggleDrs);
+$('hud-drs-toggle').addEventListener('click', () => {
+  closeAllTelemetryPopovers();
+  toggleDrs();
+});
 $('hud-steer')?.addEventListener('input', e => { state.steer = Number(e.target.value); showState(); });
 $('hud-center-steering')?.addEventListener('click', () => { state.steer = 0; showState(); });
 $('reset').addEventListener('click', () => {
@@ -1388,13 +1377,16 @@ $('brand-home')?.addEventListener('click', e => {
 });
 $('flow-retry').addEventListener('click', () => {
   airflow.yaw.retry();
+  airflow.stationary.retry();
+  airflow.road010.retry();
   if (!airflow.stats.ready) {
     void airflow.load(state.model);
   } else if (flowJobs.failed) {
     flowJobs.retry();
     updateFlowStatus('正在恢复流线计算…');
   } else {
-    updateFlowStatus('正在加载当前角度的侧风数据…');
+    updateFlowStatus(isStationaryHeadwind(state) ? '正在加载静止迎风数据…'
+      : isRoad010Headwind(state) ? '正在加载 10 km/h 直行数据…' : '正在加载当前角度的侧风数据…');
   }
 });
 // Recover automatically when the network comes back instead of waiting for a manual retry.
@@ -1498,7 +1490,7 @@ renderer.setAnimationLoop(now => {
         : state.speed === 0 && state.wheelSpeedMps < .001
           ? '静止：来流与车轮均为零'
           : underbodyVisible
-            ? (underbody.mode === 'baseline' ? '底盘加密基线 · 仍有网格差异，未充分收敛' : '底盘：基于加密流场的工况近似预览')
+            ? (underbody.mode === 'coarse' ? '底盘流线 · 当前工况粗网格' : underbody.mode === 'baseline' ? '底盘加密基线 · 仍有网格差异，未充分收敛' : '底盘：基于加密流场的工况近似预览')
             : '正在准备底盘气流…';
   if (statusNodes.underbody && statusNodes.underbody.textContent !== underbodyMessage) statusNodes.underbody.textContent = underbodyMessage;
 
@@ -1512,7 +1504,7 @@ renderer.setAnimationLoop(now => {
         : state.speed === 0 && state.wheelSpeedMps < .001
           ? ''
           : sidepodVisible
-            ? (sidepod.mode === 'baseline' ? '侧箱及悬挂：探索性加密基线，未充分收敛' : '侧箱及悬挂：近似预览，缺失处沿用缩放基线')
+            ? (sidepod.mode === 'coarse' ? '侧箱及悬挂流线 · 当前工况粗网格' : sidepod.mode === 'baseline' ? '侧箱及悬挂：探索性加密基线，未充分收敛' : '侧箱及悬挂：近似预览，缺失处沿用缩放基线')
             : '正在准备侧箱及悬挂气流…';
   if (statusNodes.sidepod && statusNodes.sidepod.textContent !== sidepodMessage) statusNodes.sidepod.textContent = sidepodMessage;
 
@@ -1542,9 +1534,9 @@ renderer.setAnimationLoop(now => {
 // Read-only diagnostics plus explicit controls for reproducible browser QA.
 window.aeroStudio = {
   get ready() { return Boolean(rig); },
-  get airflow() { return { ...airflow.stats, visible: airflow.group.visible || flowJobs.preview.lines.visible, presentation: {
-    previewAngle: flowJobs.preview.lines.visible ? flowJobs.preview.angle : null,
-    previewMs: flowJobs.previewMs,
+  get airflow() { return { ...airflow.stats, visible: airflow.group.visible, presentation: {
+    previousOpacity: flowJobs.transition ? flowJobs.transitionMaterial.uniforms.opacity.value : 0,
+    fieldFamily: flowJobs.appliedJob?.fieldFamily ?? null,
     detailAngle: airflow.group.visible ? flowJobs.detailAngle : null,
     detailOpacity: airflow.group.visible ? airflow.material.uniforms.opacity.value : 0,
     workerPending: Boolean(flowJobs.sent),
@@ -1592,7 +1584,7 @@ window.aeroStudio = {
     }));
   },
   setPose(pose) {
-    if (pose.drs !== undefined) state.drs = THREE.MathUtils.clamp(pose.drs, 0, 1);
+    if (pose.drs !== undefined) state.drs = drsEndpoint(pose.drs);
     if (pose.steer !== undefined) state.steer = THREE.MathUtils.clamp(pose.steer, -18, 18);
     if (pose.ambientWindMps !== undefined) state.ambientWindMps = THREE.MathUtils.clamp(pose.ambientWindMps, 0, 15);
     if (pose.windAngle !== undefined) state.windAngle = THREE.MathUtils.clamp(pose.windAngle, -90, 90);

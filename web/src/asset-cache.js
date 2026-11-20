@@ -15,7 +15,7 @@ export async function deleteCachedAsset(cacheKey) {
   try { await cache.delete(cacheKey); } catch {}
 }
 
-export async function hasCachedAsset(cacheKey, { bypass = import.meta.env.DEV } = {}) {
+export async function hasCachedAsset(cacheKey, { bypass = import.meta.env?.DEV } = {}) {
   if (bypass) return false;
   const cache = await openAssetCache();
   if (!cache) return false;
@@ -26,7 +26,7 @@ export async function hasCachedAsset(cacheKey, { bypass = import.meta.env.DEV } 
   }
 }
 
-export async function cachedArrayBuffer(url, { cacheKey = url, bypass = import.meta.env.DEV, onProgress = null, signal } = {}) {
+export async function cachedArrayBuffer(url, { cacheKey = url, bypass = import.meta.env?.DEV, onProgress = null, signal } = {}) {
   signal?.throwIfAborted();
   const cache = bypass ? null : await openAssetCache();
   if (cache) {

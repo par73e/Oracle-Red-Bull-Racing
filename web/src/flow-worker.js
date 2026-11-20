@@ -26,7 +26,11 @@ function pack(layer,visible=layer.group.visible){const attributes={};for(const k
 self.onmessage=({data:m})=>{try{if(m.type==='init'){init(m);return;}if(m.type==='layer'){const target=m.kind==='bottom'?bottom:side;target.meta=m.meta;target.data=m.data;target.status=m.data?'ready':'unavailable';return;}if(m.type!=='compute')return;
  const start=performance.now();applySnapshot(m.rig);Object.assign(cache,m.fields);selection=m.selection;yawSelection=m.yawSelection?{...m.yawSelection,data:cache}:null;
  flow.lastKey='';flow.lastBuild=0;bottom.key='';side.key='';side.pendingKey='';
- const now=m.id*1000;flow.update(m.state,rig,0,now);bottom.update(m.state,rig,flow);side.update(m.state,rig,flow,now,true);
+ const now=m.id*1000;
+ const stationary=m.selection.stationary===true || m.selection.matchedHeadwind===true;
+ flow.update(m.state,rig,0,now,{stationary});
+ bottom.update(m.state,rig,flow,{stationary});
+ side.update(m.state,rig,flow,now,true,{stationary});
  const coarse=pack(flow,flow.group.visible),underbody=pack(bottom),sidepod=pack(side);coarse.stats={...flow.stats,axisSweep:m.selection.axisSweep};
  for(const key of Object.keys(cache))if(Object.keys(cache).length>64&&key!=='base'&&key!=='yaw-000'&&!Object.hasOwn(selection.weights,key)&&(!yawSelection||!Object.hasOwn(yawSelection.weights,key)))delete cache[key];
  const result={type:'result',id:m.id,key:m.key,pose:{steer:m.state.steer,drs:m.state.drsCurrent},flow:coarse,bottom:underbody,side:sidepod,workerMs:performance.now()-start,cachedKeys:Object.keys(cache)};

@@ -10,8 +10,8 @@ export class SidepodFlow extends UnderbodyFlow {
   try{const cacheMode=import.meta.env.DEV?'no-store':'default';const [m,buf]=await Promise.all([fetch(`/flow/${car}/sidepod.json`,{cache:cacheMode}),cachedArrayBuffer(`/flow/${car}/sidepod.bin`)]);if(!m.ok)throw Error('missing');const meta=await m.json(),data=new Int16Array(buf);if(serial!==this.serial)return;if(data.length!==meta.shape.reduce((a,v)=>a*v,1)*4)throw Error('shape');this.meta=meta;this.data=data;this.status='ready';}
   catch{if(serial===this.serial){this.data=null;this.status='unavailable';}}
  }
- update(state,rig,airflow,now=performance.now(),immediate=false){
-  const U=state.speed/3.6,W=state.wheelSpeedMps,active=state.flow&&this.data&&airflow.stats.ready&&rig&&state.flowDensity>0&&(U>.001||W>.001);
+ update(state,rig,airflow,now=performance.now(),immediate=false,{stationary=false}={}){
+  const U=state.speed/3.6,W=state.wheelSpeedMps,active=state.flow&&(stationary||this.data)&&airflow.stats.ready&&rig&&state.flowDensity>0&&(U>.001||W>.001);
   this.group.visible=Boolean(active);if(!active)return false;
   const desired=[U.toFixed(3),W.toFixed(3),state.steer.toFixed(2),state.drsCurrent.toFixed(3),state.flowDensity,(state.effWindAngle??state.windAngle??0).toFixed(1)].join(':');
   if(airflow.stats.inputKey!==desired){this.group.visible=false;return false;}
@@ -50,16 +50,19 @@ export class SidepodFlow extends UnderbodyFlow {
    const hit=airflow.firstRayHit(point.set(-sign*outer,z+.005,-station.x),direction.set(sign,0,0),.0001,outer-.16,all);if(!hit)continue;
    for(const offset of [.04,.09])candidates.push({name:station.name,position:hit.point.clone().add(new T.Vector3(-sign*offset,0,0))});
   }
+  const sampleVelocity=stationary
+   ? (point,velocity)=>airflow.sample(-point.z,-point.x,point.y-.005,velocity,airflow.grid,true)
+   : (point,velocity)=>this.sample(point,velocity);
   const inv120=1/120,invFade=.025/.16;
   for(const station of candidates){point.copy(station.position);
    // Only seed where the sampled proxy field exists and a clear outward ray
    // reaches the exterior of the display car; conservative for open meshes.
-   if(!this.sample(point,vel))continue;
+   if(!sampleVelocity(point,vel))continue;
    const obstructed=airflow.hasRayHit(point,station.escape?direction.copy(station.escape):direction.set(Math.sign(point.x),0,0),station.escape?.04:3,all,.0001);if(obstructed){blockedSeeds++;continue;}
    const seed=point.clone();const start=scratch.len;let travel=0,segments=0;
    for(let n=0;n<210;n++){
-    if(!this.sample(point,vel))break;
-    if(!exact){const x=-point.z,y=-point.x,z=point.y-.005;
+    if(!sampleVelocity(point,vel))break;
+    if(!stationary&&!exact){const x=-point.z,y=-point.x,z=point.y-.005;
      const haveDelta=airflow.sample(x,y,z,reference,airflow.data.base,true,airflow.baseSpec||airflow.spec)&&airflow.sample(x,y,z,coarse);
      vel.multiplyScalar(baseScale);if(haveDelta)vel.add(coarse).addScaledVector(reference,-baseScale);else fallbackSamples++;
     }
@@ -72,6 +75,6 @@ export class SidepodFlow extends UnderbodyFlow {
    if(segments<4){scratch.len=start;continue;}
    for(let n=0;n<segments;n++){scratch.alp[start+2*n]=Math.min(1,n*invFade,(segments-n)*invFade);scratch.alp[start+2*n+1]=Math.min(1,(n+1)*invFade,(segments-n-1)*invFade);}count++;regions[station.name]++;if(station.name==='sidepod')layers[seed.y-.005<.55?'undercut':'upper']++;seedPoints.push({region:station.name,point:seed.toArray()});
   }
-  this.geometry=scratch.commit(this.geometry);this.lines.geometry=this.geometry;this.count=count;this.regions=regions;this.layers=layers;this.seedPoints=seedPoints;this.blockedSeeds=blockedSeeds;this.fallbackSamples=fallbackSamples;this.mode=exact?'baseline':'surrogate';return true;
+  this.geometry=scratch.commit(this.geometry);this.lines.geometry=this.geometry;this.count=count;this.regions=regions;this.layers=layers;this.seedPoints=seedPoints;this.blockedSeeds=blockedSeeds;this.fallbackSamples=fallbackSamples;this.mode=stationary?'coarse':exact?'baseline':'surrogate';return true;
  }
 }

@@ -1,11 +1,15 @@
 import * as T from 'three';
 import { describeModel, snapshotRig } from './flow-worker-protocol.js';
 import { rollingWeights } from './airflow.js';
-import { FlowPreview } from './flow-preview.js';
+import { isStationaryHeadwind, isRoad010Headwind } from './stationary-fields.js';
 
 const DIRECTION_SETTLE_MS = 140;
 const FIELD_POLL_MS = 75;
-const BLEND_MS = 160;
+const FIELD_HANDOFF_MS = 220;
+const INPUT_HANDOFF_MS = 95;
+// Prefer the rolling/yaw estimates near still air or strong sidewind.
+const SWEEP_BLEND_START_MPS = 30;
+const SWEEP_BLEND_END_MPS = 50;
 const TRACE_TIMEOUT_MS = 5000;
 const windAngleOf = state => state.effWindAngle ?? state.windAngle ?? 0;
 const activeFlow = state => state.flow && state.flowDensity > 0 && (state.speed > 0 || state.wheelSpeedMps > 0);
@@ -17,8 +21,8 @@ const coverage = loader => loader?.manifest ? {
   queueState: loader.queue?.state,
 } : null;
 
-function applyLayer(layer, result) {
-  layer.geometry.dispose();
+function applyLayer(layer, result, retainGeometry) {
+  if (!retainGeometry) layer.geometry.dispose();
   const geometry = new T.BufferGeometry();
   for (const [key, array] of Object.entries(result.attributes)) {
     geometry.setAttribute(key, new T.BufferAttribute(array, key === 'position' || key === 'color' ? 3 : 1));
@@ -33,11 +37,42 @@ function applyLayer(layer, result) {
 export class FlowJobs {
   constructor(flow, bottom, side, { onWorkerReady = null, reducedMotion = false } = {}) {
     Object.assign(this, { flow, bottom, side, onWorkerReady, reducedMotion, serial: 0, jobId: 0 });
-    this.preview = new FlowPreview(flow);
+    this.layers = [flow, bottom, side];
+    this.transitionMaterial = flow.material.clone();
+    this.previousLines = this.layers.map(() => {
+      const lines = new T.LineSegments(undefined, this.transitionMaterial);
+      lines.frustumCulled = false;
+      lines.visible = false;
+      lines.geometry.dispose();
+      lines.geometry = null;
+      flow.parent?.add(lines);
+      return lines;
+    });
+  }
+
+  clearTransition() {
+    for (const lines of this.previousLines) {
+      lines.visible = false;
+      lines.geometry?.dispose();
+      lines.geometry = null;
+    }
+    this.transition = null;
+  }
+
+  updatePresentation(now) {
+    let blend = 1;
+    if (this.transition) {
+      blend = T.MathUtils.smoothstep(now - this.transition.started, 0, this.transition.duration);
+      if (blend === 1) this.clearTransition();
+    }
+    this.flow.material.uniforms.opacity.value = blend;
+    this.transitionMaterial.uniforms.opacity.value = 1 - blend;
   }
 
   hideLayers() {
-    for (const layer of [this.flow, this.bottom, this.side]) layer.group.visible = false;
+    for (const layer of this.layers) layer.group.visible = false;
+    this.appliedKey = this.appliedJob = this.detailAngle = null;
+    this.clearTransition();
   }
 
   resetWorker() {
@@ -67,8 +102,8 @@ export class FlowJobs {
     this.recoveries = (this.recoveries || 0) + 1;
     if (timedOut || this.recoveries > 2) {
       this.failureStatus = this.appliedKey == null
-        ? '精细流线暂不可用 · 当前为交互预览，请重试'
-        : '流线更新失败 · 保留最近一次结果，请重试';
+        ? '精细流线暂不可用 · 请重试'
+        : '流线更新暂不可用 · 保留最近一次结果，请重试';
       this.flow.onStatus(this.failureStatus);
       return;
     }
@@ -130,10 +165,29 @@ export class FlowJobs {
     // advance. A result from before a wind-direction change must never return.
     if (!pending || pending.job.directionVersion !== this.directionVersion) return false;
     const { message, job } = pending;
-    if (this.appliedKey == null) this.blendStarted = now;
-    applyLayer(this.flow, message.flow);
-    applyLayer(this.bottom, message.bottom);
-    applyLayer(this.side, message.side);
+    const previous = this.appliedJob;
+    const fieldChanged = previous && (job.angle !== previous.angle || job.fieldFamily !== previous.fieldFamily
+      || job.usesDrsFallback !== previous.usesDrsFallback || job.layerMask !== previous.layerMask);
+    const inputJump = previous && (job.density !== previous.density
+      || Math.abs(job.airspeed - previous.airspeed) > 10
+      || Math.abs(job.roadSpeed - previous.roadSpeed) > 4
+      || Math.abs(job.steer - previous.steer) > 4
+      || Math.abs(job.drs - previous.drs) > .35);
+    const startTransition = !this.reducedMotion && this.appliedKey != null && !this.transition
+      && (fieldChanged || inputJump);
+    if (startTransition) {
+      this.transition = { started: now, duration: fieldChanged ? FIELD_HANDOFF_MS : INPUT_HANDOFF_MS };
+    }
+    const results = [message.flow, message.bottom, message.side];
+    this.layers.forEach((layer, index) => {
+      const retain = startTransition && layer.group.visible;
+      if (retain) {
+        this.previousLines[index].geometry = layer.geometry;
+        this.previousLines[index].visible = true;
+      }
+      applyLayer(layer, results[index], retain);
+    });
+    this.appliedJob = job;
     this.appliedKey = job.key;
     this.appliedSelection = job.selectionKey;
     this.detailAngle = job.angle;
@@ -141,7 +195,12 @@ export class FlowJobs {
       ...this.flow.stats, ...message.flow.stats, worker: true, workerMs: message.workerMs,
       buildMs: message.workerMs, mainThreadMs: job.mainThreadMs,
     };
-    this.detailStatus = message.flow.stats.sourceMode === 'anchor' ? '粗网格 CFD · 已计算工况'
+    this.detailStatus = job.fieldFamily === 'stationary'
+      ? (message.flow.stats.sourceMode === 'anchor' ? '静止迎风 · 已求解 CFD 工况' : '静止迎风 · 相邻 CFD 工况插值')
+      : job.fieldFamily === 'road010'
+        ? (message.flow.stats.sourceMode === 'anchor' ? '10 km/h 直行 · 已求解 CFD 工况' : '10 km/h 直行 · 相邻 CFD 工况插值')
+      : job.usesDrsFallback ? '粗网格 CFD · 当前档位尚在计算，暂用近似工况'
+      : message.flow.stats.sourceMode === 'anchor' ? '粗网格 CFD · 已计算工况'
       : message.flow.stats.yawMirror ? '粗网格 CFD · 侧风对称近似'
       : message.flow.stats.yawActive ? '粗网格 CFD · 侧风组合近似'
       : message.flow.stats.axisSweep ? '粗网格 CFD · 多参数组合近似'
@@ -151,20 +210,21 @@ export class FlowJobs {
 
   update(state, rig, dt, now) {
     const { flow, bottom, side } = this;
-    const { sweep, yaw } = flow;
+    const { sweep, yaw, stationary, road010 } = flow;
     flow.elapsed += dt;
-    flow.material.uniforms.clock.value = this.preview.material.uniforms.clock.value = flow.elapsed;
+    flow.material.uniforms.clock.value = flow.elapsed;
+    this.transitionMaterial.uniforms.clock.value = flow.elapsed;
+    if (this.transition && now - this.transition.started >= this.transition.duration) this.clearTransition();
     if (this.epoch !== flow.serial) {
       this.epoch = flow.serial;
       this.resetWorker();
-      this.key = this.appliedKey = null;
-      this.result = null;
+      this.key = null;
+      this.hideLayers();
     }
     const hasRig = rig && (!rig.config?.id || rig.config.id === state.model);
     if (!hasRig || !activeFlow(state)) {
       this.hideLayers();
-      this.preview.show(0);
-      this.key = this.appliedKey = this.result = null;
+      this.key = this.result = null;
       yaw?.cancelRequestsExcept(new Set());
       if (hasRig && state.flow && state.speed === 0 && state.wheelSpeedMps === 0) {
         flow.stats.lines = 0;
@@ -180,22 +240,14 @@ export class FlowJobs {
       this.angle = angle;
       this.directionChangedAt = now;
       this.directionVersion = (this.directionVersion ?? 0) + 1;
-      this.appliedKey = null;
-      this.hideLayers();
       yaw?.cancelRequestsExcept(new Set());
-    }
-    if (key !== this.key && this.appliedKey == null) {
-      const started = performance.now();
-      this.preview.update(state, angle, rig);
-      this.previewMs = performance.now() - started;
     }
     this.key = key;
     const committed = this.commitResult(now);
     const hasDetail = this.appliedKey != null;
     const detailIsCurrent = this.appliedKey === key;
-    const blend = !hasDetail ? 0 : this.reducedMotion ? 1 : Math.min(1, (now - this.blendStarted) / BLEND_MS);
-    flow.material.uniforms.opacity.value = blend;
-    this.preview.show(1 - blend);
+    // Keep the last traced geometry until the next result can take its place.
+    this.updatePresentation(now);
     if (this.failed) {
       flow.onStatus(this.failureStatus);
       return;
@@ -209,11 +261,11 @@ export class FlowJobs {
     if (yaw && now - yaw.lastRefresh > 30000 && !yaw.manifest?.complete) yaw.refresh();
 
     if (now - this.directionChangedAt < DIRECTION_SETTLE_MS) {
-      flow.onStatus('交互预览 · 随当前工况更新');
+      flow.onStatus('正在准备当前风向的流线…');
       return;
     }
     if (!this.ready) {
-      flow.onStatus(hasDetail ? '正在准备流线更新…' : '交互预览 · 正在准备精细流线');
+      flow.onStatus(hasDetail ? '正在准备流线更新…' : '正在准备精细流线…');
       return;
     }
     if (!this.bottomSent && bottom.status === 'ready' && bottom.data) {
@@ -224,7 +276,7 @@ export class FlowJobs {
       this.worker.postMessage({ type: 'layer', kind: 'side', data: side.data, meta: side.meta });
       this.sideSent = true;
     }
-    const tracingStatus = hasDetail ? '正在更新精细流线…' : '交互预览 · 正在计算当前工况的精细流线';
+    const tracingStatus = hasDetail ? '正在更新精细流线…' : '正在计算当前工况的精细流线…';
     // Keep the same label when a trace is submitted and while it is in flight.
     if (this.sent) {
       flow.onStatus(tracingStatus);
@@ -241,37 +293,81 @@ export class FlowJobs {
     const useYaw = Math.abs(angle) >= 1e-6 && state.speed > 0;
     const yawField = useYaw ? yaw?.selection(angle) : null;
     if (useYaw && (!yawField || yawField.loading || yawField.error)) {
-      if (hasDetail) {
-        flow.onStatus(yawField?.error ? '侧风数据暂不可用 · 保留最近一次结果，请重试' : '正在加载当前角度的侧风数据…');
+      if (yawField?.error) {
+        flow.onStatus(hasDetail ? '侧风数据暂不可用 · 保留最近一次结果，请重试' : '侧风数据暂不可用 · 请重试');
       } else {
-        flow.onStatus(yawField?.error ? '精细侧风流线暂不可用 · 当前为交互预览，请重试' : '交互预览 · 正在加载当前角度的侧风数据');
+        flow.onStatus('正在加载当前角度的侧风数据…');
       }
       return;
     }
 
     const U = state.speed / 3.6, W = state.wheelSpeedMps;
+    const matchedFamily = stationary && isStationaryHeadwind(state) ? 'stationary'
+      : road010 && isRoad010Headwind(state) ? 'road010' : null;
+    const matchedField = matchedFamily ? flow[matchedFamily].selection(U, flow.baseSpec) : null;
+    if (matchedField?.loading || matchedField?.error || matchedField?.unsupported) {
+      if (!matchedField.loading) this.hideLayers();
+      const label = matchedFamily === 'stationary' ? '静止迎风' : '10 km/h 直行';
+      flow.onStatus(matchedField.unsupported ? `此风速暂无${label} CFD 数据`
+        : matchedField.error ? `${label}数据暂不可用 · 请重试`
+        : hasDetail ? `正在加载${label}数据 · 显示上一工况` : `正在加载${label}数据…`);
+      return;
+    }
     const alignment = useYaw ? Math.abs(Math.cos(T.MathUtils.degToRad(angle))) : 1;
     const steer = state.steer * alignment, drs = state.drsCurrent * alignment;
-    const sweepField = sweep.car && sweep.car !== state.model ? null : sweep.selection(U, W, steer, drs);
-    const axisSweep = Boolean(sweepField && !sweepField.loading);
-    let weights = axisSweep ? sweepField.weights : rollingWeights(U, W, steer, drs);
-    const source = axisSweep ? sweepField.data : flow.data;
-    const missing = Object.keys(weights).filter(name => Math.abs(weights[name]) > 1e-7 && !source[name]);
-    if (missing.length) {
-      missing.forEach(name => flow.ensureAnchor?.(name));
+    const drsEndpoints = state.drs === 0 || state.drs === 1;
+    const highSpeedMix = T.MathUtils.smoothstep(U + W, SWEEP_BLEND_START_MPS, SWEEP_BLEND_END_MPS);
+    // Retain changes in the solved fields at lower relative airspeeds. Fade
+    // back to rolling as wheel motion dominates, and to yaw for strong crosswind.
+    const incomingAir = T.MathUtils.smoothstep(U, .25, 1);
+    const forwardFlow = W > 0 ? T.MathUtils.smoothstep(U / W, .25, .5) : 1;
+    const headwindMix = 1 - T.MathUtils.smoothstep(Math.abs(angle), 0, 30);
+    const lowSpeedMix = incomingAir * forwardFlow * headwindMix;
+    const sweepMix = T.MathUtils.lerp(lowSpeedMix, 1, highSpeedMix);
+    const inflowBlend = incomingAir * forwardFlow * (1 - highSpeedMix);
+    const sweepField = !matchedField && sweepMix > 0 && (!sweep.car || sweep.car === state.model)
+      ? sweep.selection(U, W, steer, drs, { drsEndpoints, inflowBlend }) : null;
+    const sweepReady = Boolean(sweepField && !sweepField.loading);
+    const rolling = matchedField || (sweepReady && sweepMix === 1) ? {} : rollingWeights(U, W, steer, drs);
+    const missing = Object.keys(rolling).filter(name => Math.abs(rolling[name]) > 1e-7 && !flow.data[name]);
+    missing.forEach(name => flow.ensureAnchor?.(name));
+    const axisSweep = sweepReady;
+    let weights = rolling;
+    let source = flow.data;
+    let fieldFamily = 'rolling';
+    if (matchedField) {
+      weights = matchedField.weights;
+      source = matchedField.data;
+      fieldFamily = matchedFamily;
+    } else if (sweepReady) {
+      weights = sweepField.weights;
+      source = sweepField.data;
+      fieldFamily = 'sweep';
+      if (sweepMix < 1 && !missing.length) {
+        weights = {};
+        for (const [name, weight] of Object.entries(rolling)) weights[name] = (1 - sweepMix) * weight;
+        for (const [name, weight] of Object.entries(sweepField.weights)) {
+          weights[name] = (weights[name] ?? 0) + sweepMix * weight;
+        }
+        source = { ...flow.data, ...sweepField.data };
+      }
+    } else if (missing.length) {
       weights = { base: U / 50 };
+      fieldFamily = 'baseline';
     }
     // At zero airspeed, the baseline scaled by U would erase wheel-only flow.
-    // Keep its local preview until the required rolling field arrives.
-    if (!U && missing.length) {
-      flow.onStatus(hasDetail ? '正在加载车轮气流数据…' : '交互预览 · 正在加载车轮气流数据');
+    // Wait for the required rolling field and leave any existing result visible.
+    if (!U && !sweepReady && missing.length) {
+      flow.onStatus('正在加载车轮气流数据…');
       return;
     }
     const yawSelection = yawField && {
       weights: Object.fromEntries(Object.entries(yawField.weights).map(([name, value]) => [`yaw:${name}`, value])),
       spec: yawField.spec, exact: yawField.exact, mirror: yawField.mirror,
     };
-    const selectionKey = JSON.stringify([weights, axisSweep, yawSelection?.weights, yawSelection?.exact, this.bottomSent, this.sideSent]);
+    const usesDrsFallback = axisSweep && sweepField.usesDrsFallback === true;
+    const layerMask = Number(this.bottomSent) | (Number(this.sideSent) << 1);
+    const selectionKey = JSON.stringify([weights, fieldFamily, usesDrsFallback, yawSelection?.weights, yawSelection?.exact, layerMask]);
     // Background warm-up should not cause a trace of an unchanged selection.
     if (detailIsCurrent && this.appliedSelection === selectionKey) {
       flow.onStatus(this.detailStatus);
@@ -289,11 +385,15 @@ export class FlowJobs {
     }
     const id = ++this.jobId;
     const serial = this.serial;
-    this.sent = { id, key, angle, selectionKey, directionVersion: this.directionVersion };
+    this.sent = { id, key, angle, selectionKey, usesDrsFallback, fieldFamily, layerMask,
+      density: state.flowDensity, airspeed: state.speed, roadSpeed: W, steer: state.steer, drs: state.drsCurrent,
+      directionVersion: this.directionVersion };
     this.watchdog = setTimeout(() => this.recover(serial, true), TRACE_TIMEOUT_MS);
+    const selection = { weights, axisSweep, stationary: fieldFamily === 'stationary' };
+    if (fieldFamily === 'road010') selection.matchedHeadwind = true;
     this.worker.postMessage({
       type: 'compute', id, key, state: { ...state }, rig: snapshotRig(rig, this.meshes, this.versions),
-      selection: { weights, axisSweep }, yawSelection, fields,
+      selection, yawSelection, fields,
     });
     this.sent.mainThreadMs = performance.now() - started;
   }

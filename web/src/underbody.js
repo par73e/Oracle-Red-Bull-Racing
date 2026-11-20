@@ -2,6 +2,18 @@ import * as T from 'three';
 import { TraceScratch } from './airflow.js';
 import { cachedArrayBuffer } from './asset-cache.js';
 
+// The published bottom-layer sampling window, in solver coordinates. Keep
+// this window when a solved whole-car field supplies the velocity, even if
+// the optional refined underbody asset has yet to load.
+const FLOOR_MIN = [-1.8, -1.4, .01];
+const FLOOR_MAX = [4, 1.4, .45];
+function floorBoundary(point) {
+ if (-point.z < FLOOR_MIN[0] || -point.z > FLOOR_MAX[0]) return 'x';
+ if (-point.x < FLOOR_MIN[1] || -point.x > FLOOR_MAX[1]) return 'y';
+ if (point.y - .005 < FLOOR_MIN[2] || point.y - .005 > FLOOR_MAX[2]) return 'z';
+ return null;
+}
+
 // The fine baseline plus coarse-field deltas is an exploratory surrogate, not a new solve.
 export class UnderbodyFlow {
  constructor(parent, material){this.material=material;this.group=new T.Group();this.group.name='UNDERBODY_BASELINE';parent.add(this.group);this.geometry=new T.BufferGeometry();this.lines=new T.LineSegments(this.geometry,material);this.lines.frustumCulled=false;this.group.add(this.lines);this.serial=0;this.data=null;this.key='';this.count=0;this.status='loading';this._scratch=new TraceScratch(65536);}
@@ -22,8 +34,8 @@ export class UnderbodyFlow {
   const z=w000*d[i000+2]+w100*d[i100+2]+w010*d[i010+2]+w110*d[i110+2]+w001*d[i001+2]+w101*d[i101+2]+w011*d[i011+2]+w111*d[i111+2];
   out.set(-y*scale,z*scale,-x*scale);return Number.isFinite(x+y+z);
  }
- update(state,rig,airflow){const U=state.speed/3.6,W=state.wheelSpeedMps;
-  const active=state.flow&&this.data&&airflow.stats.ready&&rig&&state.flowDensity>0&&(U>.001||W>.001);
+ update(state,rig,airflow,{stationary=false}={}){const U=state.speed/3.6,W=state.wheelSpeedMps;
+  const active=state.flow&&(stationary||this.data)&&airflow.stats.ready&&rig&&state.flowDensity>0&&(U>.001||W>.001);
   this.group.visible=Boolean(active);if(!active)return false;
   // Wait for the coarse field to match the current controls before blending.
   const windAngle=state.effWindAngle??state.windAngle??0;
@@ -45,14 +57,41 @@ export class UnderbodyFlow {
   const seedX = -.95 * rakeAngle / 90;
   const seedZ = 1.78 * (1 - lateralWeight);
   const halfWidth = T.MathUtils.lerp(.72, 1.5, lateralWeight);
+  const seeds = [];
+  for (let j = 0; j < ny; j++) {
+   for (let i = 0; i < nx; i++) {
+    const offset = halfWidth - 2 * halfWidth * (i + .5) / nx;
+    seeds.push(new T.Vector3(seedX + rakeCos * offset, .035 + .07 * (j + .5) / ny + .005, seedZ + rakeSin * offset));
+   }
+  }
+  if (state.model === 'rb19') {
+   // A front rake alone misses fluid inside the floor when its paths exit the
+   // sampled passage early. Place two fixed local rakes under the floor and
+   // use the same field and collision checks as the front rake.
+   const yawWeight = 1 - T.MathUtils.smoothstep(Math.abs(windAngle), 5, 30);
+   const columns = Math.round(nx * .5 * yawWeight);
+   const rows = Math.max(1, Math.round(ny * .5));
+   const up = new T.Vector3(0, 1, 0);
+   for (const z of [.25, -.9]) {
+    for (let j = 0; j < rows; j++) {
+     for (let i = 0; i < columns; i++) {
+      const seed = new T.Vector3(-.69 + 1.38 * (i + .5) / columns, .038 + .043 * (j + .5) / rows, z);
+      if (airflow.hasRayHit(seed, up, .23, nearby(seed))) seeds.push(seed);
+     }
+    }
+   }
+  }
   const inv120=1/120,invFade=.02/.14;
-  for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){
-   const offset = halfWidth - 2 * halfWidth * (i + .5) / nx;
-   point.set(seedX + rakeCos * offset, .035 + .07 * (j + .5) / ny + .005, seedZ + rakeSin * offset);
+  for (const seed of seeds) {
+   point.copy(seed);
    const start=scratch.len;let reason='limit',travel=0,segments=0;
    for(let n=0;n<350;n++){
-    if(!this.sample(point,vel)){reason=this.sampleStop||'masked';break;}
-    if(!exact){const x=-point.z,y=-point.x,z=point.y-.005;
+    if(stationary){
+     const axis = floorBoundary(point);
+     if (axis) { reason = 'boundary'; this.boundaryAxis = axis; break; }
+     if(!airflow.sample(-point.z,-point.x,point.y-.005,vel,airflow.grid,true)){reason='masked';break;}
+    }else if(!this.sample(point,vel)){reason=this.sampleStop||'masked';break;}
+    if(!stationary&&!exact){const x=-point.z,y=-point.x,z=point.y-.005;
      const haveDelta = airflow.sample(x,y,z,reference,airflow.data.base,true,airflow.baseSpec||airflow.spec)
        && airflow.sample(x,y,z,coarse);
      if (haveDelta) {
@@ -66,6 +105,10 @@ export class UnderbodyFlow {
      }
     }
     const speed=vel.length();if(speed<Math.max(.005,Math.max(U,W)*.005)){reason='slow';break;}last.copy(point);direction.copy(vel).normalize();point.addScaledVector(direction,.02);
+    if (stationary) {
+     const axis = floorBoundary(point);
+     if (axis) { reason = 'boundary'; this.boundaryAxis = axis; break; }
+    }
     if(airflow.hasRayHit(last,direction,.022,nearby(last))){reason='collision';break;}
     const next=travel+.02/speed;color.setHSL(.55-.52*T.MathUtils.clamp(speed*inv120,0,1),.85,.65);
     scratch.pushSeg(last.x,last.y,last.z,point.x,point.y,point.z,color.r,color.g,color.b,travel,next);
@@ -75,6 +118,6 @@ export class UnderbodyFlow {
    for(let n=0;n<segments;n++){scratch.alp[start+2*n]=Math.min(1,n*invFade,(segments-n)*invFade);scratch.alp[start+2*n+1]=Math.min(1,(n+1)*invFade,(segments-n-1)*invFade);}
    count++;
   }
-  this.geometry=scratch.commit(this.geometry);this.lines.geometry=this.geometry;this.count=count;this.fallbackSamples=fallbackSamples;this.stops=stops;this.boundaryAxes=boundaryAxes;this.mode=exact?'baseline':'surrogate';return true;
+  this.geometry=scratch.commit(this.geometry);this.lines.geometry=this.geometry;this.count=count;this.fallbackSamples=fallbackSamples;this.stops=stops;this.boundaryAxes=boundaryAxes;this.mode=stationary?'coarse':exact?'baseline':'surrogate';return true;
  }
 }

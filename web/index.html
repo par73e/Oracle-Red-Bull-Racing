@@ -64,7 +64,7 @@
               <span>空气阻力 (Fx)</span><strong id="hud-drag-value">2418 N · 0%</strong>
               <span>侧向气动力 (Fy)</span><strong id="hud-side-value">0 N</strong>
               <span>升阻比 (L/D)</span><strong id="hud-ld-ratio">2.63</strong>
-              <span>粗网格原始下压力</span><strong id="hud-raw-downforce">739 N</strong>
+              <span>粗网格下压力估算</span><strong id="hud-raw-downforce">739 N</strong>
             </div>
             <p class="force-note" id="hud-force-note">基于 180 km/h F1 参考基准与 OpenFOAM 实算工况趋势连续估算，仅作直观量级参考。</p>
           </div>
@@ -131,17 +131,19 @@
           <input id="ground-speed" type="range" min="0" max="350" step="5" value="10" aria-label="对地车速，车轮与地面同步运动" />
           <div class="range-labels"><span>0</span><span>纯滚动 · 前轮 <output id="wheel-value">80 rpm</output></span><span>350</span></div>
         </div>
-        <div class="control-group">
-          <div class="label-row"><label for="drs">DRS 尾翼</label><span class="label-tail"><output id="drs-value" for="drs">0%</output><button id="drs-toggle" class="chip" aria-pressed="false">打开</button></span></div>
-          <input id="drs" type="range" min="0" max="100" step="1" value="0" aria-label="DRS 开合程度" />
-          <div class="range-labels"><span>闭合</span><span>打开</span></div>
+        <div class="control-group switch-row">
+          <span id="drs-label">DRS 尾翼</span>
+          <div class="label-tail">
+            <output id="drs-value" for="drs-toggle">关闭 · 0%</output>
+            <button id="drs-toggle" type="button" class="switch" role="switch" aria-checked="false" aria-labelledby="drs-label"><i aria-hidden="true"></i></button>
+          </div>
         </div>
         <div class="control-group">
           <div class="label-row"><label for="steer">前轮转向</label><span class="label-tail"><output id="steer-value" for="steer">0°</output><button id="center-steering" class="chip">回正</button></span></div>
           <input id="steer" type="range" min="-18" max="18" step="1" value="0" aria-label="前轮转向角" />
           <div class="range-labels"><span>向右</span><span>向左</span></div>
         </div>
-        <div class="panel-foot"><span>后轮固定 · 步进 0.5 m/s、5° 风向、5 km/h、1%、1°</span><button id="reset" class="chip">全部复位<svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M15.5 6V3m0 3h-3M15.5 6a6.25 6.25 0 1 0 .75 4.5"/></svg></button></div>
+        <div class="panel-foot"><span>后轮固定 · 步进 0.5 m/s、5° 风向、5 km/h、1°</span><button id="reset" class="chip">全部复位<svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M15.5 6V3m0 3h-3M15.5 6a6.25 6.25 0 1 0 .75 4.5"/></svg></button></div>
       </section>
 
       <section class="panel" id="panel-flow" aria-labelledby="panel-flow-title" hidden>
@@ -232,18 +234,10 @@
         </div>
 
         <div class="telemetry-item" data-telemetry="drs">
-          <button type="button" class="readout" aria-expanded="false" aria-controls="adjust-drs" title="点击切换 DRS 全开 / 全关">
+          <button id="hud-drs-toggle" type="button" class="readout" aria-label="DRS 尾翼" aria-pressed="false" title="点击切换 DRS 全开 / 关闭">
             <span class="readout-label">DRS</span>
             <span class="readout-value" id="t-drs">0<small>%</small></span>
           </button>
-          <div id="adjust-drs" class="telemetry-popover" role="group" aria-label="DRS尾翼调节">
-            <div class="popover-head">
-              <label for="hud-drs">DRS 尾翼</label>
-              <span class="label-tail"><output id="hud-drs-value" for="hud-drs">0%</output><button id="hud-drs-toggle" type="button" class="chip" aria-pressed="false">打开</button></span>
-            </div>
-            <input id="hud-drs" type="range" min="0" max="100" step="1" value="0" aria-label="DRS 开合程度" />
-            <div class="range-labels"><span>闭合</span><span>打开</span></div>
-          </div>
         </div>
       </div>
 
@@ -282,8 +276,9 @@
       <p><a href="https://skfb.ly/py9Uu" target="_blank" rel="noreferrer">Redbull rb16b</a> · MattDoesBlender</p>
       <p>两份原模型均标注为 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">Creative Commons Attribution 4.0</a>。</p>
       <p>本地修改：材质调整、统一展示尺度、四轮与前轮转向绑定、近似 DRS 液压机构；RB19 另补简化底板通道。机构与底板为展示用近似，不是车队 CAD。气流基于两车型分别求解的 OpenFOAM 粗网格关键工况，网页对速度矢量场做稀疏组合近似并积分流线。中间状态、多个参数同时变化、低速及高速缩放不等于完整工程求解，也不模拟瞬态湍流。孤立的数值异常采样点会被排除并留有记录；这些预览不用于气动性能判断。零来流下的行驶采用新增移动地面与旋转车轮共同作用的流场；中间状态为缩放及插值。车轮使用旋转壁面近似，来流速度与对地车速独立控制，四轮角速度按对地车速除以各自半径计算，保持纵向纯滚动；移动地面使用对地车速。新增工况均为直行，转向组合仍为姿态插值，不模拟真实转弯的各轮运动学。</p>
-      <p>底盘流线在 180 km/h、直行、DRS 关闭且轮速匹配时使用单独的加密 CFD 基线；其他工况在基线速度缩放上叠加相应粗网格整车场相对基线的变化，是探索性代理近似，不是对应工况的底盘加密重算。车辆几何为体素代理，近壁没有边界层网格，两档网格仍有明显差异，RB19 结果尚未充分收敛，结果仅供探索，不能用于气动性能判断。</p>
-      <p>侧箱下方、侧箱上沿及前悬挂附近的流线来自各车单独的局部加密基线；其他工况叠加整车粗网格差分。粗场无有效数据的位置沿用速度缩放的基线，不包含该处的工况响应。两车局部计算仍有收敛、网格和几何限制，不用于赛车性能判断。</p>
+      <p>静止迎风、前轮居中且 DRS 关闭时，整车、底板和侧箱流线统一读取固定地面与静止车轮的粗网格 CFD。已求解档位直接使用该档位的速度场，其余档位在相邻速度场之间插值。</p>
+      <p>底盘流线在 180 km/h、直行、DRS 关闭且轮速匹配时使用单独的加密 CFD 基线；其余工况通常在基线速度缩放上叠加相应粗网格整车场相对基线的变化，是探索性代理近似，不是对应工况的底盘加密重算。车辆几何为体素代理，近壁没有边界层网格，两档网格仍有明显差异，RB19 结果尚未充分收敛，结果仅供探索，不能用于气动性能判断。</p>
+      <p>侧箱下方、侧箱上沿及前悬挂附近的流线来自各车单独的局部加密基线；其余工况通常叠加整车粗网格差分。粗场无有效数据的位置沿用速度缩放的基线，不包含该处的工况响应。两车局部计算仍有收敛、网格和几何限制，不用于赛车性能判断。</p>
       <p>侧风工况覆盖相对来流偏航角 -90°（左侧风）至 +90°（右侧风）、每 5° 共 37 档 OpenFOAM 自由远场外流求解（车身、车轮与移动地面保持车体纵向）。网页端由“风向”滑块直接控制风洞圆盘转台与来流偏航角（-90° 至 +90°），“对地车速”（0–350 km/h）与“对地绝对风速”（0–15 m/s）共同合成为车身所受总相对来流速度（高速叠加迎风时合成来流可超过 350 km/h）；风洞风机始终保持沿固定轴线吹风，调节风速与车速仅改变合成风速与载荷而不带动转台偏转。</p>
       <p>实时下压力读数（牛顿及相对 180 km/h 正迎风的百分比变化）按两车 180 km/h 典型 F1 下压力量级基准，结合实际求解得到的随风速、车速/滚动、DRS、转向及侧风角度压力积分趋势进行物理一致估算（侧风增大或开启 DRS 时下压力回落，接近 ±90° 纯侧风可能转为失速或微正升力）；因展示体素代理网格较粗（41 mm 近壁且无边界层棱柱层），OpenFOAM 原始力积分在悬停详情内同步标出。</p>
       <p>风洞为原创场景，显示的 CFD 来自自由外流域，未计算房间壁面影响。Eau Rouge 场景采用公开中心线、路宽和瓦隆地区 LiDAR 高程重建，默认从坡底望向 Raidillon；植被使用 CC0 三维松树模型及其枝叶烘焙，天空为真实 HDR 摄影。中心线地理配准和采样仍有误差，看台及护栏按实拍比例建模，不是赛道测绘 CAD。<a href="https://github.com/TUMFTM/racetrack-database" target="_blank" rel="noreferrer">TUMFTM 数据</a>（LGPL-3.0） · <a href="https://geoservices.wallonie.be/arcgis/rest/services/RELIEF/WALLONIE_MNT_2021_2022/MapServer" target="_blank" rel="noreferrer">SPW 地形</a> · <a href="https://polyhaven.com/" target="_blank" rel="noreferrer">Poly Haven CC0 材质与树模型</a>。场景不改变直线 CFD 的适用范围。</p>

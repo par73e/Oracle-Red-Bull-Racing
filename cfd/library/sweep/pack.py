@@ -2,6 +2,9 @@ from pathlib import Path
 import json,re,sys,hashlib
 import numpy as np
 ROOT=Path(__file__).resolve().parents[3];case=Path(sys.argv[1]);meta=json.loads((case/'anchor.json').read_text())
+family=meta['family']
+assert family in ('sweep','stationary','road010')
+matched=family!='sweep'
 files=list((case/'postProcessing/grid').glob('*/grid.xy'))
 assert files,'No sampled grid '+str(case)
 file=max(files,key=lambda p:float(p.parent.name));rows=np.loadtxt(file)
@@ -12,14 +15,14 @@ index=index[valid];rows=rows[valid]
 # Isolated near-wall numerical spikes are excluded, never clamped to a nicer
 # velocity. A masked point is zero so trajectories terminate there. Keep counts
 # and the raw maximum in the public manifest; reject broadly unstable fields.
-speeds=np.linalg.norm(rows[:,3:6],axis=1);raw_max=float(speeds.max());limit=3*max(meta['speedMps'],meta['wheelSpeedMps'],1)
+speeds=np.linalg.norm(rows[:,3:6],axis=1);raw_max=float(speeds.max());limit=3*max(meta['speedMps'],meta['wheelSpeedMps'],0 if matched else 1)
 anomalous=speeds>limit;anomaly_count=int(anomalous.sum())
 assert anomaly_count/max(len(rows),1)<.002,'Widespread velocity anomalies: solve rejected'
 rows[anomalous,3:6]=0
 flat=(index[:,2]*shape[1]+index[:,1])*shape[0]+index[:,0]
 field=np.zeros((np.prod(shape),3),np.float32);field[flat]=rows[:,3:6]
-scale=max(.001,float(np.max(np.abs(field)))/32760);packed=np.rint(field/scale).astype('<i2')
-folder=ROOT/'web/public/flow'/meta['car']/'sweep';out=folder/(meta['anchor']+'.bin')
+scale=max(1e-6 if matched else .001,float(np.max(np.abs(field)))/32760);packed=np.rint(field/scale).astype('<i2')
+folder=ROOT/'web/public/flow'/meta['car']/family;out=folder/(meta['anchor']+'.bin')
 log=(case/'log.foamRun').read_text();mesh=(case/'log.checkMesh').read_text();res={};step=0
 for line in log.splitlines():
  m=re.match(r'Time = ([\d.]+)',line)
@@ -29,15 +32,35 @@ for line in log.splitlines():
 assert re.search(r'^End$',log,re.M) and 'FOAM FATAL' not in log
 assert not re.search(r'residual = [-+]?nan',log,re.I),'Divergent solve rejected'
 assert np.isfinite(field).all(),'Non-finite field rejected'
+if matched:
+ assert step==650 and 'Mesh OK.' in mesh
+ assert res and all(np.isfinite(list(res.values())))
+ continuity=re.findall(r'sum local = ([\deE+.-]+), global = ([\deE+.-]+)',log)
+ assert continuity,'Missing continuity diagnostics'
 assert float(file.parent.name)==650,'Missing final sampled iteration'
-folder.mkdir(parents=True,exist_ok=True);out.write_bytes(packed.tobytes())
-record={**meta,'grid':{'shape':shape,'min':lo.tolist(),'max':hi.tolist()},'file':f'/flow/{meta["car"]}/sweep/{out.name}','scale':scale,'sampledPoints':len(rows),'unlocatedOrSolidGridPoints':int(np.prod(shape)-len(rows)),'excludedNumericalSamples':anomaly_count,'rawFieldMax':raw_max,'exclusionThresholdMps':limit,'sampling':'cellPoint; isolated >3x max(inlet,wheel) samples excluded, never clipped','fieldMax':float(np.max(np.linalg.norm(field,axis=1))),'cells':int(re.search(r'cells:\s+(\d+)',mesh)[1]),'lastIteration':step,'residuals':res,'meshOk':'Mesh OK.' in mesh,'solver':'OpenFOAM Foundation 14 kOmegaSST RANS','quality':'coarse voxel proxy; sparse factorised interpolation is approximate','sha256':hashlib.sha256(out.read_bytes()).hexdigest()}
-(case/'complete.json').write_text(json.dumps(record,indent=2)+'\n');(ROOT/f'cfd/library/reports/{meta["car"]}-sweep-{meta["anchor"]}.json').write_text(json.dumps(record,indent=2)+'\n')
-from plan import write_manifest
-write_manifest(meta['car'])
+folder.mkdir(parents=True,exist_ok=True)
+if matched:
+ tmp=out.with_suffix('.bin.tmp');tmp.write_bytes(packed.tobytes());tmp.replace(out)
+else:
+ out.write_bytes(packed.tobytes())
+record={**meta,'grid':{'shape':shape,'min':lo.tolist(),'max':hi.tolist()},'file':f'/flow/{meta["car"]}/{family}/{out.name}','scale':scale,'sampledPoints':len(rows),'unlocatedOrSolidGridPoints':int(np.prod(shape)-len(rows)),'excludedNumericalSamples':anomaly_count,'rawFieldMax':raw_max,'exclusionThresholdMps':limit,'sampling':'cellPoint; isolated >3x max(inlet,wheel) samples excluded, never clipped','fieldMax':float(np.max(np.linalg.norm(field,axis=1))),'cells':int(re.search(r'cells:\s+(\d+)',mesh)[1]),'lastIteration':step,'residuals':res,'meshOk':'Mesh OK.' in mesh,'solver':'OpenFOAM Foundation 14 kOmegaSST RANS','quality':'coarse voxel proxy; sparse factorised interpolation is approximate','sha256':hashlib.sha256(out.read_bytes()).hexdigest()}
+if matched:
+ record.update(quality='fixed road speed and matching wheel rotation; exploratory coarse voxel RANS',
+  lastLocalContinuity=float(continuity[-1][0]),lastGlobalContinuity=float(continuity[-1][1]))
+
+(case/'complete.json').write_text(json.dumps(record,indent=2)+'\n');(ROOT/f'cfd/library/reports/{meta["car"]}-{family}-{meta["anchor"]}.json').write_text(json.dumps(record,indent=2)+'\n')
+if matched:
+ records=sorted(
+  (json.loads(p.read_text()) for p in (ROOT/'cfd/library/reports').glob(f'{meta["car"]}-{family}-*.json')),
+  key=lambda r:r['speedMps'])
+ manifest={'car':meta['car'],'family':family,'fields':records}
+ tmp=folder/'manifest.json.tmp';tmp.write_text(json.dumps(manifest,indent=2)+'\n');tmp.replace(folder/'manifest.json')
 print('PACKED',meta['car'],meta['anchor'],record['fieldMax'],flush=True)
 # This packer is loaded fresh for every case. Final verification is therefore
 # also honored by a batch that was already running when final checks were added.
-if all(write_manifest(car)['complete'] for car in ['rb19','rb16b']):
- import subprocess
- subprocess.run([sys.executable,str(ROOT/'cfd/library/sweep/finalize.py')],check=True)
+if not matched:
+ from plan import write_manifest
+ write_manifest(meta['car'])
+ if all(write_manifest(car)['complete'] for car in ['rb19','rb16b']):
+  import subprocess
+  subprocess.run([sys.executable,str(ROOT/'cfd/library/sweep/finalize.py')],check=True)

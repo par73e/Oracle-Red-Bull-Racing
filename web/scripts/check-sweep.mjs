@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
 import { SweepFields } from '../src/sweep-field.js';
 const root=new URL('../public/',import.meta.url),nativeFetch=globalThis.fetch;
-globalThis.fetch=async url=>{try{const b=await fs.readFile(new URL(String(url).replace(/^\//,''),root));return {ok:true,json:async()=>JSON.parse(b),arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)};}catch{return {ok:false};}};
+globalThis.fetch=async url=>{try{const b=await fs.readFile(new URL(String(url).replace(/^\//,''),root));return new Response(b);}catch{return new Response(null,{status:404});}};
 try{for(const car of ['rb19','rb16b']){
  const manifest=JSON.parse(await fs.readFile(new URL(`flow/${car}/sweep/manifest.json`,root)));
  assert.equal(manifest.plannedUnique,277);assert.equal(manifest.complete,manifest.completedUnique===277);assert.equal(manifest.completedUnique,manifest.fields.length);

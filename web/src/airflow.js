@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { SweepFields } from './sweep-field.js';
 import { YawFields } from './yaw-field.js';
+import { FixedRoadHeadwindFields, ROAD010_MPS } from './stationary-fields.js';
 import { cachedArrayBuffer, deleteCachedAsset } from './asset-cache.js';
 const FLOW_LOAD_ATTEMPTS=5;
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
@@ -51,7 +52,7 @@ export class TraceScratch {
  commit(geometry){const n=this.len;geometry.dispose();const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(this.pos.slice(0,n*3),3));g.setAttribute('color',new T.Float32BufferAttribute(this.col.slice(0,n*3),3));g.setAttribute('flight',new T.Float32BufferAttribute(this.flt.slice(0,n),1));g.setAttribute('lineAlpha',new T.Float32BufferAttribute(this.alp.slice(0,n),1));return g;}
 }
 export class Airflow {
- constructor(parent,{onStatus=()=>{}}={}){this.sweep=new SweepFields(()=>{this.lastKey='';});this.yaw=new YawFields(()=>{this.lastKey='';});this.parent=parent;this.onStatus=onStatus;this.serial=0;this.revision=0;this.car=null;this.anchorMeta=null;this.anchorPending=new Map();this._secondaryFn=null;this.data=null;this.enabled=true;this.elapsed=0;this.lastKey='';this.grid=null;this.baseGrid=null;this.baseSpec=null;this.yawGrid=null;this.group=new T.Group();this.group.name='CFD_FLOW';parent.add(this.group);this.ray=new T.Raycaster();this.ray.firstHitOnly=true;this.colliders=new WeakMap();this.colliderMaterial=new T.MeshBasicMaterial({side:T.DoubleSide});this.lastBuild=0;this._rayContext=null;this._scratch=new TraceScratch(131072);this.stats={ready:false,lines:0,peakMps:0,blocked:0};
+ constructor(parent,{onStatus=()=>{}}={}){this.sweep=new SweepFields(()=>{this.lastKey='';});this.stationary=new FixedRoadHeadwindFields('stationary',0);this.road010=new FixedRoadHeadwindFields('road010',ROAD010_MPS);this.yaw=new YawFields(()=>{this.lastKey='';});this.parent=parent;this.onStatus=onStatus;this.serial=0;this.revision=0;this.car=null;this.anchorMeta=null;this.anchorPending=new Map();this._secondaryFn=null;this.data=null;this.enabled=true;this.elapsed=0;this.lastKey='';this.grid=null;this.baseGrid=null;this.baseSpec=null;this.yawGrid=null;this.group=new T.Group();this.group.name='CFD_FLOW';parent.add(this.group);this.ray=new T.Raycaster();this.ray.firstHitOnly=true;this.colliders=new WeakMap();this.colliderMaterial=new T.MeshBasicMaterial({side:T.DoubleSide});this.lastBuild=0;this._rayContext=null;this._scratch=new TraceScratch(131072);this.stats={ready:false,lines:0,peakMps:0,blocked:0};
   this.material=new T.ShaderMaterial({transparent:true,depthWrite:false,depthTest:true,uniforms:{clock:{value:0},opacity:{value:1}},vertexShader:`attribute vec3 color;attribute float flight;attribute float lineAlpha;varying vec3 tint;varying float travel;varying float fade;void main(){tint=color;travel=flight;fade=lineAlpha;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,fragmentShader:`uniform float clock,opacity;varying vec3 tint;varying float travel;varying float fade;void main(){float p=fract((clock-travel)*4.);float pulse=exp(-pow((p-.22)*8.,2.));gl_FragColor=vec4(tint,opacity*fade*(.55+.45*pulse));}`});
   this.geometry=new T.BufferGeometry();this.lines=new T.LineSegments(this.geometry,this.material);this.lines.frustumCulled=false;this.group.add(this.lines);
  }
@@ -78,7 +79,7 @@ export class Airflow {
   this.anchorPending.set(key,p);return p;
  }
  startSecondary(){if(!this._secondaryFn)return Promise.resolve();const fn=this._secondaryFn;this._secondaryFn=null;return fn();}
- async load(car,{deferSecondary=true,autoSecondary=true}={}){const serial=++this.serial;this.car=car;this.yaw.setCar(car);this.data=null;this.anchorMeta=null;this.anchorPending.clear();this._secondaryFn=null;this.stats.ready=false;this.group.visible=false;this.onStatus('正在加载气流数据…');
+ async load(car,{deferSecondary=true,autoSecondary=true}={}){const serial=++this.serial;this.car=car;this.yaw.setCar(car);this.stationary.setCar(car);this.road010.setCar(car);this.data=null;this.anchorMeta=null;this.anchorPending.clear();this._secondaryFn=null;this.stats.ready=false;this.group.visible=false;this.onStatus('正在加载气流数据…');
   let lastError=null;
   for(let attempt=1;attempt<=FLOW_LOAD_ATTEMPTS;attempt++){
   if(serial!==this.serial)return;
@@ -124,7 +125,7 @@ export class Airflow {
   // Convert solver X downstream, Y right, Z up to the display frame.
   out.set(-out.y,out.z,-out.x);return true;
  }
- update(state,rig,dt,now){this.elapsed+=dt;this.material.uniforms.clock.value=this.elapsed;this.group.visible=this.enabled&&this.stats.ready;
+ update(state,rig,dt,now,{stationary=false}={}){this.elapsed+=dt;this.material.uniforms.clock.value=this.elapsed;this.group.visible=this.enabled&&this.stats.ready;
   if(!this.stats.ready||!this.enabled||!rig)return;
   if(!this.baseSpec)this.baseSpec=this.spec;if(!this.baseGrid)this.baseGrid=this.grid;
   const U=state.speed/3.6,W=state.wheelSpeedMps,windAngle=state.effWindAngle??state.windAngle??0,key=[U.toFixed(3),W.toFixed(3),state.steer.toFixed(2),state.drsCurrent.toFixed(3),state.flowDensity,windAngle.toFixed(1)].join(':');
@@ -203,7 +204,7 @@ export class Airflow {
   this._rayContext=null;
   if(U<.001&&W<.001){this.geometry.setDrawRange(0,0);this.stats.lines=0;this.stats.vertices=0;this.stats.signature=0;this.stats.blocked=0;this.stats.peakMps=0;this.stats.buildMs=performance.now()-started;this.stats.inputKey=key;this.onStatus('静止 · 来流与车轮均为 0');return;}
   this.onStatus(this.stats.sourceMode==='anchor'?'粗网格 CFD · 已计算工况':yawSel?.mirror?'粗网格 CFD · 该侧风角计算中，暂用对称近似':yawSel?'粗网格 CFD · 侧风组合实时预览':sweep?'粗网格 CFD · 多参数组合近似':'粗网格 CFD · 当前档位尚在计算，暂用近似预览');
-  this.rebuild(rig,U,W,state.flowDensity,windAngle);this.stats.buildMs=performance.now()-started;this.stats.inputKey=key;const pArr=this.geometry.attributes.position?.array;let sig=0;if(pArr)for(let i=0;i<pArr.length;i+=97)sig+=Math.round(pArr[i]*10000);this.stats.signature=sig;
+  this.rebuild(rig,U,W,state.flowDensity,windAngle,stationary);this.stats.buildMs=performance.now()-started;this.stats.inputKey=key;const pArr=this.geometry.attributes.position?.array;let sig=0;if(pArr)for(let i=0;i<pArr.length;i+=97)sig+=Math.round(pArr[i]*10000);this.stats.signature=sig;
  }
  buildRayContext(model){model.updateMatrixWorld(true);this.parent?.updateMatrixWorld(true);const hasParent=Boolean(this.parent);if(hasParent)_invParent.copy(this.parent.matrixWorld).invert();const size=.2,nx=24,ny=14,nz=34,ox=-2.4,oy=-.4,oz=-3.4,invSize=5,bins=Array.from({length:nx*ny*nz},()=>[]),all=[];
   model.traverse(o=>{if(!o.isMesh||!o.visible)return;let collider=this.colliders.get(o);if(!collider){collider=new T.Mesh(o.geometry,this.colliderMaterial);collider.matrixAutoUpdate=false;collider._tightBox=new T.Box3();this.colliders.set(o,collider);}if(hasParent)collider.matrixWorld.multiplyMatrices(_invParent,o.matrixWorld);else collider.matrixWorld.copy(o.matrixWorld);all.push(collider);if(!o.geometry.boundingBox)o.geometry.computeBoundingBox();collider._tightBox.copy(o.geometry.boundingBox).applyMatrix4(collider.matrixWorld);_box.copy(collider._tightBox).expandByScalar(.09);
@@ -236,7 +237,7 @@ export class Airflow {
  }
  getRayContext(model){if(this._rayContext&&this._rayContext.model===model)return this._rayContext;this._rayContext=this.buildRayContext(model);return this._rayContext;}
  rayBins(model){return this.buildRayContext(model).nearby;}
- rebuild(rig,U,W,density,windAngle=0){const scratch=this._scratch;scratch.reset();const velocity=new T.Vector3(),last=new T.Vector3(),point=new T.Vector3(),mid=new T.Vector3(),color=new T.Color();let count=0,peak=0,blocked=0;
+ rebuild(rig,U,W,density,windAngle=0,stationary=false){const scratch=this._scratch;scratch.reset();const velocity=new T.Vector3(),last=new T.Vector3(),point=new T.Vector3(),mid=new T.Vector3(),color=new T.Color();let count=0,peak=0,blocked=0;
   const {nearby}=this.getRayContext(rig.model);
   const hasParent=Boolean(this.parent);
   if(hasParent){_invParent.copy(this.parent.matrixWorld).invert();_invQuat.setFromRotationMatrix(_invParent);}
@@ -284,7 +285,7 @@ export class Airflow {
   const maxSteps=absAngle<1e-6?190:220,inv120=1/120,ds=.065,invFade=ds/.22;
   for(const seed of seeds){const start=scratch.len;point.copy(seed);let travel=0,segments=0;
    for(let step=0;step<maxSteps;step++){
-    if(!this.sample(-point.z,-point.x,point.y-.005,velocity))break;const speed=velocity.length();if(speed<Math.max(.07,Math.max(U,W)*.005))break;
+    if(!this.sample(-point.z,-point.x,point.y-.005,velocity,this.grid,stationary))break;const speed=velocity.length();if(speed<Math.max(stationary ? .001 : .07,Math.max(U,W)*.005))break;
     peak=Math.max(peak,speed);last.copy(point);
     point.addScaledVector(velocity,ds/speed);
     if(insideWheel(point)){blocked++;break;}
