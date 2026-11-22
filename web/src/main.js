@@ -6,7 +6,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { cachedArrayBuffer, hasCachedAsset } from './asset-cache.js';
 import { bindRig, applyRig, inspectRig } from './rig.js';
 import { FlowLayer, makeFlowMaterial } from './flow-tracing.js';
-import { FlowCatalog, formatConditionSummary, selectCoverage } from './flow-catalog.js';
+import { FlowCatalog, selectCoverage } from './flow-catalog.js';
 import { captureCondition, resolveRelativeWind } from './flow-condition.js';
 import { FlowJobs } from './flow-jobs.js';
 import { Environments } from './environments.js';
@@ -18,7 +18,7 @@ THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const $ = id => document.getElementById(id);
 const viewport = $('viewport');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const DEFAULT_GROUND_SPEED = 10;
+const DEFAULT_GROUND_SPEED = 180;
 const drsEndpoint = value => Number.isFinite(value) && value >= .5 ? 1 : 0;
 const DEFAULT_CONFIG = Object.freeze({
   model: 'rb16b',
@@ -53,7 +53,7 @@ function applyOperatingDefaults({ includeFlow = false } = {}) {
     drs: DEFAULT_CONFIG.drs,
     drsCurrent: DEFAULT_CONFIG.drsCurrent,
     steer: DEFAULT_CONFIG.steer,
-    ambientWindMps: DEFAULT_CONFIG.ambientWindMps,
+    ambientWindMps: 0,
     speed: DEFAULT_CONFIG.speed,
     windAngle: DEFAULT_CONFIG.windAngle,
     effWindAngle: DEFAULT_CONFIG.effWindAngle,
@@ -66,7 +66,7 @@ function applyOperatingDefaults({ includeFlow = false } = {}) {
   });
 }
 
-const STORAGE_KEY = 'aero-studio:config:v2';
+const STORAGE_KEY = 'aero-studio:config:v3';
 const VALID_ENVS = new Set(['studio', 'wind', 'eau-rouge']);
 const VALID_VIEWS = new Set(['hero', 'front', 'side', 'drs', 'floor']);
 let persistenceReady = false;
@@ -87,7 +87,7 @@ function hydrateSavedState() {
     if (VALID_ENVS.has(saved.environment)) state.environment = saved.environment;
     if (VALID_VIEWS.has(saved.view)) state.view = saved.view;
     if (typeof saved.freeMode === 'boolean') state.freeMode = saved.freeMode;
-    if (Number.isFinite(saved.ambientWindMps)) state.ambientWindMps = THREE.MathUtils.clamp(saved.ambientWindMps, 0, 15);
+    state.ambientWindMps = 0;
     if (Number.isFinite(saved.windAngle)) state.windAngle = THREE.MathUtils.clamp(saved.windAngle, -90, 90);
     if (Number.isFinite(saved.groundSpeed)) state.groundSpeed = THREE.MathUtils.clamp(saved.groundSpeed, 0, 350);
     state.drs = drsEndpoint(saved.drs);
@@ -119,7 +119,6 @@ function saveState() {
       environment: state.environment,
       view: state.view,
       freeMode: state.freeMode,
-      ambientWindMps: state.ambientWindMps,
       windAngle: state.windAngle,
       groundSpeed: state.groundSpeed,
       drs: state.drs,
@@ -904,9 +903,8 @@ function updatePopoverPosition(item) {
 }
 
 const telemetrySteps = {
-  speed: { key: 'ambientWindMps', step: 3 },
   'wind-angle': { key: 'windAngle', step: 15 },
-  steer: { key: 'steer', step: 6 },
+  steer: { key: 'steer', cycle: [0, 18, -18] },
   'ground-speed': { key: 'groundSpeed', step: 20 },
 };
 
@@ -958,9 +956,14 @@ document.querySelectorAll('.telemetry-item').forEach(item => {
       return;
     }
     if (shortcut) {
-      const { key, step } = shortcut;
-      const max = Number(range.max);
-      state[key] = state[key] >= max ? Number(range.min) : Math.min(max, state[key] + step);
+      const { key, step, cycle } = shortcut;
+      if (cycle) {
+        const idx = cycle.indexOf(state[key]);
+        state[key] = idx >= 0 ? cycle[(idx + 1) % cycle.length] : (state[key] > 0 ? 18 : state[key] < 0 ? -18 : cycle[1]);
+      } else {
+        const max = Number(range.max);
+        state[key] = state[key] >= max ? Number(range.min) : Math.min(max, state[key] + step);
+      }
       showState();
     } else {
       openItem();
@@ -1112,13 +1115,11 @@ function showState() {
   const rel = resolveRelativeWind(state);
   state.speed = rel.relSpeedKmh;
   state.effWindAngle = rel.effWindAngleDeg;
-  const windMps = state.ambientWindMps;
-  const windMpsText = windMps.toFixed(1);
   const drsOpen = state.drs === 1;
   const steerText = `${state.steer > 0 ? '+' : ''}${state.steer}`;
   const windDeg = Math.round(state.windAngle || 0);
   const windShort = `${windDeg > 0 ? '+' : ''}${windDeg}`;
-  const effYawText = `合成来流 ${rel.effWindAngleDeg.toFixed(1)}°`;
+  const effYawText = `偏航 ${rel.effWindAngleDeg.toFixed(1)}°`;
   const radius = rig?.config.wheels.FL.radius ?? configs?.[state.model]?.wheels.FL.radius ?? (state.model === 'rb16b' ? .3321 : .369);
   state.wheelSpeedMps = state.groundSpeed / 3.6;
   state.wheelRpm = state.wheelSpeedMps / radius / (Math.PI * 2) * 60;
@@ -1127,19 +1128,17 @@ function showState() {
   $('flow-density').value = state.flowDensity;
   $('flow-density-value').textContent = `${state.flowDensity}%`;
   $('steer').value = state.steer;
-  $('speed').value = windMps;
   if ($('wind-angle')) $('wind-angle').value = windDeg;
   $('ground-speed').value = state.groundSpeed;
 
   updateDrsReadout();
   $('drs-toggle').setAttribute('aria-checked', String(drsOpen));
   $('hud-drs-toggle').setAttribute('aria-pressed', String(drsOpen));
-  $('speed-value').textContent = `${windMpsText} m/s`;
   if ($('wind-angle-value')) $('wind-angle-value').textContent = formatWindLabel(windDeg);
   if ($('wind-angle-side')) $('wind-angle-side').textContent = effYawText;
   $('ground-speed-value').textContent = `${state.groundSpeed} km/h`;
   $('wheel-value').textContent = `${rpmRounded} rpm`;
-  $('wind-speed').textContent = `合成来流 ${Math.round(rel.relSpeedKmh)} km/h (${rel.relSpeedMps.toFixed(1)} m/s)`;
+  if ($('wind-speed')) $('wind-speed').textContent = `${rel.relSpeedMps.toFixed(1)} m/s`;
   $('steer-value').textContent = `${steerText}°`;
 
   const flowToggle = $('flow-toggle');
@@ -1147,20 +1146,17 @@ function showState() {
     flowToggle.setAttribute('aria-checked', String(state.flow));
     flowToggle.setAttribute('aria-pressed', String(state.flow));
   }
-  if ($('hud-speed')) $('hud-speed').value = windMps;
   if ($('hud-wind-angle')) $('hud-wind-angle').value = windDeg;
   if ($('hud-ground-speed')) $('hud-ground-speed').value = state.groundSpeed;
   if ($('hud-steer')) $('hud-steer').value = state.steer;
 
-  if ($('hud-speed-value')) $('hud-speed-value').textContent = `${windMpsText} m/s`;
-  if ($('hud-wind-speed')) $('hud-wind-speed').textContent = `合成 ${Math.round(rel.relSpeedKmh)} km/h`;
+  if ($('hud-wind-speed')) $('hud-wind-speed').textContent = `${rel.relSpeedMps.toFixed(1)} m/s`;
   if ($('hud-wind-angle-value')) $('hud-wind-angle-value').textContent = formatWindLabel(windDeg);
   if ($('hud-wind-side')) $('hud-wind-side').textContent = effYawText;
   if ($('hud-ground-speed-value')) $('hud-ground-speed-value').textContent = `${state.groundSpeed} km/h`;
   if ($('hud-wheel-value')) $('hud-wheel-value').textContent = `${rpmRounded} rpm`;
   if ($('hud-steer-value')) $('hud-steer-value').textContent = `${steerText}°`;
 
-  if ($('t-speed')) $('t-speed').innerHTML = `${windMpsText}<small>m/s</small>`;
   if ($('t-wind-angle')) $('t-wind-angle').innerHTML = `${windShort}<small>°</small>`;
   if ($('t-ground')) $('t-ground').innerHTML = `${state.groundSpeed}<small>km/h</small>`;
   if ($('t-steer')) $('t-steer').innerHTML = `${steerText}<small>°</small>`;
@@ -1172,68 +1168,20 @@ function showState() {
 }
 
 const FLOW_PRESETS = {
-  low: { groundSpeed: 10, ambientWindMps: 0, windAngle: 0, steer: 0, drs: 0 },
-  cruise: { groundSpeed: 180, ambientWindMps: 0, windAngle: 0, steer: 0, drs: 0 },
-  drs: { groundSpeed: 180, ambientWindMps: 0, windAngle: 0, steer: 0, drs: 1 },
-  steer: { groundSpeed: 180, ambientWindMps: 0, windAngle: 0, steer: -18, drs: 0 },
-  crosswind: { groundSpeed: 180, ambientWindMps: 0, windAngle: 45, steer: 0, drs: 0 },
-  headwind: { groundSpeed: 10, ambientWindMps: 15, windAngle: 0, steer: 0, drs: 0 },
+  low50: { groundSpeed: 50, windAngle: 0, steer: 0, drs: 0 },
+  cruise: { groundSpeed: 180, windAngle: 0, steer: 0, drs: 0 },
+  high350: { groundSpeed: 350, windAngle: 0, steer: 0, drs: 0 },
+  drs: { groundSpeed: 180, windAngle: 0, steer: 0, drs: 1 },
+  steer: { groundSpeed: 180, windAngle: 0, steer: -18, drs: 0 },
+  yaw45: { groundSpeed: 180, windAngle: 45, steer: 0, drs: 0 },
 };
 
-const TRACK_CONTROLS = [
-  { axis: 'groundSpeed', ids: ['ground-speed', 'hud-ground-speed'], min: 0, max: 350, step: 5 },
-  { axis: 'ambientWindMps', ids: ['speed', 'hud-speed'], min: 0, max: 15, step: .5 },
-  { axis: 'windAngle', ids: ['wind-angle', 'hud-wind-angle'], min: -90, max: 90, step: 5 },
-  { axis: 'steer', ids: ['steer', 'hud-steer'], min: -18, max: 18, step: 1 },
-];
-
-const TRACK_BASE_COLOR = 'rgba(186, 202, 220, 0.22)';
-const TRACK_COVERED_COLOR = 'rgba(53, 196, 124, 0.62)';
-
-function buildCoverageTrackGradient(min, max, step, values) {
-  if (!values.length || max <= min) return TRACK_BASE_COLOR;
-  const span = max - min;
-  const minHalf = .9;
-  const ranges = [];
-  let start = values[0], end = values[0];
-  for (let i = 1; i < values.length; i++) {
-    if (values[i] - end <= step * 1.15) end = values[i];
-    else { ranges.push([start, end]); start = end = values[i]; }
-  }
-  ranges.push([start, end]);
-  const pct = v => Math.max(0, Math.min(100, (v - min) / span * 100));
-  const merged = [];
-  for (const [lo, hi] of ranges) {
-    let p0 = pct(lo), p1 = pct(hi);
-    if (p1 - p0 < minHalf * 2) {
-      const mid = (p0 + p1) * .5;
-      p0 = Math.max(0, mid - minHalf);
-      p1 = Math.min(100, mid + minHalf);
-    }
-    if (merged.length && p0 <= merged[merged.length - 1][1] + .2) {
-      merged[merged.length - 1][1] = Math.max(merged[merged.length - 1][1], p1);
-    } else {
-      merged.push([p0, p1]);
-    }
-  }
-  const stops = [];
-  let cursor = 0;
-  for (const [p0, p1] of merged) {
-    if (p0 > cursor) stops.push(`${TRACK_BASE_COLOR} ${cursor.toFixed(2)}%`, `${TRACK_BASE_COLOR} ${p0.toFixed(2)}%`);
-    stops.push(`${TRACK_COVERED_COLOR} ${p0.toFixed(2)}%`, `${TRACK_COVERED_COLOR} ${p1.toFixed(2)}%`);
-    cursor = p1;
-  }
-  if (cursor < 100) stops.push(`${TRACK_BASE_COLOR} ${cursor.toFixed(2)}%`, `${TRACK_BASE_COLOR} 100%`);
-  return `linear-gradient(90deg, ${stops.join(', ')})`;
-}
-
 let lastCoverageKey = '';
-let lastNearestCovered = null;
 
 function applyConditionTarget(target) {
   if (!target) return;
   state.groundSpeed = target.groundSpeed;
-  state.ambientWindMps = target.ambientWindMps;
+  state.ambientWindMps = 0;
   state.windAngle = target.windAngle;
   state.steer = target.steer;
   state.drs = target.drs ? 1 : 0;
@@ -1243,7 +1191,7 @@ function applyConditionTarget(target) {
 
 function updateCoverageGuidance() {
   const ready = Boolean(flowCatalog.catalog && flowCatalog.catalog.car === state.model);
-  const key = `${state.model}|${state.groundSpeed}|${state.ambientWindMps}|${state.windAngle}|${state.steer}|${state.drs}|${state.flow}|${ready}`;
+  const key = `${state.model}|${state.groundSpeed}|${state.ambientWindMps}|${state.windAngle}|${state.steer}|${state.drs}|${ready}`;
   if (key === lastCoverageKey) return;
   lastCoverageKey = key;
 
@@ -1251,52 +1199,26 @@ function updateCoverageGuidance() {
     const preset = FLOW_PRESETS[btn.dataset.flowPreset];
     const active = Boolean(preset &&
       state.groundSpeed === preset.groundSpeed &&
-      state.ambientWindMps === preset.ambientWindMps &&
+      state.ambientWindMps === 0 &&
       state.windAngle === preset.windAngle &&
       state.steer === preset.steer &&
       state.drs === preset.drs);
     btn.setAttribute('aria-pressed', String(active));
   });
 
-  if (!ready) {
-    lastNearestCovered = null;
-    if ($('flow-snap')) $('flow-snap').hidden = true;
-    if ($('conditions-coverage-tip')) $('conditions-coverage-tip').hidden = true;
-    return;
-  }
-
-  for (const control of TRACK_CONTROLS) {
-    const covered = flowCatalog.axisCoverage(state, control.axis);
-    const bg = buildCoverageTrackGradient(control.min, control.max, control.step, covered);
-    for (const id of control.ids) $(id)?.style.setProperty('--track-bg', bg);
-  }
-
+  if (!ready) return;
   const targetCondition = captureCondition({ ...state, drsCurrent: state.drs });
   const isRest = !targetCondition.speed && !targetCondition.wheelSpeedMps;
   const selection = isRest ? { mode: 'still' } : selectCoverage(flowCatalog.catalog, targetCondition.coordinates);
-  const unsupported = selection.mode === 'unsupported';
-  lastNearestCovered = unsupported ? flowCatalog.nearestCovered(state) : null;
-  const summary = formatConditionSummary(lastNearestCovered);
-
-  const snapBtn = $('flow-snap');
-  if (snapBtn) {
-    snapBtn.hidden = true;
-  }
-  const tipEl = $('conditions-coverage-tip');
-  if (tipEl) {
-    tipEl.hidden = !lastNearestCovered;
-    const tipText = $('conditions-coverage-text');
-    if (tipText && lastNearestCovered) tipText.textContent = `实时组合近似 · 最近实算：${summary}`;
-  }
   const hintEl = $('flow-coverage-hint');
   if (hintEl) {
     hintEl.textContent = isRest
-      ? '当前静止：调高车速或自然风速即可查看流线。'
-      : unsupported && lastNearestCovered
-        ? `当前为 CFD 组合近似，最近精确实算：${summary}。`
-        : selection.mode === 'exact'
-          ? '当前组合命中已求解 CFD 节点。'
-          : '当前组合位于已校验 CFD 插值区间内。';
+      ? '当前静止：调高风洞风速即可查看流线。'
+      : selection.mode === 'exact'
+        ? '当前工况命中已求解 CFD 节点。'
+        : selection.mode === 'interpolated'
+          ? '当前工况位于已校验 CFD 插值区间内。'
+          : '当前工况由已求解 CFD 与 74 档侧风库实时合成。';
   }
 }
 
@@ -1442,7 +1364,6 @@ $('interface-toggle').addEventListener('click', e => {
 
 $('flow-density').addEventListener('input', e => { state.flowDensity = Number(e.target.value); showState(); });
 $('steer').addEventListener('input', e => { state.steer = Number(e.target.value); showState(); });
-$('speed').addEventListener('input', e => { state.ambientWindMps = Number(e.target.value); showState(); });
 $('wind-angle')?.addEventListener('input', e => { state.windAngle = Number(e.target.value); showState(); });
 $('center-wind')?.addEventListener('click', () => { state.windAngle = 0; showState(); });
 function toggleDrs() {
@@ -1451,7 +1372,6 @@ function toggleDrs() {
 }
 $('drs-toggle').addEventListener('click', toggleDrs);
 $('center-steering').addEventListener('click', () => { state.steer = 0; showState(); });
-$('hud-speed')?.addEventListener('input', e => { state.ambientWindMps = Number(e.target.value); showState(); });
 $('hud-wind-angle')?.addEventListener('input', e => { state.windAngle = Number(e.target.value); showState(); });
 $('hud-center-wind')?.addEventListener('click', () => { state.windAngle = 0; showState(); });
 $('hud-ground-speed')?.addEventListener('input', e => { state.groundSpeed = Number(e.target.value); showState(); });
@@ -1509,13 +1429,6 @@ $('brand-home')?.addEventListener('click', e => {
 $('flow-retry').addEventListener('click', () => {
   flowCatalog.retry();
   flowJobs.reset();
-});
-$('flow-snap')?.addEventListener('click', e => {
-  e.stopPropagation();
-  applyConditionTarget(lastNearestCovered);
-});
-$('conditions-snap')?.addEventListener('click', () => {
-  applyConditionTarget(lastNearestCovered);
 });
 document.querySelectorAll('[data-flow-preset]').forEach(btn => {
   btn.addEventListener('click', () => applyConditionTarget(FLOW_PRESETS[btn.dataset.flowPreset]));
@@ -1627,7 +1540,7 @@ renderer.setAnimationLoop(now => {
 window.aeroStudio = {
   get ready() { return Boolean(rig); },
   get airflow() { return { ...flowJobs.presented, visible: airflow.group.visible,
-    workerPending: Boolean(flowJobs.sent), nearestCovered: lastNearestCovered, state: { ...state } }; },
+    workerPending: Boolean(flowJobs.sent), state: { ...state } }; },
   get forces() { return readForces(); },
   get turntable() { return { carYawDeg: THREE.MathUtils.radToDeg(carTurntable.rotation.y), environmentYawDeg: THREE.MathUtils.radToDeg(worlds.turntableYaw), fanPosition: worlds.root?.userData.fan?.getWorldPosition(new THREE.Vector3()).toArray() || null }; },
   get sidepod() { return { visible: sidepod.group.visible, lines: sidepod.count, stops: sidepod.stops }; },
