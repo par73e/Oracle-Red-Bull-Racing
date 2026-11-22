@@ -108,7 +108,11 @@ export class FlowJobs {
     if (this.presented?.key === key && selection.sources) {
       this.departedAt = null;
       this.setVisible(true);
-      this.onStatus(this.presented.mode === 'exact' ? '已求解 CFD 工况' : '相邻 CFD 工况插值');
+      this.onStatus(this.presented.mode === 'exact'
+        ? '已求解 CFD 工况'
+        : this.presented.mode === 'interpolated'
+          ? '相邻 CFD 工况插值'
+          : 'CFD 组合近似');
       return;
     }
     if (this.failed) return this.hide('流线计算暂不可用 · 请重试');
@@ -124,10 +128,13 @@ export class FlowJobs {
     const id = ++this.sequence;
     // The rig has already been set to this condition by the animation loop.
     const sources = selection.sources.map(({ node, weight }) => ({ id: node.id, weight }));
-    this.sent = { id, key, condition, mode: selection.mode, sources };
+    const deltas = (selection.deltas ?? []).map(({ posNode, negNode, weight, grid }) => ({
+      posId: posNode.id, negId: negNode.id, weight, grid,
+    }));
+    this.sent = { id, key, condition, mode: selection.mode, sources, deltas };
     this.watchdog = setTimeout(this.fail, TRACE_TIMEOUT_MS);
     try {
-      this.worker.postMessage({ type: 'compute', id, key, condition, sources, grid: selection.grid,
+      this.worker.postMessage({ type: 'compute', id, key, condition, sources, deltas, grid: selection.grid,
         fields: selection.fields.filter(field => !this.known.has(field.id)),
         rig: snapshotRig(rig, this.meshes, this.versions) });
     } catch { this.fail(); }

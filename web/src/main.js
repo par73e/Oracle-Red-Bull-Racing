@@ -201,9 +201,11 @@ function updateFlowStatus(message) {
       ? 'error'
       : message.includes('正在')
         ? 'loading'
-        : !state.flow || message.startsWith('静止 ·') || message.includes('暂无')
-          ? 'idle'
-          : 'ready';
+        : message.includes('组合近似')
+          ? 'approx'
+          : !state.flow || message.startsWith('静止 ·') || message.includes('暂无')
+            ? 'idle'
+            : 'ready';
     if (dotEl.dataset.tone !== tone) dotEl.dataset.tone = tone;
   }
 }
@@ -224,7 +226,7 @@ const flowJobs = new FlowJobs(flowCatalog, { whole: airflow, bottom: underbody, 
 worlds.set(state.environment, state.model === 'rb19' ? 2023 : 2021);
 
 function syncTurntable() {
-  const yawRad = state.environment === 'wind' ? THREE.MathUtils.degToRad(state.effWindAngle) : 0;
+  const yawRad = state.environment === 'wind' ? THREE.MathUtils.degToRad(state.windAngle || 0) : 0;
   if (Math.abs(carTurntable.rotation.y - yawRad) > 1e-6) {
     carTurntable.rotation.y = yawRad;
     carTurntable.updateMatrixWorld(true);
@@ -1059,6 +1061,7 @@ function readForces() {
 const forceDescriptions = {
   exact: ['CFD', '当前工况 OpenFOAM 粗网格求解的末 100 步平均值。'],
   interpolated: ['插值', '相邻 OpenFOAM 工况按动压归一的气动力插值，已通过独立算例校验。'],
+  approximated: ['近似', '基于已有 OpenFOAM 实算工况与 ±90° 侧风库按动压及单轴差分实时合成的近似估计。'],
   still: ['静止', '对地车速与合成相对来流均为零。'],
   loading: ['加载中', '正在加载气动力数据。'],
   unavailable: ['暂无数据', '当前工况暂无经过校验的气动力数据。'],
@@ -1173,7 +1176,7 @@ const FLOW_PRESETS = {
   cruise: { groundSpeed: 180, ambientWindMps: 0, windAngle: 0, steer: 0, drs: 0 },
   drs: { groundSpeed: 180, ambientWindMps: 0, windAngle: 0, steer: 0, drs: 1 },
   steer: { groundSpeed: 180, ambientWindMps: 0, windAngle: 0, steer: -18, drs: 0 },
-  crosswind: { groundSpeed: 180, ambientWindMps: 4, windAngle: 90, steer: 0, drs: 0 },
+  crosswind: { groundSpeed: 180, ambientWindMps: 0, windAngle: 45, steer: 0, drs: 0 },
   headwind: { groundSpeed: 10, ambientWindMps: 15, windAngle: 0, steer: 0, drs: 0 },
 };
 
@@ -1249,7 +1252,7 @@ function updateCoverageGuidance() {
     const active = Boolean(preset &&
       state.groundSpeed === preset.groundSpeed &&
       state.ambientWindMps === preset.ambientWindMps &&
-      (preset.ambientWindMps === 0 || state.windAngle === preset.windAngle) &&
+      state.windAngle === preset.windAngle &&
       state.steer === preset.steer &&
       state.drs === preset.drs);
     btn.setAttribute('aria-pressed', String(active));
@@ -1277,21 +1280,20 @@ function updateCoverageGuidance() {
 
   const snapBtn = $('flow-snap');
   if (snapBtn) {
-    snapBtn.hidden = !state.flow || !lastNearestCovered;
-    if (lastNearestCovered) snapBtn.title = `一键切至最近实算工况：${summary}`;
+    snapBtn.hidden = true;
   }
   const tipEl = $('conditions-coverage-tip');
   if (tipEl) {
     tipEl.hidden = !lastNearestCovered;
     const tipText = $('conditions-coverage-text');
-    if (tipText && lastNearestCovered) tipText.textContent = `暂无覆盖 · 最近：${summary}`;
+    if (tipText && lastNearestCovered) tipText.textContent = `实时组合近似 · 最近实算：${summary}`;
   }
   const hintEl = $('flow-coverage-hint');
   if (hintEl) {
     hintEl.textContent = isRest
       ? '当前静止：调高车速或自然风速即可查看流线。'
       : unsupported && lastNearestCovered
-        ? `当前组合暂无覆盖，最近实算：${summary}。`
+        ? `当前为 CFD 组合近似，最近精确实算：${summary}。`
         : selection.mode === 'exact'
           ? '当前组合命中已求解 CFD 节点。'
           : '当前组合位于已校验 CFD 插值区间内。';

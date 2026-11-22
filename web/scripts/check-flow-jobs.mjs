@@ -13,10 +13,11 @@ class TestWorker {
 globalThis.Worker = TestWorker;
 const initial = { model: 'rb19', groundSpeed: 10, ambientWindMps: 0, windAngle: 0, steer: 0,
   drs: 0, drsCurrent: 0, flow: true, flowDensity: 100 };
-assert.equal(resolveRelativeWind({ groundSpeed: 180, ambientWindMps: 0, windAngle: 90 }).effWindAngleDeg, 0);
-assert.ok(Math.abs(resolveRelativeWind({ groundSpeed: 180, ambientWindMps: 15, windAngle: 90 }).effWindAngleDeg - 16.69924423399362) < 1e-10);
+assert.equal(resolveRelativeWind({ groundSpeed: 180, ambientWindMps: 0, windAngle: 90 }).effWindAngleDeg, 90);
+assert.equal(resolveRelativeWind({ groundSpeed: 180, ambientWindMps: 15, windAngle: 90 }).effWindAngleDeg, 90);
 assert.equal(resolveRelativeWind({ groundSpeed: 350, ambientWindMps: 15 }).relSpeedKmh, 404);
-assert.equal(conditionKey(captureCondition(initial)), conditionKey(captureCondition({ ...initial, drs: 1, windAngle: -90 })));
+assert.equal(conditionKey(captureCondition(initial)), conditionKey(captureCondition({ ...initial, drs: 1 })));
+assert.notEqual(conditionKey(captureCondition(initial)), conditionKey(captureCondition({ ...initial, windAngle: -45 })));
 
 const makeLayer = () => ({ group: {}, lines: {}, geometry: new T.BufferGeometry() });
 const layers = { whole: makeLayer(), bottom: makeLayer(), side: makeLayer() };

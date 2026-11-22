@@ -53,19 +53,190 @@ function uiStateFromCoordinates(at) {
   if (groundSpeed < 0 || groundSpeed > 350 || Math.abs(groundSpeed / 3.6 - roadMps) > 1e-4) return null;
   const steerRounded = Math.round(steer);
   if (steerRounded < -18 || steerRounded > 18 || Math.abs(steerRounded - steer) > 1e-4) return null;
-  const yawRad = yawDeg * Math.PI / 180;
-  const wx = relMps * Math.cos(yawRad) - roadMps;
-  const wy = relMps * Math.sin(yawRad);
-  const rawWind = Math.hypot(wx, wy);
+  const windAngle = roundStep(yawDeg, 5);
+  if (windAngle < -90 || windAngle > 90 || Math.abs(windAngle - yawDeg) > .25) return null;
+  const rad = windAngle * Math.PI / 180;
+  // Solve |road + w*cos(a), w*sin(a)| = relMps for w >= 0:
+  // w^2 + 2*road*cos(a)*w + (road^2 - rel^2) = 0
+  const b = roadMps * Math.cos(rad);
+  const disc = b * b + (relMps * relMps - roadMps * roadMps);
+  if (disc < -1e-6) return null;
+  const rawWind = Math.max(0, -b + Math.sqrt(Math.max(0, disc)));
   const ambientWindMps = roundStep(rawWind, .5);
-  if (ambientWindMps < 0 || ambientWindMps > 15 || Math.abs(ambientWindMps - rawWind) > .02) return null;
-  let windAngle = 0;
-  if (ambientWindMps > 0) {
-    const rawAngle = Math.atan2(wy, wx) * 180 / Math.PI;
-    windAngle = roundStep(rawAngle, 5);
-    if (windAngle < -90 || windAngle > 90 || Math.abs(windAngle - rawAngle) > .25) return null;
-  }
+  if (ambientWindMps < 0 || ambientWindMps > 15 || Math.abs(ambientWindMps - rawWind) > .05) return null;
   return { groundSpeed, ambientWindMps, windAngle, steer: steerRounded, drs };
+}
+
+function buildSynthIndex(catalog) {
+  const rollingMap = new Map(), stationaryMap = new Map(), yawMap = new Map();
+  for (const node of catalog.nodes) {
+    const [rel, road, yaw, steer, drs] = node.at;
+    if (steer !== 0 || drs !== 0) continue;
+    if (node.grid === 'headwind' && Math.abs(yaw) < 1e-4 && rel > 1e-4) {
+      if (Math.abs(rel - road) < 1e-3) {
+        const key = Math.round(rel * 100);
+        if (!rollingMap.has(key) || (node.forces && !rollingMap.get(key).forces)) rollingMap.set(key, node);
+      } else if (road <= 1e-6) {
+        const key = Math.round(rel * 100);
+        if (!stationaryMap.has(key) || (node.forces && !stationaryMap.get(key).forces)) stationaryMap.set(key, node);
+      }
+    } else if (node.grid === 'yaw' && Math.abs(rel - 50) < .1 && Math.abs(road - 50) < .1) {
+      const key = Math.round(yaw);
+      if (!yawMap.has(key) || (node.forces && !yawMap.get(key).forces)) yawMap.set(key, node);
+    }
+  }
+  const rolling = [...rollingMap.values()].sort((a, b) => a.at[0] - b.at[0]);
+  const stationary = [...stationaryMap.values()].sort((a, b) => a.at[0] - b.at[0]);
+  const yaw = [...yawMap.values()].sort((a, b) => a.at[2] - b.at[2]);
+  return {
+    rolling,
+    rollingWithForces: rolling.filter(n => n.forces),
+    stationary,
+    stationaryWithForces: stationary.filter(n => n.forces),
+    yaw,
+    yawWithForces: yaw.filter(n => n.forces),
+    base: catalog.byId.get('base') ?? null,
+    open: catalog.byId.get('open') ?? null,
+    left: catalog.byId.get('left') ?? null,
+    right: catalog.byId.get('right') ?? null,
+  };
+}
+
+function bracketSpeedSources(nodes, targetMps) {
+  if (!nodes.length) return [];
+  if (targetMps <= nodes[0].at[0]) {
+    return [{ node: nodes[0], weight: targetMps / nodes[0].at[0] }];
+  }
+  const last = nodes[nodes.length - 1];
+  if (targetMps >= last.at[0]) {
+    return [{ node: last, weight: targetMps / last.at[0] }];
+  }
+  for (let i = 1; i < nodes.length; i++) {
+    const lo = nodes[i - 1], hi = nodes[i];
+    if (targetMps <= hi.at[0]) {
+      const t = (targetMps - lo.at[0]) / (hi.at[0] - lo.at[0]);
+      if (t <= 1e-6) return [{ node: lo, weight: targetMps / lo.at[0] }];
+      if (t >= 1 - 1e-6) return [{ node: hi, weight: targetMps / hi.at[0] }];
+      return [
+        { node: lo, weight: (1 - t) * targetMps / lo.at[0] },
+        { node: hi, weight: t * targetMps / hi.at[0] },
+      ];
+    }
+  }
+  return [{ node: last, weight: targetMps / last.at[0] }];
+}
+
+function bracketYawNodes(nodes, yawDeg) {
+  const y = Math.max(-90, Math.min(90, yawDeg));
+  if (!nodes.length) return [];
+  if (y <= nodes[0].at[2]) return [{ node: nodes[0], weight: 1 }];
+  const last = nodes[nodes.length - 1];
+  if (y >= last.at[2]) return [{ node: last, weight: 1 }];
+  for (let i = 1; i < nodes.length; i++) {
+    const lo = nodes[i - 1], hi = nodes[i];
+    if (y <= hi.at[2]) {
+      const span = hi.at[2] - lo.at[2];
+      const t = span > 1e-6 ? (y - lo.at[2]) / span : 0;
+      if (t <= 1e-6) return [{ node: lo, weight: 1 }];
+      if (t >= 1 - 1e-6) return [{ node: hi, weight: 1 }];
+      return [{ node: lo, weight: 1 - t }, { node: hi, weight: t }];
+    }
+  }
+  return [{ node: last, weight: 1 }];
+}
+
+export function synthesizeCoverage(catalog, coordinates) {
+  const [relMps, roadMps, yawDeg, steer, drs] = coordinates;
+  if (relMps <= 1e-8 && roadMps <= 1e-8) return { mode: 'unsupported' };
+  const synth = catalog._synth ??= buildSynthIndex(catalog);
+  const speedRef = Math.max(relMps, roadMps);
+  let sources, grid;
+  if (Math.abs(yawDeg) >= 1e-4 && synth.yaw.length) {
+    const scaleV = speedRef / 50;
+    sources = bracketYawNodes(synth.yaw, yawDeg).map(({ node, weight }) => ({ node, weight: weight * scaleV }));
+    grid = catalog.grids[sources[0].node.grid];
+  } else {
+    const curve = roadMps <= 1e-6 && synth.stationary.length ? synth.stationary : synth.rolling;
+    sources = bracketSpeedSources(curve, speedRef);
+    if (!sources.length) return { mode: 'unsupported' };
+    grid = catalog.grids[sources[0].node.grid];
+  }
+  const deltas = [];
+  if (synth.base) {
+    const scaleV = speedRef / 50;
+    if (Math.abs(steer) > 1e-4) {
+      const steerNode = steer < 0 ? synth.left : synth.right;
+      if (steerNode) {
+        deltas.push({ posNode: steerNode, negNode: synth.base, weight: (Math.abs(steer) / 18) * scaleV, grid: catalog.grids[steerNode.grid] });
+      }
+    }
+    if (drs > 1e-4 && synth.open) {
+      deltas.push({ posNode: synth.open, negNode: synth.base, weight: drs * scaleV, grid: catalog.grids[synth.open.grid] });
+    }
+  }
+  return { mode: 'synthesized', sources, deltas, grid };
+}
+
+export function resolveCoverage(catalog, coordinates) {
+  const strict = selectCoverage(catalog, coordinates);
+  if (strict.mode !== 'unsupported') return strict;
+  return synthesizeCoverage(catalog, coordinates);
+}
+
+export function synthesizeForces(catalog, coordinates) {
+  const [relMps, roadMps, yawDeg, steer, drs] = coordinates;
+  if (relMps <= 1e-8 && roadMps <= 1e-8) return undefined;
+  const synth = catalog._synth ??= buildSynthIndex(catalog);
+  const speedRef = Math.max(relMps, roadMps);
+  let baseForces;
+  if (Math.abs(yawDeg) >= 1e-4 && synth.yawWithForces.length) {
+    const pair = bracketYawNodes(synth.yawWithForces, yawDeg);
+    const qScale = (speedRef / 50) ** 2;
+    baseForces = Object.fromEntries(['drag', 'side', 'downforce'].map(key => [
+      key,
+      pair.reduce((sum, { node, weight }) => sum + weight * node.forces[key], 0) * qScale,
+    ]));
+  } else {
+    const curve = roadMps <= 1e-6 && synth.stationaryWithForces.length ? synth.stationaryWithForces : synth.rollingWithForces;
+    if (!curve.length) return undefined;
+    if (speedRef <= curve[0].at[0]) {
+      const qScale = (speedRef / curve[0].at[0]) ** 2;
+      baseForces = Object.fromEntries(['drag', 'side', 'downforce'].map(k => [k, curve[0].forces[k] * qScale]));
+    } else if (speedRef >= curve[curve.length - 1].at[0]) {
+      const last = curve[curve.length - 1];
+      const qScale = (speedRef / last.at[0]) ** 2;
+      baseForces = Object.fromEntries(['drag', 'side', 'downforce'].map(k => [k, last.forces[k] * qScale]));
+    } else {
+      for (let i = 1; i < curve.length; i++) {
+        const lo = curve[i - 1], hi = curve[i];
+        if (speedRef <= hi.at[0]) {
+          const t = (speedRef - lo.at[0]) / (hi.at[0] - lo.at[0]);
+          baseForces = interpolateForces([{ node: lo, weight: 1 - t }, { node: hi, weight: t }], speedRef);
+          break;
+        }
+      }
+    }
+  }
+  if (!baseForces) return undefined;
+  const q50 = (speedRef / 50) ** 2;
+  if (synth.base?.forces) {
+    if (Math.abs(steer) > 1e-4) {
+      const steerNode = steer < 0 ? synth.left : synth.right;
+      if (steerNode?.forces) {
+        const w = (Math.abs(steer) / 18) * q50;
+        for (const key of ['drag', 'side', 'downforce']) {
+          baseForces[key] += w * (steerNode.forces[key] - synth.base.forces[key]);
+        }
+      }
+    }
+    if (drs > 1e-4 && synth.open?.forces) {
+      const w = drs * q50;
+      for (const key of ['drag', 'side', 'downforce']) {
+        baseForces[key] += w * (synth.open.forces[key] - synth.base.forces[key]);
+      }
+    }
+  }
+  return { mode: 'approximated', ...baseForces };
 }
 
 function collectUiCandidates(catalog) {
@@ -125,12 +296,12 @@ export function nearestCoveredState(catalog, state) {
   if (!candidates.length) return null;
   const curGround = state.groundSpeed ?? 0;
   const curWind = state.ambientWindMps ?? 0;
-  const curAngle = curWind > 0 ? (state.windAngle ?? 0) : 0;
+  const curAngle = state.windAngle ?? 0;
   const curSteer = state.steer ?? 0;
   const curDrs = state.drs ? 1 : 0;
   let best = null, bestScore = Infinity;
   for (const item of candidates) {
-    const itemAngle = item.ambientWindMps > 0 ? item.windAngle : 0;
+    const itemAngle = item.windAngle;
     const dGround = Math.abs(item.groundSpeed - curGround) / 350;
     const dWind = Math.abs(item.ambientWindMps - curWind) / 15;
     const dAngle = Math.abs(itemAngle - curAngle) / 180;
@@ -152,6 +323,8 @@ export function formatConditionSummary(target) {
   if (target.ambientWindMps > 0) {
     const dir = target.windAngle === 0 ? '迎风' : `${target.windAngle > 0 ? '右侧风 +' : '左侧风 '}${target.windAngle}°`;
     parts.push(`${dir} ${target.ambientWindMps.toFixed(1)} m/s`);
+  } else if (target.windAngle !== 0) {
+    parts.push(`${target.windAngle > 0 ? '右侧来流 +' : '左侧来流 '}${target.windAngle}°`);
   } else {
     parts.push('静风');
   }
@@ -250,7 +423,7 @@ export class FlowCatalog {
       for (let i = 0; i < velocity.length; i++) velocity[i] = view.getInt16(i * 2, true) * node.scale;
       if (generation.aborted) return;
       this.cache.set(node.id, { id: node.id, velocity, mask: new Uint8Array(validity) });
-      if (this.cache.size > 16) this.cache.delete(this.cache.keys().next().value);
+      if (this.cache.size > 24) this.cache.delete(this.cache.keys().next().value);
     };
     this.pending.set(node.id, attempt().catch(() => generation.aborted || attempt()).catch(() => {
       if (!generation.aborted) this.failures.add(node.id);
@@ -262,10 +435,12 @@ export class FlowCatalog {
   forcesAt(condition) {
     if (this.catalog?.car !== condition.model) return undefined;
     const { mode, sources } = selectCoverage(this.catalog, condition.coordinates);
-    if (!sources?.every(({ node }) => node.forces)) return undefined;
-    if (mode === 'exact') return { ...sources[0].node.forces, mode };
-    if (!this.catalog.forceSegments.has(sources.map(source => source.node.id).join(':'))) return undefined;
-    return { mode, ...interpolateForces(sources, condition.coordinates[0]) };
+    if (mode === 'exact' && sources[0].node.forces) return { ...sources[0].node.forces, mode };
+    if (mode === 'interpolated' && sources.every(({ node }) => node.forces)
+        && this.catalog.forceSegments.has(sources.map(source => source.node.id).join(':'))) {
+      return { mode, ...interpolateForces(sources, condition.coordinates[0]) };
+    }
+    return synthesizeForces(this.catalog, condition.coordinates);
   }
 
   axisCoverage(state, axis) {
@@ -281,13 +456,20 @@ export class FlowCatalog {
   select(condition) {
     if (!this.catalog) return { mode: this.loadingCatalog ? 'loading' : 'error' };
     if (this.catalog.car !== condition.model) return { mode: 'unsupported' };
-    const selection = selectCoverage(this.catalog, condition.coordinates);
+    const selection = resolveCoverage(this.catalog, condition.coordinates);
     if (!selection.sources) return selection;
-    const missing = selection.sources.map(source => source.node).filter(node => !this.cache.has(node.id));
+    const requiredMap = new Map();
+    for (const source of selection.sources) requiredMap.set(source.node.id, source.node);
+    for (const delta of selection.deltas ?? []) {
+      requiredMap.set(delta.posNode.id, delta.posNode);
+      requiredMap.set(delta.negNode.id, delta.negNode);
+    }
+    const required = [...requiredMap.values()];
+    const missing = required.filter(node => !this.cache.has(node.id));
     if (missing.some(node => this.failures.has(node.id))) return { mode: 'error' };
     missing.forEach(node => this.request(node));
     if (missing.length) return { mode: 'loading' };
-    const fields = selection.sources.map(({ node }) => {
+    const fields = required.map(node => {
       const field = this.cache.get(node.id);
       this.cache.delete(node.id);
       this.cache.set(node.id, field);

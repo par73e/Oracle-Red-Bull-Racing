@@ -8,7 +8,7 @@ import { loadGeometry } from './geometry-loader.mjs';
 import { bindRig, applyRig } from '../src/rig.js';
 import { describeModel, snapshotRig } from '../src/flow-worker-protocol.js';
 import { captureCondition } from '../src/flow-condition.js';
-import { FlowCatalog, axisCoverage, nearestCoveredState, readCatalog, selectCoverage } from '../src/flow-catalog.js';
+import { FlowCatalog, axisCoverage, nearestCoveredState, readCatalog, resolveCoverage, selectCoverage } from '../src/flow-catalog.js';
 
 T.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 T.Mesh.prototype.raycast = acceleratedRaycast;
@@ -101,9 +101,19 @@ for (const modelId of cars) {
   const trace = async (condition, selection, stepScale = 1) => {
     applyRig(rig, { steer: condition.steer, drs: condition.drs, spin: 0 });
     model.updateMatrixWorld(true);
+    const nodeMap = new Map();
+    for (const { node } of selection.sources) nodeMap.set(node.id, node);
+    for (const delta of selection.deltas ?? []) {
+      nodeMap.set(delta.posNode.id, delta.posNode);
+      nodeMap.set(delta.negNode.id, delta.negNode);
+    }
     return request({ type: 'compute', id: ++id, key: id, condition, stepScale,
-      fields: await Promise.all(selection.sources.map(({ node }) => decode(node))),
-      grid: selection.grid, sources: selection.sources.map(({ node, weight }) => ({ id: node.id, weight })),
+      fields: await Promise.all([...nodeMap.values()].map(node => decode(node))),
+      grid: selection.grid,
+      sources: selection.sources.map(({ node, weight }) => ({ id: node.id, weight })),
+      deltas: (selection.deltas ?? []).map(({ posNode, negNode, weight, grid }) => ({
+        posId: posNode.id, negId: negNode.id, weight, grid,
+      })),
       rig: snapshotRig(rig, meshes, versions) });
   };
   try {
@@ -134,12 +144,13 @@ for (const modelId of cars) {
     for (const [, label, groundSpeed, ambientWindMps, windAngle, steer, drs, drsCurrent] of cases.filter(([car]) => car === modelId)) {
       const condition = makeCondition(modelId, { groundSpeed, ambientWindMps, windAngle, steer, drs, drsCurrent });
       if (condition.speed === 0 && condition.wheelSpeedMps === 0) { modes[label] = 'rest'; continue; }
-      const selection = selectCoverage(catalog, condition.coordinates);
+      const selection = resolveCoverage(catalog, condition.coordinates);
       modes[label] = selection.mode;
-      if (selection.mode === 'unsupported') continue;
+      assert.notEqual(selection.mode, 'unsupported', `${modelId}/${label} must always resolve to live airflow`);
       const result = await trace(condition, selection);
       assert(result.layers.whole.lines > 0, `${modelId}/${label} must show traces`);
       for (const layer of Object.values(result.layers)) assert(layer.attributes.position.every(Number.isFinite));
+      if (label === 'baseline-yaw45-combined' || label === 'low-steer1') inspectGeometry(result, model);
       assert.equal(result.key, id);
     }
     assert.equal(modes['low-closed'], 'exact');
@@ -165,9 +176,11 @@ for (const modelId of cars) {
     }
     assert.equal(modes['low-command-only'], modes['low-closed']);
     assert.equal(modes['still-0.5'], 'exact');
-    assert.equal(modes['high-ambient15'], 'unsupported');
-    assert.equal(modes['low-yaw90'], 'exact', 'A zero-strength natural wind has no angle');
+    assert.equal(modes['high-ambient15'], 'synthesized');
+    assert.equal(modes['low-yaw90'], 'synthesized', 'Wind direction directly drives yaw synthesis at any wind speed');
+    assert.equal(modes['low-steer1'], 'synthesized', 'Arbitrary steering angle synthesizes continuously');
     assert.equal(modes['baseline-yaw45'], 'exact');
+    assert.equal(modes['baseline-yaw45-combined'], 'synthesized');
     assert.equal(modes['still-zero'], 'rest');
     const condition = makeCondition(modelId, {});
     const selection = selectCoverage(catalog, condition.coordinates);
@@ -212,7 +225,14 @@ const rollingForces = catalog.forcesAt(makeCondition('rb19', { groundSpeed: 120 
 assert.equal(rollingForces?.mode, 'interpolated', 'Dynamic-pressure interpolation covers 120 km/h rolling');
 assert(rollingForces.drag > 800 && rollingForces.drag < 1300);
 assert.equal(catalog.forcesAt(makeCondition('rb16b', {})), undefined);
-assert.equal(catalog.forcesAt(makeCondition('rb19', { groundSpeed: 350, ambientWindMps: 15 })), undefined);
+const highSynthForces = catalog.forcesAt(makeCondition('rb19', { groundSpeed: 350, ambientWindMps: 15 }));
+assert.equal(highSynthForces?.mode, 'approximated');
+assert(highSynthForces.drag > 8000);
+const yawSteerDrsForces = catalog.forcesAt(makeCondition('rb19', { groundSpeed: 180, ambientWindMps: 6, windAngle: 45, steer: 12, drsCurrent: 1 }));
+assert.equal(yawSteerDrsForces?.mode, 'approximated');
+assert(Number.isFinite(yawSteerDrsForces.downforce) && Number.isFinite(yawSteerDrsForces.drag));
+assert.equal((await waitForSelection('rb19', { groundSpeed: 180, windAngle: 45 })).mode, 'exact');
+assert.equal((await waitForSelection('rb19', { groundSpeed: 90, windAngle: 35, steer: 12, drsCurrent: 1 })).mode, 'synthesized');
 const steerTicks = axisCoverage(catalog.catalog, { groundSpeed: 180, ambientWindMps: 0, windAngle: 0, steer: 0, drs: 0 }, 'steer');
 assert.deepEqual(steerTicks, [-18, 0, 18]);
 const snappedDrs = nearestCoveredState(catalog.catalog, { groundSpeed: 90, ambientWindMps: 0, windAngle: 0, steer: 0, drs: 1 });

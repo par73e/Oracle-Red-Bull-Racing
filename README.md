@@ -41,7 +41,7 @@ AERO/
 
 - **模型与机构**：两车制作基线为 `2026-11-10-tail-detail1`，支持 DRS 液压联动（二态开关与过渡动画）、四轮自转与前轮转向，RB19 含简化底板通道，RB16B 含驾驶舱安全带与尾部碳纤维/排气细节。网页默认加载压缩后的 `.web.glb`（约 6.8 MB/车）。
 - **三维场景**：提供「风洞（11 叶翼型风机 + 联动转台）」「艾尔罗格 Eau Rouge（含曲面阴影与 LiDAR 地形）」「纯白影棚」三个场景，支持自由观察与车体部位预设机位、`localStorage` 状态保持及自动/手动隐藏 HUD。
-- **统一实算 CFD 流场与气动力**：整车、底板与侧箱共享当前工况选定的 OpenFOAM 粗网格稳态 RANS 速度场（详见 [cfd/library/display/README.md](cfd/library/display/README.md)），不再使用历史单轴叠加近似或 F1 基准估算。网页通过 `web/public/flow/<车型>/display/manifest.json` 在 343 个实算节点与 66 个经独立算例校验的插值区间内选场（气动力按动压 $v^2$ 归一插值），超出覆盖时隐藏流线并提供滑块覆盖刻度与一键切换最近实算工况。
+- **统一实算 CFD 流场与全参数实时合成**：整车、底板与侧箱共享当前工况的速度场（详见 [cfd/library/display/README.md](cfd/library/display/README.md)）。命中 343 个 OpenFOAM 实算节点或 66 个已校验插值区间时直接使用精确 CFD 与动压（$v^2$）归一化插值力值；其余任意前轮转向、±90° 风向及多参数组合基于已求解场与 74 档 ±90° 侧风库实时合成（状态标为「CFD 组合近似」），确保任意滑块位置均有连续流线与气动力响应。
 - **调试与验收入口**：前端启动与校验见 [web/README.md](web/README.md)；浏览器控制台可通过 `window.aeroStudio`（含 `airflow`、`forces`、`metrics`、`runKinematicChecks()` 等）复核姿态、已显示工况与来源。
 - **科学边界**：当前 CFD 基于展示几何的粗网格稳态 RANS（无近壁棱柱边界层），网格独立性验证、实验对照及多轴混合组合覆盖仍有局限，不代表车队实车工程载荷。
 

@@ -143,10 +143,10 @@
           <div class="range-labels"><span>向右</span><span>向左</span></div>
         </div>
         <div id="conditions-coverage-tip" class="coverage-tip" hidden>
-          <span id="conditions-coverage-text">当前组合暂无 CFD 覆盖</span>
-          <button id="conditions-snap" type="button" class="chip flow-snap">最近实算</button>
+          <span id="conditions-coverage-text">实时组合近似</span>
+          <button id="conditions-snap" type="button" class="chip flow-snap">切至实算</button>
         </div>
-        <div class="panel-foot"><span>绿轨表示当前组合下已覆盖的 CFD 刻度</span><button id="reset" class="chip">全部复位<svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M15.5 6V3m0 3h-3M15.5 6a6.25 6.25 0 1 0 .75 4.5"/></svg></button></div>
+        <div class="panel-foot"><span>绿轨表示精确实算刻度，其余位置自动实时合成</span><button id="reset" class="chip">全部复位<svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M15.5 6V3m0 3h-3M15.5 6a6.25 6.25 0 1 0 .75 4.5"/></svg></button></div>
       </section>
 
       <section class="panel" id="panel-flow" aria-labelledby="panel-flow-title" hidden>
@@ -175,7 +175,7 @@
           </div>
           <p id="flow-coverage-hint" class="coverage-hint"></p>
           <h3>数据来源</h3>
-          <p class="data-note">整车、底板与侧箱共享当前 CFD 速度场。支持已求解工况及经过数值对照的插值范围，气动力按动压归一插值并经独立算例核验。</p>
+          <p class="data-note">整车、底板与侧箱共享当前 CFD 速度场。命中实算节点与校验区间时使用精确 CFD，其余任意转向、±90° 风向及多参数组合基于已求解场与 74 档侧风库实时合成。</p>
         </div>
       </section>
     </aside>

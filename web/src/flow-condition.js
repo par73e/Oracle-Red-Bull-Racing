@@ -1,13 +1,14 @@
 export function resolveRelativeWind(state) {
-  const road = (state.groundSpeed ?? 0) / 3.6;
-  const wind = state.ambientWindMps ?? 0;
-  const angle = (state.windAngle ?? 0) * Math.PI / 180;
+  const road = Math.max(0, (state.groundSpeed ?? 0) / 3.6);
+  const wind = Math.max(0, state.ambientWindMps ?? 0);
+  const windAngle = state.windAngle ?? 0;
+  const angle = windAngle * Math.PI / 180;
   const longitudinal = road + wind * Math.cos(angle);
   const lateral = wind * Math.sin(angle);
   const relSpeedMps = Math.hypot(longitudinal, lateral);
   return {
     longitudinal, lateral, relSpeedMps, relSpeedKmh: relSpeedMps * 3.6,
-    effWindAngleDeg: relSpeedMps > 0 ? Math.atan2(lateral, longitudinal) * 180 / Math.PI : 0,
+    effWindAngleDeg: windAngle,
   };
 }
 
