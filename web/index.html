@@ -44,29 +44,28 @@
         <div class="telemetry-item telemetry-readout-only" data-telemetry="downforce">
           <button type="button" class="readout aero-readout" aria-expanded="false">
             <span class="aero-metric" data-metric="downforce">
-              <span class="readout-label">下压力</span>
-              <span class="readout-value" id="t-downforce">6355<small>N · 0%</small></span>
+              <span class="readout-label">下压力 <small id="hud-force-source">加载中</small></span>
+              <span class="readout-value" id="t-downforce">—</span>
             </span>
             <span class="aero-metric-sep" aria-hidden="true"></span>
             <span class="aero-metric" data-metric="drag">
               <span class="readout-label">空气阻力</span>
-              <span class="readout-value" id="t-drag">2418<small>N · 0%</small></span>
+              <span class="readout-value" id="t-drag">—</span>
             </span>
           </button>
-          <div class="telemetry-popover popover-forces" role="group" aria-label="实时气动力估算详情">
+          <div class="telemetry-popover popover-forces" role="group" aria-label="实时气动力详情">
             <div class="popover-head">
-              <span class="force-title">实时气动力估算</span>
-              <output id="hud-downforce-value">6355 N (0%)</output>
+              <span class="force-title">实时气动力</span>
+              <output id="hud-downforce-value">—</output>
             </div>
             <div class="force-grid">
-              <span>合成相对来流</span><strong id="hud-rel-airflow">10 km/h · 0.0°</strong>
-              <span>下压力 (Fz)</span><strong id="hud-downforce-pct">6355 N · 0%</strong>
-              <span>空气阻力 (Fx)</span><strong id="hud-drag-value">2418 N · 0%</strong>
-              <span>侧向气动力 (Fy)</span><strong id="hud-side-value">0 N</strong>
-              <span>升阻比 (L/D)</span><strong id="hud-ld-ratio">2.63</strong>
-              <span>粗网格下压力估算</span><strong id="hud-raw-downforce">739 N</strong>
+              <span>合成相对来流</span><strong id="hud-rel-airflow">—</strong>
+              <span>下压力 (Fz)</span><strong id="hud-downforce-pct">—</strong>
+              <span>空气阻力</span><strong id="hud-drag-value">—</strong>
+              <span>侧向气动力 (Fy)</span><strong id="hud-side-value">—</strong>
+              <span>升阻比 (L/D)</span><strong id="hud-ld-ratio">—</strong>
             </div>
-            <p class="force-note" id="hud-force-note">基于 180 km/h F1 参考基准与 OpenFOAM 实算工况趋势连续估算，仅作直观量级参考。</p>
+            <p class="force-note" id="hud-force-note">正在加载气动力数据。</p>
           </div>
         </div>
       </div>
@@ -122,8 +121,8 @@
           <div class="range-labels"><span>0</span><span id="wind-speed">合成来流 198 km/h (50.0 m/s)</span><span>15 m/s</span></div>
         </div>
         <div class="control-group">
-          <div class="label-row"><label for="wind-angle">来流风向</label><span class="label-tail"><output id="wind-angle-value" for="wind-angle">正迎风 0°</output><button id="center-wind" type="button" class="chip">正迎风</button></span></div>
-          <input id="wind-angle" type="range" min="-90" max="90" step="5" value="0" aria-label="来流相对车身的水平风向角" />
+          <div class="label-row"><label for="wind-angle">自然风向</label><span class="label-tail"><output id="wind-angle-value" for="wind-angle">正迎风 0°</output><button id="center-wind" type="button" class="chip">正迎风</button></span></div>
+          <input id="wind-angle" type="range" min="-90" max="90" step="5" value="0" aria-label="自然风相对于车头的水平风向角" />
           <div class="range-labels"><span>左侧 -90°</span><span id="wind-angle-side">正迎风</span><span>右侧 +90°</span></div>
         </div>
         <div class="control-group">
@@ -162,11 +161,7 @@
         </div>
         <div class="data-status">
           <h3>数据来源</h3>
-          <p id="sweep-status" aria-live="polite"></p>
-          <p id="yaw-status" aria-live="polite"></p>
-          <p id="underbody-status" aria-live="polite"></p>
-          <p id="sidepod-status" aria-live="polite"></p>
-          <p class="data-note">流线与气动力估算基于离线 CFD 工况插值及量级趋势校准，仅供探索，不用于严谨气动性能判断。</p>
+          <p class="data-note">整车、底板与侧箱共享当前 CFD 速度场。支持已求解工况及经过数值对照的插值范围。</p>
         </div>
       </section>
     </aside>
@@ -195,10 +190,10 @@
           </button>
           <div id="adjust-wind-angle" class="telemetry-popover" role="group" aria-label="来流风向调节">
             <div class="popover-head">
-              <label for="hud-wind-angle">来流风向</label>
+              <label for="hud-wind-angle">自然风向</label>
               <span class="label-tail"><output id="hud-wind-angle-value" for="hud-wind-angle">正迎风 0°</output><button id="hud-center-wind" type="button" class="chip">回正</button></span>
             </div>
-            <input id="hud-wind-angle" type="range" min="-90" max="90" step="5" value="0" aria-label="来流相对车身的水平风向角" />
+            <input id="hud-wind-angle" type="range" min="-90" max="90" step="5" value="0" aria-label="自然风相对于车头的水平风向角" />
             <div class="range-labels"><span>左 -90°</span><span id="hud-wind-side">正迎风</span><span>右 +90°</span></div>
           </div>
         </div>
@@ -275,12 +270,10 @@
       <p><a href="https://skfb.ly/oR7sq" target="_blank" rel="noreferrer">Oracle Red Bull F1 Car RB19 2023</a> · Redgrund</p>
       <p><a href="https://skfb.ly/py9Uu" target="_blank" rel="noreferrer">Redbull rb16b</a> · MattDoesBlender</p>
       <p>两份原模型均标注为 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">Creative Commons Attribution 4.0</a>。</p>
-      <p>本地修改：材质调整、统一展示尺度、四轮与前轮转向绑定、近似 DRS 液压机构；RB19 另补简化底板通道。机构与底板为展示用近似，不是车队 CAD。气流基于两车型分别求解的 OpenFOAM 粗网格关键工况，网页对速度矢量场做稀疏组合近似并积分流线。中间状态、多个参数同时变化、低速及高速缩放不等于完整工程求解，也不模拟瞬态湍流。孤立的数值异常采样点会被排除并留有记录；这些预览不用于气动性能判断。零来流下的行驶采用新增移动地面与旋转车轮共同作用的流场；中间状态为缩放及插值。车轮使用旋转壁面近似，来流速度与对地车速独立控制，四轮角速度按对地车速除以各自半径计算，保持纵向纯滚动；移动地面使用对地车速。新增工况均为直行，转向组合仍为姿态插值，不模拟真实转弯的各轮运动学。</p>
-      <p>静止迎风、前轮居中且 DRS 关闭时，整车、底板和侧箱流线统一读取固定地面与静止车轮的粗网格 CFD。已求解档位直接使用该档位的速度场，其余档位在相邻速度场之间插值。</p>
-      <p>底盘流线在 180 km/h、直行、DRS 关闭且轮速匹配时使用单独的加密 CFD 基线；其余工况通常在基线速度缩放上叠加相应粗网格整车场相对基线的变化，是探索性代理近似，不是对应工况的底盘加密重算。车辆几何为体素代理，近壁没有边界层网格，两档网格仍有明显差异，RB19 结果尚未充分收敛，结果仅供探索，不能用于气动性能判断。</p>
-      <p>侧箱下方、侧箱上沿及前悬挂附近的流线来自各车单独的局部加密基线；其余工况通常叠加整车粗网格差分。粗场无有效数据的位置沿用速度缩放的基线，不包含该处的工况响应。两车局部计算仍有收敛、网格和几何限制，不用于赛车性能判断。</p>
-      <p>侧风工况覆盖相对来流偏航角 -90°（左侧风）至 +90°（右侧风）、每 5° 共 37 档 OpenFOAM 自由远场外流求解（车身、车轮与移动地面保持车体纵向）。网页端由“风向”滑块直接控制风洞圆盘转台与来流偏航角（-90° 至 +90°），“对地车速”（0–350 km/h）与“对地绝对风速”（0–15 m/s）共同合成为车身所受总相对来流速度（高速叠加迎风时合成来流可超过 350 km/h）；风洞风机始终保持沿固定轴线吹风，调节风速与车速仅改变合成风速与载荷而不带动转台偏转。</p>
-      <p>实时下压力读数（牛顿及相对 180 km/h 正迎风的百分比变化）按两车 180 km/h 典型 F1 下压力量级基准，结合实际求解得到的随风速、车速/滚动、DRS、转向及侧风角度压力积分趋势进行物理一致估算（侧风增大或开启 DRS 时下压力回落，接近 ±90° 纯侧风可能转为失速或微正升力）；因展示体素代理网格较粗（41 mm 近壁且无边界层棱柱层），OpenFOAM 原始力积分在悬停详情内同步标出。</p>
+      <p>本地修改包括材质、统一展示尺度、车轮与前轮转向绑定、近似 DRS 液压机构和 RB19 简化底板。OpenFOAM 使用展示几何的粗网格体素模型，近壁无边界层棱柱层。结果仅供观察定常流动，车队实车载荷需要独立验证。</p>
+      <p>整车、底板和侧箱流线从同一速度场积分。网页使用匹配的 CFD 实算节点，或在经过速度矢量与流线轨迹校验的相邻工况间插值。覆盖以合成来流速度、对地车速、来流偏航、转向及实际 DRS 开度为准。缺少覆盖时隐藏流线。</p>
+      <p>自然风和对地车速共同决定合成相对来流。移动地面取对地车速，车轮角速度为对地车速除以各自半径。转向工况使用静态前轮转角，真实过弯运动学与瞬态湍流超出算例范围。</p>
+      <p>气动力取匹配工况的 OpenFOAM 末 100 步平均值，或经独立算例核验的气动力插值。气动力数据缺失时显示「—」。</p>
       <p>风洞为原创场景，显示的 CFD 来自自由外流域，未计算房间壁面影响。Eau Rouge 场景采用公开中心线、路宽和瓦隆地区 LiDAR 高程重建，默认从坡底望向 Raidillon；植被使用 CC0 三维松树模型及其枝叶烘焙，天空为真实 HDR 摄影。中心线地理配准和采样仍有误差，看台及护栏按实拍比例建模，不是赛道测绘 CAD。<a href="https://github.com/TUMFTM/racetrack-database" target="_blank" rel="noreferrer">TUMFTM 数据</a>（LGPL-3.0） · <a href="https://geoservices.wallonie.be/arcgis/rest/services/RELIEF/WALLONIE_MNT_2021_2022/MapServer" target="_blank" rel="noreferrer">SPW 地形</a> · <a href="https://polyhaven.com/" target="_blank" rel="noreferrer">Poly Haven CC0 材质与树模型</a>。场景不改变直线 CFD 的适用范围。</p>
       <p><a href="https://www.spa-francorchamps.be/en/news/275_the-spa-francorchamps-track-is-decked-out-in-new-colours" target="_blank" rel="noreferrer">赛道官方：2022 年场地变化</a> · 多云干地，远景按深度虚化。赛道背景不代表已求解真实过弯载荷。</p>
     </dialog>

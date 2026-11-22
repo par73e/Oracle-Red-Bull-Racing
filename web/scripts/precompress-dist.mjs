@@ -3,7 +3,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 
 const distDir = path.resolve(import.meta.dirname, '../dist');
-const COMPRESS_EXTS = new Set(['.html', '.js', '.css', '.json', '.glb', '.bin', '.hdr', '.wasm', '.txt', '.csv']);
+const COMPRESS_EXTS = new Set(['.html', '.js', '.css', '.json', '.glb', '.bin', '.mask', '.hdr', '.wasm', '.txt', '.csv']);
 
 async function walk(dir) {
   const entries = await fs.readdir(dir, { withFileTypes: true });

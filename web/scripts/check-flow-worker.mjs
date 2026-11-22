@@ -61,7 +61,7 @@ for(const car of ['rb19','rb16b']){
  const {model,config}=await loadGeometry(car),rig=bindRig(model,config),scene=new T.Scene();scene.add(model);model.traverse(o=>{if(o.isMesh){o.geometry.computeBoundsTree();o.material.side=T.DoubleSide;}});
  const flow=new Airflow(scene),bottom=new UnderbodyFlow(scene,flow.material),side=new SidepodFlow(scene,flow.material);await loadRollingFixture(flow,car);
  for(const [target,name] of [[bottom,'underbody'],[side,'sidepod']]){const url=new URL(`../public/flow/${car}/${name}`,import.meta.url),b=await fs.readFile(new URL(url.href+'.bin'));target.meta=JSON.parse(await fs.readFile(new URL(url.href+'.json')));target.data=new Int16Array(b.buffer,b.byteOffset,b.length/2);target.status='ready';}
- const worker = new Worker(new URL('./flow-worker-node.mjs', import.meta.url));
+ const worker = new Worker(new URL('./legacy-flow-worker-node.mjs', import.meta.url));
  const send = message => new Promise((resolve, reject) => {
   const onReply = reply => {
    worker.off('error', onError);

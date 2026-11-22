@@ -19,7 +19,7 @@
     "validate:sidepod": "node scripts/check-sidepod-assets.mjs && node scripts/check-sidepod.mjs rb19 public/flow/rb19/sidepod.bin && node scripts/check-sidepod.mjs rb16b public/flow/rb16b/sidepod.bin",
     "validate:rolling": "node scripts/check-rolling.mjs",
     "validate:sweep": "node scripts/check-sweep.mjs",
-    "validate:worker": "node scripts/check-flow-jobs.mjs && node scripts/check-flow-worker.mjs",
+    "validate:worker": "node scripts/check-flow-jobs.mjs && node scripts/check-display-flow.mjs && node scripts/check-flow-worker.mjs",
     "validate:spa": "node scripts/check-spa.mjs && node scripts/check-spa-surfaces.mjs"
   },
   "dependencies": {

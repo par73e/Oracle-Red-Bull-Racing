@@ -1,18 +1,7 @@
 import * as T from 'three';
+import { floorBoundary, floorSeeds } from './flow-seeds.js';
 import { TraceScratch } from './airflow.js';
 import { cachedArrayBuffer } from './asset-cache.js';
-
-// The published bottom-layer sampling window, in solver coordinates. Keep
-// this window when a solved whole-car field supplies the velocity, even if
-// the optional refined underbody asset has yet to load.
-const FLOOR_MIN = [-1.8, -1.4, .01];
-const FLOOR_MAX = [4, 1.4, .45];
-function floorBoundary(point) {
- if (-point.z < FLOOR_MIN[0] || -point.z > FLOOR_MAX[0]) return 'x';
- if (-point.x < FLOOR_MIN[1] || -point.x > FLOOR_MAX[1]) return 'y';
- if (point.y - .005 < FLOOR_MIN[2] || point.y - .005 > FLOOR_MAX[2]) return 'z';
- return null;
-}
 
 // The fine baseline plus coarse-field deltas is an exploratory surrogate, not a new solve.
 export class UnderbodyFlow {
@@ -47,40 +36,7 @@ export class UnderbodyFlow {
   const axialScale = baseScale * Math.max(0, Math.cos(T.MathUtils.degToRad(windAngle)));
   let fallbackSamples=0;
   const scratch=this._scratch;scratch.reset();const point=new T.Vector3(),last=new T.Vector3(),vel=new T.Vector3(),direction=new T.Vector3(),color=new T.Color();const {nearby}=airflow.getRayContext(rig.model);let count=0;const stops={boundary:0,masked:0,slow:0,collision:0,limit:0},boundaryAxes={x:0,y:0,z:0};
-  const nx=Math.max(1,Math.round(21*Math.sqrt(state.flowDensity/100))),ny=Math.max(1,Math.round(4*Math.sqrt(state.flowDensity/100)));
-  // Preserve the front rake through shallow yaw, then move it toward the
-  // windward side. The rake stays within the fine grid with the same seed budget.
-  const rakeAngle = windAngle * T.MathUtils.smoothstep(Math.abs(windAngle), 5, 20);
-  const rakeRadians = T.MathUtils.degToRad(rakeAngle);
-  const rakeCos = Math.cos(rakeRadians), rakeSin = Math.sin(rakeRadians);
-  const lateralWeight = Math.abs(rakeAngle) / 90;
-  const seedX = -.95 * rakeAngle / 90;
-  const seedZ = 1.78 * (1 - lateralWeight);
-  const halfWidth = T.MathUtils.lerp(.72, 1.5, lateralWeight);
-  const seeds = [];
-  for (let j = 0; j < ny; j++) {
-   for (let i = 0; i < nx; i++) {
-    const offset = halfWidth - 2 * halfWidth * (i + .5) / nx;
-    seeds.push(new T.Vector3(seedX + rakeCos * offset, .035 + .07 * (j + .5) / ny + .005, seedZ + rakeSin * offset));
-   }
-  }
-  if (state.model === 'rb19') {
-   // A front rake alone misses fluid inside the floor when its paths exit the
-   // sampled passage early. Place two fixed local rakes under the floor and
-   // use the same field and collision checks as the front rake.
-   const yawWeight = 1 - T.MathUtils.smoothstep(Math.abs(windAngle), 5, 30);
-   const columns = Math.round(nx * .5 * yawWeight);
-   const rows = Math.max(1, Math.round(ny * .5));
-   const up = new T.Vector3(0, 1, 0);
-   for (const z of [.25, -.9]) {
-    for (let j = 0; j < rows; j++) {
-     for (let i = 0; i < columns; i++) {
-      const seed = new T.Vector3(-.69 + 1.38 * (i + .5) / columns, .038 + .043 * (j + .5) / rows, z);
-      if (airflow.hasRayHit(seed, up, .23, nearby(seed))) seeds.push(seed);
-     }
-    }
-   }
-  }
+  const seeds = floorSeeds(state, rig, airflow);
   const inv120=1/120,invFade=.02/.14;
   for (const seed of seeds) {
    point.copy(seed);

@@ -5,12 +5,10 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { cachedArrayBuffer, hasCachedAsset } from './asset-cache.js';
 import { bindRig, applyRig, inspectRig } from './rig.js';
-import { Airflow } from './airflow.js';
-import { AeroForces, resolveRelativeWind } from './aero-forces.js';
+import { FlowLayer, makeFlowMaterial } from './flow-tracing.js';
+import { FlowCatalog } from './flow-catalog.js';
+import { captureCondition, resolveRelativeWind } from './flow-condition.js';
 import { FlowJobs } from './flow-jobs.js';
-import { isStationaryHeadwind, isRoad010Headwind } from './stationary-fields.js';
-import { UnderbodyFlow } from './underbody.js';
-import { SidepodFlow } from './sidepod.js';
 import { Environments } from './environments.js';
 import { createSpaShadowGeometry } from './spa-scene.js';
 import { computeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
@@ -214,29 +212,16 @@ const carTurntable = new THREE.Group();
 carTurntable.name = 'CAR_TURNTABLE';
 scene.add(carTurntable);
 
-const airflow = new Airflow(carTurntable, { onStatus: updateFlowStatus });
-const aeroForces = new AeroForces();
-const underbody = new UnderbodyFlow(carTurntable, airflow.material);
-const sidepod = new SidepodFlow(carTurntable, airflow.material);
-let secondaryStartedFor = 0;
-function startSecondaryLayers(serial, carId) {
-  if (serial !== loadSerial) return;
-  airflow.startSecondary();
-  if (secondaryStartedFor === serial) return;
-  secondaryStartedFor = serial;
-  underbody.load(carId);
-  sidepod.load(carId);
-}
-const flowJobs = new FlowJobs(airflow, underbody, sidepod, {
-  reducedMotion,
-  onWorkerReady: carId => startSecondaryLayers(loadSerial, carId),
-});
-airflow.setEnabled(state.flow);
-if (!state.flow) updateFlowStatus('流线已隐藏');
+const flowMaterial = makeFlowMaterial();
+const airflow = new FlowLayer(carTurntable, flowMaterial, 'CFD_FLOW');
+const underbody = new FlowLayer(carTurntable, flowMaterial, 'UNDERBODY_FLOW');
+const sidepod = new FlowLayer(carTurntable, flowMaterial, 'SIDEPOD_FLOW');
+const flowCatalog = new FlowCatalog();
+const flowJobs = new FlowJobs(flowCatalog, { whole: airflow, bottom: underbody, side: sidepod }, updateFlowStatus);
 worlds.set(state.environment, state.model === 'rb19' ? 2023 : 2021);
 
 function syncTurntable() {
-  const yawRad = state.environment === 'wind' ? THREE.MathUtils.degToRad(state.windAngle || 0) : 0;
+  const yawRad = state.environment === 'wind' ? THREE.MathUtils.degToRad(state.effWindAngle) : 0;
   if (Math.abs(carTurntable.rotation.y - yawRad) > 1e-6) {
     carTurntable.rotation.y = yawRad;
     carTurntable.updateMatrixWorld(true);
@@ -1040,13 +1025,6 @@ function formatWindLabel(deg) {
   return `${deg < 0 ? '左侧' : '右侧'} ${deg > 0 ? '+' : ''}${deg}°`;
 }
 
-function formatWindSide(deg) {
-  if (Math.abs(deg) < .5) return '正迎风';
-  if (deg <= -89.5) return '纯左侧风';
-  if (deg >= 89.5) return '纯右侧风';
-  return deg < 0 ? '左侧来流' : '右侧来流';
-}
-
 let lastForcesKey = '';
 const forceNodes = {
   tDownforce: $('t-downforce'),
@@ -1057,48 +1035,70 @@ const forceNodes = {
   dragVal: $('hud-drag-value'),
   sideVal: $('hud-side-value'),
   ldVal: $('hud-ld-ratio'),
-  rawVal: $('hud-raw-downforce'),
+  source: $('hud-force-source'),
   note: $('hud-force-note'),
 };
-const statusNodes = {
-  sweep: $('sweep-status'),
-  yaw: $('yaw-status'),
-  underbody: $('underbody-status'),
-  sidepod: $('sidepod-status'),
+function readForces() {
+  const condition = captureCondition(state);
+  if (condition.speed === 0 && condition.wheelSpeedMps === 0) {
+    return { source: 'still', downforceN: 0, dragN: 0, sideN: 0, liftToDrag: null };
+  }
+  const forces = flowCatalog.forcesAt(condition);
+  if (!forces) {
+    return { source: flowCatalog.loadingCatalog ? 'loading' : 'unavailable',
+      downforceN: null, dragN: null, sideN: null, liftToDrag: null };
+  }
+  return { source: forces.mode, downforceN: forces.downforce, dragN: forces.drag, sideN: forces.side,
+    liftToDrag: forces.drag > 1e-3 ? forces.downforce / forces.drag : null };
+}
+
+const forceDescriptions = {
+  exact: ['CFD', '当前工况 OpenFOAM 粗网格求解的末 100 步平均值。'],
+  interpolated: ['插值', '相邻 OpenFOAM 工况的气动力插值，已通过独立算例校验。'],
+  still: ['静止', '对地车速与合成相对来流均为零。'],
+  loading: ['加载中', '正在加载气动力数据。'],
+  unavailable: ['暂无数据', '当前工况暂无经过校验的气动力数据。'],
 };
 
-function updateForcesDisplay(force = false) {
-  const yawLen = aeroForces.data?.axes?.yaw?.length || 0;
-  const fKey = `${state.model}:${state.speed.toFixed(2)}:${state.groundSpeed}:${state.windAngle}:${state.drsCurrent.toFixed(3)}:${state.steer}:${aeroForces.car}:${yawLen}`;
-  if (!force && fKey === lastForcesKey) return;
+function formatLoad(value) {
+  if (value === null) return '—';
+  if (value === 0) return '0';
+  return value.toFixed(Math.abs(value) < 10 ? 1 : 0);
+}
+
+function updateForcesDisplay() {
+  const { source, downforceN, dragN, sideN, liftToDrag } = readForces();
+  const fKey = `${source}:${downforceN}:${dragN}:${sideN}:${state.speed}:${state.effWindAngle}`;
+  if (fKey === lastForcesKey) return;
   lastForcesKey = fKey;
-  const forces = aeroForces.estimate(state);
-  const pctSign = forces.downforceDeltaPct > 0 ? '+' : '';
-  const pctStr = `${pctSign}${forces.downforceDeltaPct}%`;
-  const dragSign = forces.dragDeltaPct > 0 ? '+' : '';
-  const dragPctStr = `${dragSign}${forces.dragDeltaPct}%`;
-  if (forceNodes.tDownforce) {
-    forceNodes.tDownforce.innerHTML = `${forces.downforceN}<small>N · ${pctStr}</small>`;
-    forceNodes.tDownforce.classList.toggle('is-lift', forces.downforceN < 0);
-  }
-  if (forceNodes.tDrag) {
-    forceNodes.tDrag.innerHTML = `${forces.dragN}<small>N · ${dragPctStr}</small>`;
-  }
-  if (forceNodes.downVal) forceNodes.downVal.textContent = `${forces.downforceN} N (${pctStr})`;
-  if (forceNodes.rel) forceNodes.rel.textContent = `${forces.relSpeedKmh} km/h · ${forces.effWindAngleDeg > 0 ? '+' : ''}${forces.effWindAngleDeg.toFixed(1)}°`;
-  if (forceNodes.dfGrid) forceNodes.dfGrid.textContent = `${forces.downforceN} N · ${pctStr}`;
-  if (forceNodes.dragVal) forceNodes.dragVal.textContent = `${forces.dragN} N · ${dragPctStr}`;
-  const sideDir = Math.abs(forces.sideN) < 5 ? '' : forces.sideN < 0 ? '（向车左）' : '（向车右）';
-  if (forceNodes.sideVal) forceNodes.sideVal.textContent = `${forces.sideN > 0 ? '+' : ''}${forces.sideN} N${sideDir}`;
-  if (forceNodes.ldVal) forceNodes.ldVal.textContent = forces.liftToDrag !== null ? `${forces.liftToDrag.toFixed(2)}` : '—';
-  if (forceNodes.rawVal) forceNodes.rawVal.textContent = `${forces.rawCfdDownforceN} N`;
-  if (forceNodes.note) {
-    forceNodes.note.textContent = forces.mirroredYawForce
-      ? '负向侧风暂用右侧对应实算镜像（完整 5° 队列后台求解中），基于 180 km/h F1 基准估算。'
-      : forces.downforceN < 0
-        ? '大侧风工况下纵向下压力大幅衰减并呈失速/微正升力趋势，基于 OpenFOAM 实算趋势估算。'
-        : '基于 180 km/h F1 参考基准与 OpenFOAM 实算工况趋势连续估算，仅作直观量级参考。';
-  }
+
+  const downforce = formatLoad(downforceN);
+  const drag = formatLoad(dragN);
+  const hasLoads = downforceN !== null;
+  const [label, note] = forceDescriptions[source];
+  forceNodes.source.textContent = label;
+  forceNodes.note.textContent = note;
+  forceNodes.tDownforce.innerHTML = hasLoads ? `${downforce}<small>N</small>` : downforce;
+  forceNodes.tDownforce.classList.toggle('is-lift', downforceN < 0);
+  forceNodes.tDrag.innerHTML = hasLoads ? `${drag}<small>N</small>` : drag;
+  forceNodes.downVal.textContent = forceNodes.dfGrid.textContent = hasLoads ? `${downforce} N` : downforce;
+  forceNodes.dragVal.textContent = hasLoads ? `${drag} N` : drag;
+  forceNodes.rel.textContent = `${Math.round(state.speed)} km/h · ${state.effWindAngle > 0 ? '+' : ''}${state.effWindAngle.toFixed(1)}°`;
+  const sideDir = Math.abs(sideN) < 5 ? '' : sideN < 0 ? '（向车左）' : '（向车右）';
+  forceNodes.sideVal.textContent = hasLoads ? `${sideN > 0 ? '+' : ''}${formatLoad(sideN)} N${sideDir}` : '—';
+  forceNodes.ldVal.textContent = liftToDrag === null ? '—' : liftToDrag.toFixed(2);
+}
+
+let lastDrsReadout;
+function updateDrsReadout() {
+  const percent = Math.round(state.drsCurrent * 100);
+  const settled = state.drsCurrent === state.drs;
+  const label = settled ? (state.drs ? '全开' : '关闭') : (state.drs ? '开启中' : '关闭中');
+  const text = `${label} · ${percent}%`;
+  if (text === lastDrsReadout) return;
+  lastDrsReadout = text;
+  $('drs-value').textContent = text;
+  $('t-drs').innerHTML = `${percent}<small>%</small>`;
 }
 
 function showState() {
@@ -1108,11 +1108,10 @@ function showState() {
   const windMps = state.ambientWindMps;
   const windMpsText = windMps.toFixed(1);
   const drsOpen = state.drs === 1;
-  const drsPct = drsOpen ? 100 : 0;
   const steerText = `${state.steer > 0 ? '+' : ''}${state.steer}`;
   const windDeg = Math.round(state.windAngle || 0);
   const windShort = `${windDeg > 0 ? '+' : ''}${windDeg}`;
-  const effYawText = formatWindSide(windDeg);
+  const effYawText = `合成来流 ${rel.effWindAngleDeg.toFixed(1)}°`;
   const radius = rig?.config.wheels.FL.radius ?? configs?.[state.model]?.wheels.FL.radius ?? (state.model === 'rb16b' ? .3321 : .369);
   state.wheelSpeedMps = state.groundSpeed / 3.6;
   state.wheelRpm = state.wheelSpeedMps / radius / (Math.PI * 2) * 60;
@@ -1125,7 +1124,7 @@ function showState() {
   if ($('wind-angle')) $('wind-angle').value = windDeg;
   $('ground-speed').value = state.groundSpeed;
 
-  $('drs-value').textContent = drsOpen ? '全开 · 100%' : '关闭 · 0%';
+  updateDrsReadout();
   $('drs-toggle').setAttribute('aria-checked', String(drsOpen));
   $('hud-drs-toggle').setAttribute('aria-pressed', String(drsOpen));
   $('speed-value').textContent = `${windMpsText} m/s`;
@@ -1157,7 +1156,6 @@ function showState() {
   if ($('t-speed')) $('t-speed').innerHTML = `${windMpsText}<small>m/s</small>`;
   if ($('t-wind-angle')) $('t-wind-angle').innerHTML = `${windShort}<small>°</small>`;
   if ($('t-ground')) $('t-ground').innerHTML = `${state.groundSpeed}<small>km/h</small>`;
-  if ($('t-drs')) $('t-drs').innerHTML = `${drsPct}<small>%</small>`;
   if ($('t-steer')) $('t-steer').innerHTML = `${steerText}<small>°</small>`;
   if ($('t-rpm')) $('t-rpm').innerHTML = `${rpmRounded}<small>rpm</small>`;
   syncTurntable();
@@ -1212,8 +1210,8 @@ async function loadModel(id) {
         if (serial === loadSerial && !loadSettled && !cached) setFirstLoadVeil(true, config);
       }).catch(() => {});
     }
-    airflow.load(id, { autoSecondary: false });
-    aeroForces.load(id).then(() => updateForcesDisplay(true)).catch(() => {});
+    flowJobs.reset();
+    flowCatalog.load(id);
     const [buffer] = await Promise.all([
       cachedArrayBuffer(modelUrl, {
         onProgress: (loadedBytes, headerTotal) => {
@@ -1258,8 +1256,6 @@ async function loadModel(id) {
     rig = nextRig;
     carTurntable.add(currentModel);
     setEnvironment(state.environment);
-    // Fallback timer ensures secondary layers still load if flow is initially toggled off
-    setTimeout(() => startSecondaryLayers(serial, id), 800);
     showState();
     state.spin = 0;
     applyRig(rig, { drs: state.drsCurrent, steer: state.steer, spin: state.spin });
@@ -1336,7 +1332,6 @@ document.querySelectorAll('[data-environment]').forEach(b => b.addEventListener(
 $('ground-speed').addEventListener('input', e => { state.groundSpeed = Number(e.target.value); showState(); });
 $('flow-toggle').addEventListener('click', () => {
   state.flow = !state.flow;
-  airflow.setEnabled(state.flow);
   if (!state.flow) updateFlowStatus('流线已隐藏');
   showState();
 });
@@ -1354,7 +1349,6 @@ async function resetToInitialState() {
   state.environment = DEFAULT_CONFIG.environment;
   state.view = DEFAULT_CONFIG.view;
   state.freeMode = DEFAULT_CONFIG.freeMode;
-  airflow.setEnabled(state.flow);
   showState();
   if (!currentModel) {
     await loadModel(activeModel);
@@ -1376,21 +1370,9 @@ $('brand-home')?.addEventListener('click', e => {
   resetToInitialState().catch(() => {});
 });
 $('flow-retry').addEventListener('click', () => {
-  airflow.yaw.retry();
-  airflow.stationary.retry();
-  airflow.road010.retry();
-  if (!airflow.stats.ready) {
-    void airflow.load(state.model);
-  } else if (flowJobs.failed) {
-    flowJobs.retry();
-    updateFlowStatus('正在恢复流线计算…');
-  } else {
-    updateFlowStatus(isStationaryHeadwind(state) ? '正在加载静止迎风数据…'
-      : isRoad010Headwind(state) ? '正在加载 10 km/h 直行数据…' : '正在加载当前角度的侧风数据…');
-  }
+  flowCatalog.retry();
+  flowJobs.reset();
 });
-// Recover automatically when the network comes back instead of waiting for a manual retry.
-window.addEventListener('online', () => { if (airflow.stats.error && !airflow.stats.ready) airflow.load(state.model); });
 $('retry').addEventListener('click', () => loadModel(state.model).catch(() => {}));
 $('credits-button').addEventListener('click', () => $('credits').showModal());
 $('close-credits').addEventListener('click', () => $('credits').close());
@@ -1459,6 +1441,7 @@ renderer.setAnimationLoop(now => {
   updateAutoReveal(now, cameraSettled);
   state.drsCurrent = reducedMotion ? state.drs : THREE.MathUtils.damp(state.drsCurrent, state.drs, 9, Math.min(elapsed, .5));
   if (Math.abs(state.drsCurrent - state.drs) < .001) state.drsCurrent = state.drs;
+  updateDrsReadout();
   state.spin += state.wheelSpeedMps * dt;
   if (rig && (rig._lastDrs !== state.drsCurrent || rig._lastSteer !== state.steer || rig._lastSpin !== state.spin)) {
     const shadowDirty = rig._lastDrs !== state.drsCurrent || rig._lastSteer !== state.steer;
@@ -1466,47 +1449,9 @@ renderer.setAnimationLoop(now => {
     if (shadowDirty) renderer.shadowMap.needsUpdate = true;
   }
 
-  flowJobs.update(state, rig, dt, now);
+  flowMaterial.uniforms.clock.value += dt;
+  flowJobs.update(state, rig, now);
   updateForcesDisplay();
-  const coverage = airflow.stats.sweepCoverage;
-  const coverageText = coverage
-    ? `逐档 ${coverage.completed}/${coverage.planned} · ${coverage.queueState === 'failed' ? '计算中断' : coverage.queueState === 'complete' ? '已完成' : coverage.complete ? '校验中' : '计算中'}`
-    : '';
-  if (statusNodes.sweep && statusNodes.sweep.textContent !== coverageText) statusNodes.sweep.textContent = coverageText;
-
-  const yawCoverage = airflow.stats.yawCoverage;
-  const yawText = yawCoverage
-    ? `侧风 ±90°（5°）${yawCoverage.completed}/${yawCoverage.planned} · ${yawCoverage.complete ? '已全部完成' : yawCoverage.queueState === 'running' ? '后台求解中' : yawCoverage.queueState === 'failed' ? '计算中断' : '就绪'}`
-    : '';
-  if (statusNodes.yaw && statusNodes.yaw.textContent !== yawText) statusNodes.yaw.textContent = yawText;
-
-  const underbodyVisible = underbody.group.visible;
-  const underbodyMessage = !state.flow || state.flowDensity === 0
-    ? ''
-    : underbody.status === 'loading'
-      ? '正在加载底盘流场…'
-      : underbody.status === 'unavailable'
-        ? '底盘流场暂不可用'
-        : state.speed === 0 && state.wheelSpeedMps < .001
-          ? '静止：来流与车轮均为零'
-          : underbodyVisible
-            ? (underbody.mode === 'coarse' ? '底盘流线 · 当前工况粗网格' : underbody.mode === 'baseline' ? '底盘加密基线 · 仍有网格差异，未充分收敛' : '底盘：基于加密流场的工况近似预览')
-            : '正在准备底盘气流…';
-  if (statusNodes.underbody && statusNodes.underbody.textContent !== underbodyMessage) statusNodes.underbody.textContent = underbodyMessage;
-
-  const sidepodVisible = sidepod.group.visible;
-  const sidepodMessage = !state.flow || state.flowDensity === 0
-    ? ''
-    : sidepod.status === 'loading'
-      ? '正在加载侧箱及悬挂流场…'
-      : sidepod.status === 'unavailable'
-        ? '侧箱及悬挂加密流场暂不可用'
-        : state.speed === 0 && state.wheelSpeedMps < .001
-          ? ''
-          : sidepodVisible
-            ? (sidepod.mode === 'coarse' ? '侧箱及悬挂流线 · 当前工况粗网格' : sidepod.mode === 'baseline' ? '侧箱及悬挂：探索性加密基线，未充分收敛' : '侧箱及悬挂：近似预览，缺失处沿用缩放基线')
-            : '正在准备侧箱及悬挂气流…';
-  if (statusNodes.sidepod && statusNodes.sidepod.textContent !== sidepodMessage) statusNodes.sidepod.textContent = sidepodMessage;
 
   const prevForestReady = worlds.lastForestReady;
   worlds.update(dt, state.speed, state.groundSpeed);
@@ -1534,17 +1479,12 @@ renderer.setAnimationLoop(now => {
 // Read-only diagnostics plus explicit controls for reproducible browser QA.
 window.aeroStudio = {
   get ready() { return Boolean(rig); },
-  get airflow() { return { ...airflow.stats, visible: airflow.group.visible, presentation: {
-    previousOpacity: flowJobs.transition ? flowJobs.transitionMaterial.uniforms.opacity.value : 0,
-    fieldFamily: flowJobs.appliedJob?.fieldFamily ?? null,
-    detailAngle: airflow.group.visible ? flowJobs.detailAngle : null,
-    detailOpacity: airflow.group.visible ? airflow.material.uniforms.opacity.value : 0,
-    workerPending: Boolean(flowJobs.sent),
-  }, state: { ...state } }; },
-  get forces() { return aeroForces.estimate(state); },
+  get airflow() { return { ...flowJobs.presented, visible: airflow.group.visible,
+    workerPending: Boolean(flowJobs.sent), state: { ...state } }; },
+  get forces() { return readForces(); },
   get turntable() { return { carYawDeg: THREE.MathUtils.radToDeg(carTurntable.rotation.y), environmentYawDeg: THREE.MathUtils.radToDeg(worlds.turntableYaw), fanPosition: worlds.root?.userData.fan?.getWorldPosition(new THREE.Vector3()).toArray() || null }; },
-  get sidepod() { return { available: Boolean(sidepod.data), visible: sidepod.group.visible, mode: sidepod.mode, lines: sidepod.count, regions: sidepod.regions, layers: sidepod.layers, fallbackSamples: sidepod.fallbackSamples, blockedSeeds: sidepod.blockedSeeds, case: sidepod.meta?.case, time: sidepod.meta?.time }; },
-  get underbody() { return { available: Boolean(underbody.data), visible: underbody.group.visible, mode: underbody.mode, lines: underbody.count, fallbackSamples: underbody.fallbackSamples, stops: underbody.stops, boundaryAxes: underbody.boundaryAxes, case: underbody.meta?.case, time: underbody.meta?.time }; },
+  get sidepod() { return { visible: sidepod.group.visible, lines: sidepod.count, stops: sidepod.stops }; },
+  get underbody() { return { visible: underbody.group.visible, lines: underbody.count, stops: underbody.stops }; },
   setEnvironment,
   setPanel,
   get environment() { return { name: worlds.kind, metadata: worlds.root?.userData.metadata, forestReady: worlds.root?.userData.forestReady, forestError: worlds.root?.userData.forestError, treeCount: worlds.root?.userData.treeCount, forestTriangles: worlds.root?.userData.forestTriangles }; },
@@ -1621,12 +1561,3 @@ try {
   $('error').hidden = false;
   $('error-message').textContent = `无法准备模型：${error.message}`;
 }
-
-if (import.meta.env.DEV) window.aeroStudio.profileSynchronousFlow = () => {
-  const start = performance.now(), now = start + 1000;
-  airflow.lastKey = ''; airflow.lastBuild = 0; underbody.key = ''; sidepod.key = ''; sidepod.pendingKey = '';
-  airflow.update(state, rig, 0, now); const coarse = performance.now();
-  underbody.update(state, rig, airflow); const bottom = performance.now();
-  sidepod.update(state, rig, airflow, now); sidepod.update(state, rig, airflow, now + 200); const end = performance.now();
-  return { coarseMs: coarse - start, underbodyMs: bottom - coarse, sidepodMs: end - bottom, totalMs: end - start };
-};
