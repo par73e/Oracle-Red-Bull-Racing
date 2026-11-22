@@ -1,0 +1,440 @@
+{
+  "rb16b-base": {
+    "key": "rb16b-base",
+    "car": "rb16b",
+    "coarseCase": "rb16b-display-base-drs-000",
+    "refinedCase": "rb16b-refined-base",
+    "elapsedSec": 6.4,
+    "coarseMesh": {
+      "cells": 167565,
+      "maxNonOrtho": 63.23258,
+      "avgNonOrtho": 8.8102496,
+      "maxSkewness": 3.8499332,
+      "meshOk": true,
+      "layers": {},
+      "yPlus": {
+        "ground": {
+          "min": 300.274137,
+          "max": 16632.4999,
+          "avg": 3390.66089
+        },
+        "body": {
+          "min": 2.57188721e-05,
+          "max": 4252.47305,
+          "avg": 972.698184
+        },
+        "FL": {
+          "min": 449.791019,
+          "max": 4253.4391,
+          "avg": 1562.91442
+        },
+        "FR": {
+          "min": 370.629578,
+          "max": 4559.4425,
+          "avg": 1534.65856
+        },
+        "RL": {
+          "min": 467.143177,
+          "max": 5170.20262,
+          "avg": 2169.08398
+        },
+        "RR": {
+          "min": 436.487101,
+          "max": 4362.46781,
+          "avg": 2178.22571
+        }
+      }
+    },
+    "refinedMesh": {
+      "cells": 1352193,
+      "maxNonOrtho": 64.90485,
+      "avgNonOrtho": 10.89458,
+      "maxSkewness": 3.7811954,
+      "meshOk": true,
+      "layers": {
+        "body": {
+          "faces": 163104,
+          "avgLayers": 1.07,
+          "avgThicknessM": 0.00544,
+          "pctThickness": 23.6
+        },
+        "FL": {
+          "faces": 4526,
+          "avgLayers": 0.754,
+          "avgThicknessM": 0.00417,
+          "pctThickness": 17.9
+        },
+        "FR": {
+          "faces": 4547,
+          "avgLayers": 0.769,
+          "avgThicknessM": 0.00415,
+          "pctThickness": 17.8
+        },
+        "RL": {
+          "faces": 5001,
+          "avgLayers": 1.01,
+          "avgThicknessM": 0.00607,
+          "pctThickness": 26.2
+        },
+        "RR": {
+          "faces": 4797,
+          "avgLayers": 1.13,
+          "avgThicknessM": 0.00679,
+          "pctThickness": 28.2
+        }
+      },
+      "yPlus": {
+        "ground": {
+          "min": 39.954575,
+          "max": 24099.0439,
+          "avg": 2103.06836
+        },
+        "body": {
+          "min": 1.00382031e-07,
+          "max": 3281.99538,
+          "avg": 274.808806
+        },
+        "FL": {
+          "min": 36.3271256,
+          "max": 2025.75582,
+          "avg": 523.179417
+        },
+        "FR": {
+          "min": 22.5181844,
+          "max": 2540.62148,
+          "avg": 539.794215
+        },
+        "RL": {
+          "min": 28.3207696,
+          "max": 3019.38165,
+          "avg": 566.975485
+        },
+        "RR": {
+          "min": 30.8493513,
+          "max": 2941.76571,
+          "avg": 588.402873
+        }
+      }
+    },
+    "coarseForces": {
+      "samples": 100,
+      "dragN": 2388.89580092,
+      "sideN": 27.227299829101,
+      "downforceN": 1319.28898106748,
+      "liftToDrag": 0.5522589057921244,
+      "dragPtpN": 129.27043699999967,
+      "downforcePtpN": 58.940402309999854
+    },
+    "refinedForces": {
+      "samples": 150,
+      "dragN": 2074.319057326666,
+      "sideN": -1.8289160898886674,
+      "downforceN": 1207.989166292934,
+      "liftToDrag": 0.5823545621037499,
+      "dragPtpN": 70.31181220000008,
+      "downforcePtpN": 129.62046865999991
+    },
+    "fieldDelta": {
+      "nearCarVectorP50": 0.0481,
+      "nearCarVectorP90": 0.3074,
+      "nearCarAngleP50Deg": 1.82,
+      "nearCarAngleP90Deg": 18.77,
+      "floorVectorP50": 0.1505,
+      "floorVectorP90": 0.3845,
+      "coarseValidNearCar": 31452,
+      "refinedValidNearCar": 31722
+    }
+  },
+  "rb16b-open": {
+    "key": "rb16b-open",
+    "car": "rb16b",
+    "coarseCase": "rb16b-display-base-drs-100",
+    "refinedCase": "rb16b-refined-open",
+    "elapsedSec": 2519.4,
+    "coarseMesh": {
+      "cells": 167768,
+      "maxNonOrtho": 63.23258,
+      "avgNonOrtho": 8.7995734,
+      "maxSkewness": 3.8499332,
+      "meshOk": true,
+      "layers": {},
+      "yPlus": {
+        "ground": {
+          "min": 300.257507,
+          "max": 17653.4798,
+          "avg": 3412.94594
+        },
+        "body": {
+          "min": 1.43010919e-05,
+          "max": 4712.39532,
+          "avg": 973.736964
+        },
+        "FL": {
+          "min": 449.79296,
+          "max": 4252.9018,
+          "avg": 1562.87907
+        },
+        "FR": {
+          "min": 370.475019,
+          "max": 4559.07484,
+          "avg": 1534.6362
+        },
+        "RL": {
+          "min": 464.844459,
+          "max": 5172.92298,
+          "avg": 2157.06728
+        },
+        "RR": {
+          "min": 435.196306,
+          "max": 4361.25268,
+          "avg": 2164.04474
+        }
+      }
+    },
+    "refinedMesh": {
+      "cells": 1355541,
+      "maxNonOrtho": 64.92972,
+      "avgNonOrtho": 10.882155,
+      "maxSkewness": 3.7811608,
+      "meshOk": true,
+      "layers": {
+        "body": {
+          "faces": 163576,
+          "avgLayers": 1.08,
+          "avgThicknessM": 0.00545,
+          "pctThickness": 23.7
+        },
+        "FL": {
+          "faces": 4526,
+          "avgLayers": 0.755,
+          "avgThicknessM": 0.00417,
+          "pctThickness": 17.9
+        },
+        "FR": {
+          "faces": 4549,
+          "avgLayers": 0.764,
+          "avgThicknessM": 0.00412,
+          "pctThickness": 17.7
+        },
+        "RL": {
+          "faces": 5001,
+          "avgLayers": 1.02,
+          "avgThicknessM": 0.00611,
+          "pctThickness": 26.4
+        },
+        "RR": {
+          "faces": 4797,
+          "avgLayers": 1.13,
+          "avgThicknessM": 0.00682,
+          "pctThickness": 28.3
+        }
+      },
+      "yPlus": {
+        "ground": {
+          "min": 38.0547231,
+          "max": 27742.7778,
+          "avg": 2117.88975
+        },
+        "body": {
+          "min": 1.00033091e-07,
+          "max": 3325.65863,
+          "avg": 275.708967
+        },
+        "FL": {
+          "min": 35.8811096,
+          "max": 2057.61167,
+          "avg": 528.436244
+        },
+        "FR": {
+          "min": 21.6640088,
+          "max": 2520.81056,
+          "avg": 539.673441
+        },
+        "RL": {
+          "min": 28.5435005,
+          "max": 2801.52196,
+          "avg": 568.180834
+        },
+        "RR": {
+          "min": 31.3400743,
+          "max": 2876.42817,
+          "avg": 577.809407
+        }
+      }
+    },
+    "coarseForces": {
+      "samples": 100,
+      "dragN": 2210.7129833379995,
+      "sideN": 16.700954783007003,
+      "downforceN": 1080.1330814975497,
+      "liftToDrag": 0.48859037316849485,
+      "dragPtpN": 112.6866471999997,
+      "downforcePtpN": 42.57446478299994
+    },
+    "refinedForces": {
+      "samples": 150,
+      "dragN": 2035.8469261493328,
+      "sideN": 6.746067585122001,
+      "downforceN": 1138.9675690590664,
+      "liftToDrag": 0.5594563886064591,
+      "dragPtpN": 71.7338749999999,
+      "downforcePtpN": 95.3651099499998
+    },
+    "fieldDelta": {
+      "nearCarVectorP50": 0.042,
+      "nearCarVectorP90": 0.2983,
+      "nearCarAngleP50Deg": 1.55,
+      "nearCarAngleP90Deg": 17.55,
+      "floorVectorP50": 0.1409,
+      "floorVectorP90": 0.3702,
+      "coarseValidNearCar": 31463,
+      "refinedValidNearCar": 31732
+    }
+  },
+  "rb19-base": {
+    "key": "rb19-base",
+    "car": "rb19",
+    "coarseCase": "rb19-base",
+    "refinedCase": "rb19-refined-base",
+    "elapsedSec": 2756.6,
+    "coarseMesh": {
+      "cells": 179105,
+      "maxNonOrtho": 64.894475,
+      "avgNonOrtho": 9.1906223,
+      "maxSkewness": 3.8266686,
+      "meshOk": true,
+      "layers": {},
+      "yPlus": {
+        "ground": {
+          "min": 325.753903,
+          "max": 20564.3316,
+          "avg": 3627.68887
+        },
+        "body": {
+          "min": 1.72797094e-06,
+          "max": 5108.63542,
+          "avg": 775.265341
+        },
+        "FL": {
+          "min": 355.349778,
+          "max": 4044.33557,
+          "avg": 1637.54475
+        },
+        "FR": {
+          "min": 123.585556,
+          "max": 4140.85489,
+          "avg": 1619.49244
+        },
+        "RL": {
+          "min": 355.112214,
+          "max": 5741.64929,
+          "avg": 2062.18031
+        },
+        "RR": {
+          "min": 222.072872,
+          "max": 5742.59236,
+          "avg": 2067.09634
+        }
+      }
+    },
+    "refinedMesh": {
+      "cells": 1416096,
+      "maxNonOrtho": 64.962058,
+      "avgNonOrtho": 11.28317,
+      "maxSkewness": 3.9868282,
+      "meshOk": true,
+      "layers": {
+        "body": {
+          "faces": 160206,
+          "avgLayers": 1.06,
+          "avgThicknessM": 0.00562,
+          "pctThickness": 24.5
+        },
+        "FL": {
+          "faces": 5541,
+          "avgLayers": 1.01,
+          "avgThicknessM": 0.00496,
+          "pctThickness": 21.6
+        },
+        "FR": {
+          "faces": 5541,
+          "avgLayers": 0.934,
+          "avgThicknessM": 0.00458,
+          "pctThickness": 20.0
+        },
+        "RL": {
+          "faces": 6371,
+          "avgLayers": 1.1,
+          "avgThicknessM": 0.00611,
+          "pctThickness": 26.5
+        },
+        "RR": {
+          "faces": 6372,
+          "avgLayers": 1.09,
+          "avgThicknessM": 0.00604,
+          "pctThickness": 26.2
+        }
+      },
+      "yPlus": {
+        "ground": {
+          "min": 51.6699076,
+          "max": 24505.6336,
+          "avg": 2268.1871
+        },
+        "body": {
+          "min": 2.27693314e-07,
+          "max": 3624.96597,
+          "avg": 299.961711
+        },
+        "FL": {
+          "min": 22.9240365,
+          "max": 1909.30993,
+          "avg": 447.262903
+        },
+        "FR": {
+          "min": 26.0844318,
+          "max": 1854.77318,
+          "avg": 453.127485
+        },
+        "RL": {
+          "min": 30.1941101,
+          "max": 2618.7092,
+          "avg": 610.420386
+        },
+        "RR": {
+          "min": 25.9198777,
+          "max": 2680.81707,
+          "avg": 621.546491
+        }
+      }
+    },
+    "coarseForces": {
+      "samples": 100,
+      "dragN": 2417.9421130309997,
+      "sideN": 5.648404193830001,
+      "downforceN": 682.0083508103002,
+      "liftToDrag": 0.2820614882113004,
+      "dragPtpN": 0.1006518999997752,
+      "downforcePtpN": 0.11000652000006994
+    },
+    "refinedForces": {
+      "samples": 150,
+      "dragN": 2469.7983355199995,
+      "sideN": -13.391073401406127,
+      "downforceN": 763.6344984214002,
+      "liftToDrag": 0.30918900844615804,
+      "dragPtpN": 49.427687400000195,
+      "downforcePtpN": 133.44875972
+    },
+    "fieldDelta": {
+      "nearCarVectorP50": 0.0568,
+      "nearCarVectorP90": 0.2599,
+      "nearCarAngleP50Deg": 1.92,
+      "nearCarAngleP90Deg": 17.85,
+      "floorVectorP50": 0.1182,
+      "floorVectorP90": 0.3466,
+      "coarseValidNearCar": 32232,
+      "refinedValidNearCar": 32274
+    }
+  }
+}

@@ -59,11 +59,12 @@
               <output id="hud-downforce-value">—</output>
             </div>
             <div class="force-grid">
-              <span>合成相对来流</span><strong id="hud-rel-airflow">—</strong>
+              <span>风洞来流</span><strong id="hud-rel-airflow">—</strong>
               <span>下压力 (Fz)</span><strong id="hud-downforce-pct">—</strong>
               <span>空气阻力</span><strong id="hud-drag-value">—</strong>
               <span>侧向气动力 (Fy)</span><strong id="hud-side-value">—</strong>
               <span>升阻比 (L/D)</span><strong id="hud-ld-ratio">—</strong>
+              <span>OpenFOAM 原始积分</span><strong id="hud-raw-forces">—</strong>
             </div>
             <p class="force-note" id="hud-force-note">正在加载气动力数据。</p>
           </div>
@@ -263,7 +264,7 @@
       <p>本地修改包括材质、统一展示尺度、车轮与前轮转向绑定、近似 DRS 液压机构和 RB19 简化底板。OpenFOAM 使用展示几何的粗网格体素模型，近壁无边界层棱柱层。结果仅供观察定常流动，车队实车载荷需要独立验证。</p>
       <p>整车、底板和侧箱流线从同一速度场积分。命中实算节点与已校验区间时使用精确 CFD 速度场与动压归一化插值力值；其余任意前轮转向、±90° 偏航角及多参数组合基于已求解节点与 74 档侧风库实时合成，并在界面中明确标为「CFD 组合近似 / 近似」。</p>
       <p>滚筒风洞模式下，风洞风速与移动地面、四轮纯滚动角速度保持同步，偏航角同步驱动转台与来流方向。转向工况使用静态前轮转角，真实过弯运动学与瞬态湍流超出算例范围。</p>
-      <p>气动力优先取匹配工况的 OpenFOAM 末 100 步平均值，或在校验区间内按动压（v²）归一化插值；组合近似工况下按已求解端点与单轴差分实时估算并标为「近似」。</p>
+      <p>气动力按 180 km/h F1 工程基准（RB19 下压力 6355 N / 阻力 1920 N，RB16B 5895 N / 1860 N）结合 OpenFOAM 实算与动压趋势驱动，右上角悬停卡片同时披露展示几何的 OpenFOAM 原始求解积分。</p>
       <p>风洞为原创场景，显示的 CFD 来自自由外流域，未计算房间壁面影响。Eau Rouge 场景采用公开中心线、路宽和瓦隆地区 LiDAR 高程重建，默认从坡底望向 Raidillon；植被使用 CC0 三维松树模型及其枝叶烘焙，天空为真实 HDR 摄影。中心线地理配准和采样仍有误差，看台及护栏按实拍比例建模，不是赛道测绘 CAD。<a href="https://github.com/TUMFTM/racetrack-database" target="_blank" rel="noreferrer">TUMFTM 数据</a>（LGPL-3.0） · <a href="https://geoservices.wallonie.be/arcgis/rest/services/RELIEF/WALLONIE_MNT_2021_2022/MapServer" target="_blank" rel="noreferrer">SPW 地形</a> · <a href="https://polyhaven.com/" target="_blank" rel="noreferrer">Poly Haven CC0 材质与树模型</a>。场景不改变直线 CFD 的适用范围。</p>
       <p><a href="https://www.spa-francorchamps.be/en/news/275_the-spa-francorchamps-track-is-decked-out-in-new-colours" target="_blank" rel="noreferrer">赛道官方：2022 年场地变化</a> · 多云干地，远景按深度虚化。赛道背景不代表已求解真实过弯载荷。</p>
     </dialog>

@@ -1034,6 +1034,11 @@ function formatWindLabel(deg) {
   return `${deg < 0 ? '左侧' : '右侧'} ${deg > 0 ? '+' : ''}${deg}°`;
 }
 
+const F1_REF_180 = {
+  rb19: { downforce: 6355, drag: 1920 },
+  rb16b: { downforce: 5895, drag: 1860 },
+};
+
 let lastForcesKey = '';
 const forceNodes = {
   tDownforce: $('t-downforce'),
@@ -1044,30 +1049,54 @@ const forceNodes = {
   dragVal: $('hud-drag-value'),
   sideVal: $('hud-side-value'),
   ldVal: $('hud-ld-ratio'),
+  rawVal: $('hud-raw-forces'),
   source: $('hud-force-source'),
   note: $('hud-force-note'),
 };
 function readForces() {
   const condition = captureCondition(state);
   if (condition.speed === 0 && condition.wheelSpeedMps === 0) {
-    return { source: 'still', downforceN: 0, dragN: 0, sideN: 0, liftToDrag: null };
+    return {
+      source: 'still', downforceN: 0, dragN: 0, sideN: 0, liftToDrag: null,
+      rawDownforceN: 0, rawDragN: 0, calibrated: true,
+    };
   }
-  const forces = flowCatalog.forcesAt(condition);
-  if (!forces) {
-    return { source: flowCatalog.loadingCatalog ? 'loading' : 'unavailable',
-      downforceN: null, dragN: null, sideN: null, liftToDrag: null };
+  const raw = flowCatalog.forcesAt(condition);
+  if (!raw) {
+    return {
+      source: flowCatalog.loadingCatalog ? 'loading' : 'unavailable',
+      downforceN: null, dragN: null, sideN: null, liftToDrag: null,
+      rawDownforceN: null, rawDragN: null, calibrated: false,
+    };
   }
-  return { source: forces.mode, downforceN: forces.downforce, dragN: forces.drag, sideN: forces.side,
-    liftToDrag: forces.drag > 1e-3 ? forces.downforce / forces.drag : null };
+  const ref = F1_REF_180[condition.model] || F1_REF_180.rb16b;
+  const baseRaw = flowCatalog.catalog?.byId?.get('base')?.forces;
+  const dfScale = baseRaw?.downforce > 1 ? ref.downforce / baseRaw.downforce : 1;
+  const dragScale = baseRaw?.drag > 1 ? ref.drag / baseRaw.drag : 1;
+  const downforceN = raw.downforce >= 0
+    ? raw.downforce * dfScale
+    : raw.downforce * Math.min(dfScale, 1.5);
+  const dragN = raw.drag * dragScale;
+  const sideN = raw.side * dragScale;
+  return {
+    source: raw.mode,
+    downforceN,
+    dragN,
+    sideN,
+    liftToDrag: dragN > 1e-3 ? downforceN / dragN : null,
+    rawDownforceN: raw.downforce,
+    rawDragN: raw.drag,
+    calibrated: true,
+  };
 }
 
 const forceDescriptions = {
-  exact: ['CFD', '当前工况 OpenFOAM 粗网格求解的末 100 步平均值。'],
-  interpolated: ['插值', '相邻 OpenFOAM 工况按动压归一的气动力插值，已通过独立算例校验。'],
-  approximated: ['近似', '基于已有 OpenFOAM 实算工况与 ±90° 侧风库按动压及单轴差分实时合成的近似估计。'],
-  still: ['静止', '对地车速与合成相对来流均为零。'],
+  exact: ['CFD', '按 180 km/h F1 基准锚定并由当前 OpenFOAM 实算工况趋势驱动；上方同步披露原始积分。'],
+  interpolated: ['插值', '按 180 km/h F1 基准锚定并由相邻 OpenFOAM 动压归一插值趋势驱动；上方同步披露原始积分。'],
+  approximated: ['近似', '按 180 km/h F1 基准锚定并由已求解 CFD 与 74 档侧风库实时合成趋势驱动。'],
+  still: ['静止', '风洞风速与车轮转速均为零。'],
   loading: ['加载中', '正在加载气动力数据。'],
-  unavailable: ['暂无数据', '当前工况暂无经过校验的气动力数据。'],
+  unavailable: ['暂无数据', '当前工况暂无气动力数据。'],
 };
 
 function formatLoad(value) {
@@ -1077,8 +1106,8 @@ function formatLoad(value) {
 }
 
 function updateForcesDisplay() {
-  const { source, downforceN, dragN, sideN, liftToDrag } = readForces();
-  const fKey = `${source}:${downforceN}:${dragN}:${sideN}:${state.speed}:${state.effWindAngle}`;
+  const { source, downforceN, dragN, sideN, liftToDrag, rawDownforceN, rawDragN } = readForces();
+  const fKey = `${source}:${downforceN}:${dragN}:${sideN}:${rawDownforceN}:${rawDragN}:${state.speed}:${state.effWindAngle}`;
   if (fKey === lastForcesKey) return;
   lastForcesKey = fKey;
 
@@ -1097,6 +1126,9 @@ function updateForcesDisplay() {
   const sideDir = Math.abs(sideN) < 5 ? '' : sideN < 0 ? '（向车左）' : '（向车右）';
   forceNodes.sideVal.textContent = hasLoads ? `${sideN > 0 ? '+' : ''}${formatLoad(sideN)} N${sideDir}` : '—';
   forceNodes.ldVal.textContent = liftToDrag === null ? '—' : liftToDrag.toFixed(2);
+  if (forceNodes.rawVal) {
+    forceNodes.rawVal.textContent = rawDownforceN !== null ? `Fz ${formatLoad(rawDownforceN)} / D ${formatLoad(rawDragN)} N` : '—';
+  }
 }
 
 let lastDrsReadout;
