@@ -8,7 +8,7 @@ import { loadGeometry } from './geometry-loader.mjs';
 import { bindRig, applyRig } from '../src/rig.js';
 import { describeModel, snapshotRig } from '../src/flow-worker-protocol.js';
 import { captureCondition } from '../src/flow-condition.js';
-import { FlowCatalog, readCatalog, selectCoverage } from '../src/flow-catalog.js';
+import { FlowCatalog, axisCoverage, nearestCoveredState, readCatalog, selectCoverage } from '../src/flow-catalog.js';
 
 T.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 T.Mesh.prototype.raycast = acceleratedRaycast;
@@ -183,12 +183,13 @@ for (const modelId of cars) {
 
 if (measure) process.exit(0);
 
-// Exercise the production loader, including an initial transient failure and a persistent missing mask.
+// Exercise the production loader, including transient manifest + asset failures and a persistent missing mask.
 const catalog = new FlowCatalog();
 let requests = 0, missingMasks = false;
 globalThis.fetch = async url => {
   const file = new URL(url, 'http://example.test').pathname;
-  if (++requests === 2 || missingMasks && file.endsWith('.mask')) return new Response(null, { status: 503 });
+  const n = ++requests;
+  if (n === 1 || n === 3 || missingMasks && file.endsWith('.mask')) return new Response(null, { status: 503 });
   return new Response(await fs.readFile(publicFile(file)));
 };
 async function waitForSelection(model, input) {
@@ -204,11 +205,25 @@ assert.equal((await waitForSelection('rb19', {})).mode, 'exact');
 const interpolatedForces = catalog.forcesAt(makeCondition('rb19', { drsCurrent: .25 }));
 assert.equal(interpolatedForces?.mode, 'interpolated');
 assert(interpolatedForces.downforce > 1 && interpolatedForces.downforce < 3);
+const headwindForces = catalog.forcesAt(makeCondition('rb19', { groundSpeed: 10, ambientWindMps: 3 }));
+assert.equal(headwindForces?.mode, 'interpolated', 'Dynamic-pressure interpolation covers 10 km/h + 3 m/s headwind');
+assert(headwindForces.drag > 15 && headwindForces.drag < 60);
+const rollingForces = catalog.forcesAt(makeCondition('rb19', { groundSpeed: 120 }));
+assert.equal(rollingForces?.mode, 'interpolated', 'Dynamic-pressure interpolation covers 120 km/h rolling');
+assert(rollingForces.drag > 800 && rollingForces.drag < 1300);
 assert.equal(catalog.forcesAt(makeCondition('rb16b', {})), undefined);
 assert.equal(catalog.forcesAt(makeCondition('rb19', { groundSpeed: 350, ambientWindMps: 15 })), undefined);
+const steerTicks = axisCoverage(catalog.catalog, { groundSpeed: 180, ambientWindMps: 0, windAngle: 0, steer: 0, drs: 0 }, 'steer');
+assert.deepEqual(steerTicks, [-18, 0, 18]);
+const snappedDrs = nearestCoveredState(catalog.catalog, { groundSpeed: 90, ambientWindMps: 0, windAngle: 0, steer: 0, drs: 1 });
+assert.equal(snappedDrs?.drs, 1);
+assert.notEqual(selectCoverage(catalog.catalog, makeCondition('rb19', { ...snappedDrs, drsCurrent: snappedDrs.drs }).coordinates).mode, 'unsupported');
+const snappedSteer = nearestCoveredState(catalog.catalog, { groundSpeed: 180, ambientWindMps: 0, windAngle: 0, steer: 6, drs: 0 });
+assert.equal(snappedSteer?.groundSpeed, 180);
+assert.equal(snappedSteer?.steer, 0);
 missingMasks = true;
 assert.equal((await waitForSelection('rb19', { drsCurrent: 1 })).mode, 'error');
 missingMasks = false;
 catalog.retry();
 assert.equal((await waitForSelection('rb19', { drsCurrent: 1 })).mode, 'exact');
-console.log('Content verification, retry after transient asset failure, and explicit missing-mask state passed');
+console.log('Content verification, manifest/asset retries, dynamic-pressure forces, coverage guidance, and missing-mask state passed');

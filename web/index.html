@@ -118,7 +118,7 @@
         <div class="control-group">
           <div class="label-row"><label for="speed">绝对风速（对地）</label><output id="speed-value" for="speed">0.0 m/s</output></div>
           <input id="speed" type="range" min="0" max="15" step="0.5" value="0" aria-label="相对于地面的自然风速" />
-          <div class="range-labels"><span>0</span><span id="wind-speed">合成来流 198 km/h (50.0 m/s)</span><span>15 m/s</span></div>
+          <div class="range-labels"><span>0</span><span id="wind-speed">合成来流 10 km/h (2.8 m/s)</span><span>15 m/s</span></div>
         </div>
         <div class="control-group">
           <div class="label-row"><label for="wind-angle">自然风向</label><span class="label-tail"><output id="wind-angle-value" for="wind-angle">正迎风 0°</output><button id="center-wind" type="button" class="chip">正迎风</button></span></div>
@@ -142,7 +142,11 @@
           <input id="steer" type="range" min="-18" max="18" step="1" value="0" aria-label="前轮转向角" />
           <div class="range-labels"><span>向右</span><span>向左</span></div>
         </div>
-        <div class="panel-foot"><span>后轮固定 · 步进 0.5 m/s、5° 风向、5 km/h、1°</span><button id="reset" class="chip">全部复位<svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M15.5 6V3m0 3h-3M15.5 6a6.25 6.25 0 1 0 .75 4.5"/></svg></button></div>
+        <div id="conditions-coverage-tip" class="coverage-tip" hidden>
+          <span id="conditions-coverage-text">当前组合暂无 CFD 覆盖</span>
+          <button id="conditions-snap" type="button" class="chip flow-snap">最近实算</button>
+        </div>
+        <div class="panel-foot"><span>绿轨表示当前组合下已覆盖的 CFD 刻度</span><button id="reset" class="chip">全部复位<svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M15.5 6V3m0 3h-3M15.5 6a6.25 6.25 0 1 0 .75 4.5"/></svg></button></div>
       </section>
 
       <section class="panel" id="panel-flow" aria-labelledby="panel-flow-title" hidden>
@@ -160,8 +164,18 @@
           <div class="flow-legend"><span>气流速度</span><i aria-hidden="true"></i><span>0—120+ m/s</span></div>
         </div>
         <div class="data-status">
+          <h3>实算工况速选</h3>
+          <div class="flow-presets" role="group" aria-label="常用已求解 CFD 工况">
+            <button type="button" class="chip" data-flow-preset="low">10 km/h 静风</button>
+            <button type="button" class="chip" data-flow-preset="cruise">180 km/h 巡航</button>
+            <button type="button" class="chip" data-flow-preset="drs">180 km/h · DRS 开</button>
+            <button type="button" class="chip" data-flow-preset="steer">180 km/h · 左满舵</button>
+            <button type="button" class="chip" data-flow-preset="crosswind">180 km/h · 侧风</button>
+            <button type="button" class="chip" data-flow-preset="headwind">10 km/h · 强迎风</button>
+          </div>
+          <p id="flow-coverage-hint" class="coverage-hint"></p>
           <h3>数据来源</h3>
-          <p class="data-note">整车、底板与侧箱共享当前 CFD 速度场。支持已求解工况及经过数值对照的插值范围。</p>
+          <p class="data-note">整车、底板与侧箱共享当前 CFD 速度场。支持已求解工况及经过数值对照的插值范围，气动力按动压归一插值并经独立算例核验。</p>
         </div>
       </section>
     </aside>
@@ -256,6 +270,7 @@
         <div class="flow-state">
           <span class="status-dot" id="flow-dot" data-tone="loading"></span>
           <span id="flow-status" role="status">正在准备气流…</span>
+          <button id="flow-snap" type="button" class="chip flow-snap" hidden>最近实算</button>
           <button id="flow-retry" class="chip" aria-label="重新加载气流数据" hidden>重试</button>
         </div>
       </div>

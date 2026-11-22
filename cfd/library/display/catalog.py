@@ -88,12 +88,24 @@ def forces(case, yaw):
     return values
 
 
+def interpolate_forces(lo, hi, speed_mps, fraction):
+    a, b = lo['forces'], hi['forces']
+    va, vb = lo['at'][0], hi['at'][0]
+    if va > 0 and vb > 0:
+        q = speed_mps * speed_mps
+        wa, wb = (1 - fraction) * q / (va * va), fraction * q / (vb * vb)
+    else:
+        wa, wb = 1 - fraction, fraction
+    return {key: wa * a[key] + wb * b[key] for key in a}
+
+
 def force_interpolation_passes(lo, middle, hi, fraction):
     samples = [node.get('forces') for node in (lo, middle, hi)]
     if not all(samples):
         return False
-    a, m, b = samples
-    return all(abs((1 - fraction) * a[key] + fraction * b[key] - m[key])
+    m = middle['forces']
+    estimate = interpolate_forces(lo, hi, middle['at'][0], fraction)
+    return all(abs(estimate[key] - m[key])
                <= max(.25, .12 * abs(m[key]), .02 * m['drag']) for key in m)
 
 

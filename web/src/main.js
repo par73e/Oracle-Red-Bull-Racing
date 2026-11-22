@@ -6,7 +6,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { cachedArrayBuffer, hasCachedAsset } from './asset-cache.js';
 import { bindRig, applyRig, inspectRig } from './rig.js';
 import { FlowLayer, makeFlowMaterial } from './flow-tracing.js';
-import { FlowCatalog } from './flow-catalog.js';
+import { FlowCatalog, formatConditionSummary, selectCoverage } from './flow-catalog.js';
 import { captureCondition, resolveRelativeWind } from './flow-condition.js';
 import { FlowJobs } from './flow-jobs.js';
 import { Environments } from './environments.js';
@@ -216,7 +216,10 @@ const flowMaterial = makeFlowMaterial();
 const airflow = new FlowLayer(carTurntable, flowMaterial, 'CFD_FLOW');
 const underbody = new FlowLayer(carTurntable, flowMaterial, 'UNDERBODY_FLOW');
 const sidepod = new FlowLayer(carTurntable, flowMaterial, 'SIDEPOD_FLOW');
-const flowCatalog = new FlowCatalog();
+const flowCatalog = new FlowCatalog(() => {
+  updateCoverageGuidance();
+  updateForcesDisplay();
+});
 const flowJobs = new FlowJobs(flowCatalog, { whole: airflow, bottom: underbody, side: sidepod }, updateFlowStatus);
 worlds.set(state.environment, state.model === 'rb19' ? 2023 : 2021);
 
@@ -732,6 +735,7 @@ function resolveView(name, forFreeLanding = false) {
 
 function applyFraming() {
   const width = viewport.clientWidth, height = viewport.clientHeight;
+  renderer.setPixelRatio(Math.min(devicePixelRatio, width < 620 ? 1.25 : 1.5));
   camera.aspect = width / height;
   camera.fov = width <= 620
     ? (state.environment === 'wind' && state.view === 'side' ? 80 : 60)
@@ -1054,7 +1058,7 @@ function readForces() {
 
 const forceDescriptions = {
   exact: ['CFD', '当前工况 OpenFOAM 粗网格求解的末 100 步平均值。'],
-  interpolated: ['插值', '相邻 OpenFOAM 工况的气动力插值，已通过独立算例校验。'],
+  interpolated: ['插值', '相邻 OpenFOAM 工况按动压归一的气动力插值，已通过独立算例校验。'],
   still: ['静止', '对地车速与合成相对来流均为零。'],
   loading: ['加载中', '正在加载气动力数据。'],
   unavailable: ['暂无数据', '当前工况暂无经过校验的气动力数据。'],
@@ -1160,7 +1164,138 @@ function showState() {
   if ($('t-rpm')) $('t-rpm').innerHTML = `${rpmRounded}<small>rpm</small>`;
   syncTurntable();
   updateForcesDisplay();
+  updateCoverageGuidance();
   saveState();
+}
+
+const FLOW_PRESETS = {
+  low: { groundSpeed: 10, ambientWindMps: 0, windAngle: 0, steer: 0, drs: 0 },
+  cruise: { groundSpeed: 180, ambientWindMps: 0, windAngle: 0, steer: 0, drs: 0 },
+  drs: { groundSpeed: 180, ambientWindMps: 0, windAngle: 0, steer: 0, drs: 1 },
+  steer: { groundSpeed: 180, ambientWindMps: 0, windAngle: 0, steer: -18, drs: 0 },
+  crosswind: { groundSpeed: 180, ambientWindMps: 4, windAngle: 90, steer: 0, drs: 0 },
+  headwind: { groundSpeed: 10, ambientWindMps: 15, windAngle: 0, steer: 0, drs: 0 },
+};
+
+const TRACK_CONTROLS = [
+  { axis: 'groundSpeed', ids: ['ground-speed', 'hud-ground-speed'], min: 0, max: 350, step: 5 },
+  { axis: 'ambientWindMps', ids: ['speed', 'hud-speed'], min: 0, max: 15, step: .5 },
+  { axis: 'windAngle', ids: ['wind-angle', 'hud-wind-angle'], min: -90, max: 90, step: 5 },
+  { axis: 'steer', ids: ['steer', 'hud-steer'], min: -18, max: 18, step: 1 },
+];
+
+const TRACK_BASE_COLOR = 'rgba(186, 202, 220, 0.22)';
+const TRACK_COVERED_COLOR = 'rgba(53, 196, 124, 0.62)';
+
+function buildCoverageTrackGradient(min, max, step, values) {
+  if (!values.length || max <= min) return TRACK_BASE_COLOR;
+  const span = max - min;
+  const minHalf = .9;
+  const ranges = [];
+  let start = values[0], end = values[0];
+  for (let i = 1; i < values.length; i++) {
+    if (values[i] - end <= step * 1.15) end = values[i];
+    else { ranges.push([start, end]); start = end = values[i]; }
+  }
+  ranges.push([start, end]);
+  const pct = v => Math.max(0, Math.min(100, (v - min) / span * 100));
+  const merged = [];
+  for (const [lo, hi] of ranges) {
+    let p0 = pct(lo), p1 = pct(hi);
+    if (p1 - p0 < minHalf * 2) {
+      const mid = (p0 + p1) * .5;
+      p0 = Math.max(0, mid - minHalf);
+      p1 = Math.min(100, mid + minHalf);
+    }
+    if (merged.length && p0 <= merged[merged.length - 1][1] + .2) {
+      merged[merged.length - 1][1] = Math.max(merged[merged.length - 1][1], p1);
+    } else {
+      merged.push([p0, p1]);
+    }
+  }
+  const stops = [];
+  let cursor = 0;
+  for (const [p0, p1] of merged) {
+    if (p0 > cursor) stops.push(`${TRACK_BASE_COLOR} ${cursor.toFixed(2)}%`, `${TRACK_BASE_COLOR} ${p0.toFixed(2)}%`);
+    stops.push(`${TRACK_COVERED_COLOR} ${p0.toFixed(2)}%`, `${TRACK_COVERED_COLOR} ${p1.toFixed(2)}%`);
+    cursor = p1;
+  }
+  if (cursor < 100) stops.push(`${TRACK_BASE_COLOR} ${cursor.toFixed(2)}%`, `${TRACK_BASE_COLOR} 100%`);
+  return `linear-gradient(90deg, ${stops.join(', ')})`;
+}
+
+let lastCoverageKey = '';
+let lastNearestCovered = null;
+
+function applyConditionTarget(target) {
+  if (!target) return;
+  state.groundSpeed = target.groundSpeed;
+  state.ambientWindMps = target.ambientWindMps;
+  state.windAngle = target.windAngle;
+  state.steer = target.steer;
+  state.drs = target.drs ? 1 : 0;
+  state.flow = true;
+  showState();
+}
+
+function updateCoverageGuidance() {
+  const ready = Boolean(flowCatalog.catalog && flowCatalog.catalog.car === state.model);
+  const key = `${state.model}|${state.groundSpeed}|${state.ambientWindMps}|${state.windAngle}|${state.steer}|${state.drs}|${state.flow}|${ready}`;
+  if (key === lastCoverageKey) return;
+  lastCoverageKey = key;
+
+  document.querySelectorAll('[data-flow-preset]').forEach(btn => {
+    const preset = FLOW_PRESETS[btn.dataset.flowPreset];
+    const active = Boolean(preset &&
+      state.groundSpeed === preset.groundSpeed &&
+      state.ambientWindMps === preset.ambientWindMps &&
+      (preset.ambientWindMps === 0 || state.windAngle === preset.windAngle) &&
+      state.steer === preset.steer &&
+      state.drs === preset.drs);
+    btn.setAttribute('aria-pressed', String(active));
+  });
+
+  if (!ready) {
+    lastNearestCovered = null;
+    if ($('flow-snap')) $('flow-snap').hidden = true;
+    if ($('conditions-coverage-tip')) $('conditions-coverage-tip').hidden = true;
+    return;
+  }
+
+  for (const control of TRACK_CONTROLS) {
+    const covered = flowCatalog.axisCoverage(state, control.axis);
+    const bg = buildCoverageTrackGradient(control.min, control.max, control.step, covered);
+    for (const id of control.ids) $(id)?.style.setProperty('--track-bg', bg);
+  }
+
+  const targetCondition = captureCondition({ ...state, drsCurrent: state.drs });
+  const isRest = !targetCondition.speed && !targetCondition.wheelSpeedMps;
+  const selection = isRest ? { mode: 'still' } : selectCoverage(flowCatalog.catalog, targetCondition.coordinates);
+  const unsupported = selection.mode === 'unsupported';
+  lastNearestCovered = unsupported ? flowCatalog.nearestCovered(state) : null;
+  const summary = formatConditionSummary(lastNearestCovered);
+
+  const snapBtn = $('flow-snap');
+  if (snapBtn) {
+    snapBtn.hidden = !state.flow || !lastNearestCovered;
+    if (lastNearestCovered) snapBtn.title = `一键切至最近实算工况：${summary}`;
+  }
+  const tipEl = $('conditions-coverage-tip');
+  if (tipEl) {
+    tipEl.hidden = !lastNearestCovered;
+    const tipText = $('conditions-coverage-text');
+    if (tipText && lastNearestCovered) tipText.textContent = `暂无覆盖 · 最近：${summary}`;
+  }
+  const hintEl = $('flow-coverage-hint');
+  if (hintEl) {
+    hintEl.textContent = isRest
+      ? '当前静止：调高车速或自然风速即可查看流线。'
+      : unsupported && lastNearestCovered
+        ? `当前组合暂无覆盖，最近实算：${summary}。`
+        : selection.mode === 'exact'
+          ? '当前组合命中已求解 CFD 节点。'
+          : '当前组合位于已校验 CFD 插值区间内。';
+  }
 }
 
 const loadedCarsInSession = new Set();
@@ -1373,6 +1508,16 @@ $('flow-retry').addEventListener('click', () => {
   flowCatalog.retry();
   flowJobs.reset();
 });
+$('flow-snap')?.addEventListener('click', e => {
+  e.stopPropagation();
+  applyConditionTarget(lastNearestCovered);
+});
+$('conditions-snap')?.addEventListener('click', () => {
+  applyConditionTarget(lastNearestCovered);
+});
+document.querySelectorAll('[data-flow-preset]').forEach(btn => {
+  btn.addEventListener('click', () => applyConditionTarget(FLOW_PRESETS[btn.dataset.flowPreset]));
+});
 $('retry').addEventListener('click', () => loadModel(state.model).catch(() => {}));
 $('credits-button').addEventListener('click', () => $('credits').showModal());
 $('close-credits').addEventListener('click', () => $('credits').close());
@@ -1480,7 +1625,7 @@ renderer.setAnimationLoop(now => {
 window.aeroStudio = {
   get ready() { return Boolean(rig); },
   get airflow() { return { ...flowJobs.presented, visible: airflow.group.visible,
-    workerPending: Boolean(flowJobs.sent), state: { ...state } }; },
+    workerPending: Boolean(flowJobs.sent), nearestCovered: lastNearestCovered, state: { ...state } }; },
   get forces() { return readForces(); },
   get turntable() { return { carYawDeg: THREE.MathUtils.radToDeg(carTurntable.rotation.y), environmentYawDeg: THREE.MathUtils.radToDeg(worlds.turntableYaw), fanPosition: worlds.root?.userData.fan?.getWorldPosition(new THREE.Vector3()).toArray() || null }; },
   get sidepod() { return { visible: sidepod.group.visible, lines: sidepod.count, stops: sidepod.stops }; },

@@ -26,25 +26,24 @@ AERO/
 
 ## 模型文件
 
-当前可编辑制作文件（`2026-11-09-continuity1`）：
+当前可编辑制作基线为 `2026-11-10-tail-detail1`：
 
 - [RB19](assets/working/rb19/rb19-web.blend)
 - [RB16B](assets/working/rb16b/rb16b-web.blend)
 
-初次导入副本为各车型目录的 `<车型>.blend`。带统一灯光和材质预览的检查副本：[RB19](assets/working/rb19/rb19-review.blend)、[RB16B](assets/working/rb16b/rb16b-review.blend)。检查脚本会覆盖检查副本，生成脚本会覆盖 `*-web.blend`；后续手工制作请另存版本。操作时一次只运行一个 Blender，保存后退出。
+初次导入副本为各车型目录的 `<车型>.blend`。带统一灯光和材质预览的检查副本：[RB19](assets/working/rb19/rb19-review.blend)、[RB16B](assets/working/rb16b/rb16b-review.blend)。检查脚本会覆盖检查副本，生成脚本会覆盖 `*-web.blend`；后续手工制作请另存版本。操作时一次只运行一个 Blender，保存后退出（见 [AGENTS.md](AGENTS.md)）。
 
 原下载文件完整保存在 `assets/archives/<车型>/`，解压后的资源在 `assets/source/<车型>/`。文件名、大小和 SHA-256 校验值见 [模型文件清单](docs/research/model-files.json)。原始资产保持原样，后续编辑在工作副本中进行。
 
-资产流程为：原始下载 → 源文件 → Blender 工作副本 → 优化导出 → `web/public/`。网页实际加载本地生成的 `web/public/models/<车型>.glb`，与下载的来源 GLB 分开保存；当前没有线上部署。
+资产流程为：原始下载 → 源文件 → Blender 工作副本 → 优化导出（普通 GLB + WebP/Meshopt 压缩 `.web.glb`）→ `web/public/models/`。线上站点部署于 `https://red-bull-racing.par73e.cn/`。
 
-## 当前状态（2026-11-09）
+## 当前状态（2026-11-22）
 
-- 四个下载文件已在本地工作区归档，两个车型均已生成 Blender 工作副本。
-- Blender 官方 Lab MCP 已接入，重启后已通过当前聊天的原生工具验证实时连接。
-- 已完成首轮几何结构、现有贴图与材质基准检查，并修正 RB16B 检查副本的主要材质通道错误。见 [模型检查报告](docs/research/model-review-2026-11-08.md)。
-- 当前模型版本为 `2026-11-09-continuity1`，支持 DRS 液压联动、四轮自转和前轮转向，补建 RB19 简化底板通道。RB16B 采用竖直展示转向轴并保留静态外倾；RB19 原生整流根部固定，细杆在内部搭接。见 [机构研究与修复](docs/research/mechanical-rig-2026-11-09.md)。
-- 开发阶段已完成记录中的机械采样、网页近景、GLB 格式与构建检查；具体范围和限制见 [交付说明](docs/web-model-handoff.md)。两车为约 5.5 单位长的米级展示尺度，底板、机构和材质是视觉近似，尚无 CFD 或气流功能；具体赛道版本、精确尺寸及真实气动效果未确认。
-- `web/` 已建立 Three.js 本地验收页，可切换车型、操作部件与观察角度。[启动方式](web/README.md)、[交付说明](docs/web-model-handoff.md)。
+- **模型与机构**：两车制作基线为 `2026-11-10-tail-detail1`，支持 DRS 液压联动（二态开关与过渡动画）、四轮自转与前轮转向，RB19 含简化底板通道，RB16B 含驾驶舱安全带与尾部碳纤维/排气细节。网页默认加载压缩后的 `.web.glb`（约 6.8 MB/车）。
+- **三维场景**：提供「风洞（11 叶翼型风机 + 联动转台）」「艾尔罗格 Eau Rouge（含曲面阴影与 LiDAR 地形）」「纯白影棚」三个场景，支持自由观察与车体部位预设机位、`localStorage` 状态保持及自动/手动隐藏 HUD。
+- **统一实算 CFD 流场与气动力**：整车、底板与侧箱共享当前工况选定的 OpenFOAM 粗网格稳态 RANS 速度场（详见 [cfd/library/display/README.md](cfd/library/display/README.md)），不再使用历史单轴叠加近似或 F1 基准估算。网页通过 `web/public/flow/<车型>/display/manifest.json` 在 343 个实算节点与 66 个经独立算例校验的插值区间内选场（气动力按动压 $v^2$ 归一插值），超出覆盖时隐藏流线并提供滑块覆盖刻度与一键切换最近实算工况。
+- **调试与验收入口**：前端启动与校验见 [web/README.md](web/README.md)；浏览器控制台可通过 `window.aeroStudio`（含 `airflow`、`forces`、`metrics`、`runKinematicChecks()` 等）复核姿态、已显示工况与来源。
+- **科学边界**：当前 CFD 基于展示几何的粗网格稳态 RANS（无近壁棱柱边界层），网格独立性验证、实验对照及多轴混合组合覆盖仍有局限，不代表车队实车工程载荷。
 
 Node.js 版本记录在 `.node-version`。在项目中执行 `fnm use` 可切换到对应版本。
 

@@ -154,7 +154,7 @@
       },
       "trajectoryPassed": true,
       "passed": true,
-      "forcePassed": false
+      "forcePassed": true
     },
     {
       "endpoints": [
@@ -193,7 +193,7 @@
       },
       "trajectoryPassed": true,
       "passed": true,
-      "forcePassed": false
+      "forcePassed": true
     },
     {
       "endpoints": [
@@ -232,7 +232,7 @@
       },
       "trajectoryPassed": true,
       "passed": true,
-      "forcePassed": false
+      "forcePassed": true
     },
     {
       "endpoints": [
@@ -271,7 +271,7 @@
       },
       "trajectoryPassed": true,
       "passed": true,
-      "forcePassed": false
+      "forcePassed": true
     },
     {
       "endpoints": [
@@ -310,7 +310,7 @@
       },
       "trajectoryPassed": true,
       "passed": true,
-      "forcePassed": false
+      "forcePassed": true
     },
     {
       "endpoints": [
@@ -349,7 +349,7 @@
       },
       "trajectoryPassed": true,
       "passed": true,
-      "forcePassed": false
+      "forcePassed": true
     },
     {
       "endpoints": [
@@ -388,7 +388,7 @@
       },
       "trajectoryPassed": true,
       "passed": true,
-      "forcePassed": false
+      "forcePassed": true
     },
     {
       "endpoints": [
@@ -427,7 +427,7 @@
       },
       "trajectoryPassed": true,
       "passed": true,
-      "forcePassed": false
+      "forcePassed": true
     },
     {
       "endpoints": [

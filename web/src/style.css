@@ -634,7 +634,7 @@ input[type="range"] {
 input[type="range"]::-webkit-slider-runnable-track {
   height: 3px;
   border-radius: 2px;
-  background: rgba(186, 202, 220, 0.24);
+  background: var(--track-bg, rgba(186, 202, 220, 0.24));
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -650,7 +650,7 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]::-moz-range-track {
   height: 3px;
   border-radius: 2px;
-  background: rgba(186, 202, 220, 0.24);
+  background: var(--track-bg, rgba(186, 202, 220, 0.24));
 }
 
 input[type="range"]::-moz-range-thumb {
@@ -760,6 +760,51 @@ input[type="range"]::-moz-range-thumb {
   margin-top: 10px;
   color: var(--text-muted);
   font-size: 10px;
+}
+
+.flow-presets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.flow-presets .chip {
+  justify-content: center;
+  padding: 5px 6px;
+  font-size: 10px;
+}
+
+.coverage-hint {
+  margin: 0 0 14px;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.coverage-tip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: rgba(235, 180, 52, 0.1);
+  border: 1px solid rgba(235, 180, 52, 0.28);
+  font-size: 10px;
+  color: var(--text);
+}
+
+.flow-snap {
+  border-color: rgba(53, 196, 124, 0.45);
+  color: #b7f0cf;
+  background: rgba(53, 196, 124, 0.14);
+}
+
+.flow-snap:hover {
+  border-color: var(--ok);
+  color: #ffffff;
+  background: rgba(53, 196, 124, 0.26);
 }
 
 /* Bottom Telemetry & Camera Dock HUD */
@@ -1317,8 +1362,21 @@ dialog p:last-child {
     left: 10px;
     right: 98px;
     height: 38px;
-    padding: 0 10px;
-    gap: 8px;
+    padding: 0 8px;
+    gap: 6px;
+  }
+  .topbar .brand-mark {
+    height: 18px;
+  }
+  .topbar .model-switch button {
+    padding: 4px 7px;
+    font-size: 11px;
+  }
+  .topbar .topbar-actions {
+    padding-left: 4px;
+  }
+  .topbar .icon-button {
+    padding: 4px 6px;
   }
   .model-era,
   .topbar .icon-label {
@@ -1452,6 +1510,9 @@ dialog p:last-child {
 }
 
 @media (max-width: 540px) {
+  .topbar .model-switch button span {
+    display: none;
+  }
   .hud {
     grid-template-columns: minmax(0, 1fr);
   }

@@ -2,8 +2,8 @@ import * as T from 'three';
 import { describeModel, snapshotRig } from './flow-worker-protocol.js';
 import { captureCondition, conditionKey } from './flow-condition.js';
 
-const TRACE_TIMEOUT_MS = 5000;
-const INIT_TIMEOUT_MS = 15000;
+const TRACE_TIMEOUT_MS = 12000;
+const INIT_TIMEOUT_MS = 25000;
 const PREVIOUS_RESULT_MS = 500;
 const MAX_DRS_PREVIEW_DELTA = .05;
 
