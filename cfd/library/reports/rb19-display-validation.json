@@ -2,45 +2,6 @@
   "checks": [
     {
       "endpoints": [
-        "base",
-        "open"
-      ],
-      "heldOut": "base-mid-drs",
-      "weight": 0.5,
-      "vectorP90": 0.00561,
-      "angleP90": 0.35532,
-      "floorVectorP90": 0.00555,
-      "floorAngleP90": 0.40791,
-      "coverage": 0.99969,
-      "floorCoverage": 1.0,
-      "otherOccupancy": 3e-05,
-      "vectorPassed": true,
-      "comparisons": {
-        "whole": {
-          "compare": 744,
-          "a": 746,
-          "b": 744,
-          "p90": 0.0071
-        },
-        "bottom": {
-          "compare": 108,
-          "a": 108,
-          "b": 108,
-          "p90": 0.0026
-        },
-        "side": {
-          "compare": 222,
-          "a": 222,
-          "b": 222,
-          "p90": 0.0044
-        }
-      },
-      "trajectoryPassed": true,
-      "passed": true,
-      "forcePassed": true
-    },
-    {
-      "endpoints": [
         "road010-wind-00000",
         "low-open"
       ],
@@ -397,110 +358,50 @@
       ],
       "heldOut": "roll-020",
       "weight": 0.25,
-      "vectorP90": 0.00173,
-      "angleP90": 0.09975,
-      "floorVectorP90": 0.00322,
-      "floorAngleP90": 0.32807,
-      "coverage": 1.0,
-      "floorCoverage": 1.0,
+      "vectorP90": 0.16459,
+      "angleP90": 10.1453,
+      "floorVectorP90": 0.21548,
+      "floorAngleP90": 21.50544,
+      "coverage": 0.99674,
+      "floorCoverage": 0.99252,
       "otherOccupancy": 0.0,
-      "vectorPassed": true,
-      "comparisons": {
-        "whole": {
-          "compare": 743,
-          "a": 743,
-          "b": 743,
-          "p90": 0.0012
-        },
-        "bottom": {
-          "compare": 109,
-          "a": 109,
-          "b": 110,
-          "p90": 0.0052
-        },
-        "side": {
-          "compare": 225,
-          "a": 225,
-          "b": 225,
-          "p90": 0.0026
-        }
-      },
-      "trajectoryPassed": true,
-      "passed": true,
-      "forcePassed": true
+      "vectorPassed": false,
+      "passed": false,
+      "forcePassed": false
     },
     {
       "endpoints": [
         "low",
-        "base"
-      ],
-      "heldOut": "roll-100",
-      "weight": 0.3846153846153846,
-      "vectorP90": 0.00066,
-      "angleP90": 0.03192,
-      "floorVectorP90": 0.00083,
-      "floorAngleP90": 0.06945,
-      "coverage": 1.0,
-      "floorCoverage": 1.0,
-      "otherOccupancy": 0.0,
-      "vectorPassed": true,
-      "comparisons": {
-        "whole": {
-          "compare": 742,
-          "a": 742,
-          "b": 742,
-          "p90": 0.0006
-        },
-        "bottom": {
-          "compare": 110,
-          "a": 110,
-          "b": 110,
-          "p90": 0.0005
-        },
-        "side": {
-          "compare": 225,
-          "a": 225,
-          "b": 225,
-          "p90": 0.001
-        }
-      },
-      "trajectoryPassed": true,
-      "passed": true,
-      "forcePassed": true
-    },
-    {
-      "endpoints": [
-        "base",
         "high"
       ],
-      "heldOut": "roll-260",
-      "weight": 0.4705882352941176,
-      "vectorP90": 0.00017,
-      "angleP90": 0.01951,
-      "floorVectorP90": 0.00024,
-      "floorAngleP90": 0.02241,
+      "heldOut": "base",
+      "weight": 0.4333333333333334,
+      "vectorP90": 0.08172,
+      "angleP90": 7.36268,
+      "floorVectorP90": 0.10192,
+      "floorAngleP90": 14.83592,
       "coverage": 1.0,
       "floorCoverage": 1.0,
       "otherOccupancy": 0.0,
       "vectorPassed": true,
       "comparisons": {
         "whole": {
-          "compare": 742,
-          "a": 742,
-          "b": 742,
-          "p90": 0.0001
+          "compare": 723,
+          "a": 731,
+          "b": 733,
+          "p90": 0.049
         },
         "bottom": {
-          "compare": 107,
-          "a": 107,
-          "b": 107,
-          "p90": 0.0001
+          "compare": 70,
+          "a": 76,
+          "b": 75,
+          "p90": 0.0133
         },
         "side": {
-          "compare": 222,
-          "a": 222,
-          "b": 222,
-          "p90": 0.0001
+          "compare": 196,
+          "a": 200,
+          "b": 199,
+          "p90": 0.0537
         }
       },
       "trajectoryPassed": true,
@@ -514,37 +415,16 @@
       ],
       "heldOut": "air-185",
       "weight": 0.4999999999999987,
-      "vectorP90": 0.00035,
-      "angleP90": 0.02146,
-      "floorVectorP90": 0.00029,
-      "floorAngleP90": 0.02186,
-      "coverage": 1.0,
-      "floorCoverage": 1.0,
+      "vectorP90": 0.12636,
+      "angleP90": 7.75599,
+      "floorVectorP90": 0.16871,
+      "floorAngleP90": 16.41825,
+      "coverage": 0.99674,
+      "floorCoverage": 0.99252,
       "otherOccupancy": 0.0,
-      "vectorPassed": true,
-      "comparisons": {
-        "whole": {
-          "compare": 742,
-          "a": 742,
-          "b": 742,
-          "p90": 0.0003
-        },
-        "bottom": {
-          "compare": 108,
-          "a": 108,
-          "b": 108,
-          "p90": 0.0001
-        },
-        "side": {
-          "compare": 222,
-          "a": 222,
-          "b": 222,
-          "p90": 0.0007
-        }
-      },
-      "trajectoryPassed": true,
-      "passed": true,
-      "forcePassed": true
+      "vectorPassed": false,
+      "passed": false,
+      "forcePassed": false
     },
     {
       "endpoints": [

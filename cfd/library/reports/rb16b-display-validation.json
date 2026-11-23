@@ -2,45 +2,6 @@
   "checks": [
     {
       "endpoints": [
-        "base",
-        "open"
-      ],
-      "heldOut": "base-mid-drs",
-      "weight": 0.5,
-      "vectorP90": 0.00892,
-      "angleP90": 0.60166,
-      "floorVectorP90": 0.00523,
-      "floorAngleP90": 0.66765,
-      "coverage": 0.99978,
-      "floorCoverage": 0.99988,
-      "otherOccupancy": 0.00038,
-      "vectorPassed": true,
-      "comparisons": {
-        "whole": {
-          "compare": 787,
-          "a": 795,
-          "b": 787,
-          "p90": 0.0087
-        },
-        "bottom": {
-          "compare": 58,
-          "a": 58,
-          "b": 58,
-          "p90": 0.0043
-        },
-        "side": {
-          "compare": 187,
-          "a": 187,
-          "b": 187,
-          "p90": 0.0048
-        }
-      },
-      "trajectoryPassed": true,
-      "passed": true,
-      "forcePassed": true
-    },
-    {
-      "endpoints": [
         "low-closed",
         "low-open"
       ],
@@ -358,193 +319,34 @@
       ],
       "heldOut": "roll-020",
       "weight": 0.25,
-      "vectorP90": 0.00215,
-      "angleP90": 0.13687,
-      "floorVectorP90": 0.00301,
-      "floorAngleP90": 0.31757,
-      "coverage": 1.0,
-      "floorCoverage": 1.0,
+      "vectorP90": 0.19081,
+      "angleP90": 10.234,
+      "floorVectorP90": 0.23431,
+      "floorAngleP90": 20.93062,
+      "coverage": 0.99755,
+      "floorCoverage": 0.99376,
       "otherOccupancy": 0.0,
-      "vectorPassed": true,
-      "comparisons": {
-        "whole": {
-          "compare": 791,
-          "a": 791,
-          "b": 791,
-          "p90": 0.0014
-        },
-        "bottom": {
-          "compare": 59,
-          "a": 59,
-          "b": 59,
-          "p90": 0.0071
-        },
-        "side": {
-          "compare": 186,
-          "a": 187,
-          "b": 186,
-          "p90": 0.0007
-        }
-      },
-      "trajectoryPassed": true,
-      "passed": true,
-      "forcePassed": true
+      "vectorPassed": false,
+      "passed": false,
+      "forcePassed": false
     },
     {
       "endpoints": [
         "low",
-        "base"
-      ],
-      "heldOut": "roll-100",
-      "weight": 0.3846153846153846,
-      "vectorP90": 0.00051,
-      "angleP90": 0.02971,
-      "floorVectorP90": 0.00096,
-      "floorAngleP90": 0.08769,
-      "coverage": 1.0,
-      "floorCoverage": 1.0,
-      "otherOccupancy": 0.0,
-      "vectorPassed": true,
-      "comparisons": {
-        "whole": {
-          "compare": 791,
-          "a": 791,
-          "b": 791,
-          "p90": 0.0003
-        },
-        "bottom": {
-          "compare": 57,
-          "a": 57,
-          "b": 57,
-          "p90": 0.0015
-        },
-        "side": {
-          "compare": 187,
-          "a": 187,
-          "b": 187,
-          "p90": 0.0002
-        }
-      },
-      "trajectoryPassed": true,
-      "passed": true,
-      "forcePassed": true
-    },
-    {
-      "endpoints": [
-        "base",
         "high"
       ],
-      "heldOut": "roll-260",
-      "weight": 0.4705882352941176,
-      "vectorP90": 0.0002,
-      "angleP90": 0.02051,
-      "floorVectorP90": 0.00043,
-      "floorAngleP90": 0.03994,
+      "heldOut": "base",
+      "weight": 0.4333333333333334,
+      "vectorP90": 0.10527,
+      "angleP90": 8.79563,
+      "floorVectorP90": 0.16792,
+      "floorAngleP90": 26.36516,
       "coverage": 1.0,
       "floorCoverage": 1.0,
       "otherOccupancy": 0.0,
-      "vectorPassed": true,
-      "comparisons": {
-        "whole": {
-          "compare": 791,
-          "a": 791,
-          "b": 791,
-          "p90": 0.0001
-        },
-        "bottom": {
-          "compare": 56,
-          "a": 56,
-          "b": 56,
-          "p90": 0.0005
-        },
-        "side": {
-          "compare": 187,
-          "a": 187,
-          "b": 187,
-          "p90": 0.0001
-        }
-      },
-      "trajectoryPassed": true,
-      "passed": true,
-      "forcePassed": true
-    },
-    {
-      "endpoints": [
-        "base",
-        "base-mid-drs"
-      ],
-      "heldOut": "base-quarter-drs",
-      "weight": 0.5,
-      "vectorP90": 0.00687,
-      "angleP90": 0.38944,
-      "floorVectorP90": 0.00626,
-      "floorAngleP90": 0.56425,
-      "coverage": 0.99962,
-      "floorCoverage": 0.99976,
-      "otherOccupancy": 0.0,
-      "vectorPassed": true,
-      "comparisons": {
-        "whole": {
-          "compare": 787,
-          "a": 787,
-          "b": 789,
-          "p90": 0.0093
-        },
-        "bottom": {
-          "compare": 57,
-          "a": 58,
-          "b": 57,
-          "p90": 0.0051
-        },
-        "side": {
-          "compare": 187,
-          "a": 188,
-          "b": 187,
-          "p90": 0.0048
-        }
-      },
-      "trajectoryPassed": true,
-      "passed": true,
-      "forcePassed": true
-    },
-    {
-      "endpoints": [
-        "base-mid-drs",
-        "open"
-      ],
-      "heldOut": "base-three-quarter-drs",
-      "weight": 0.5,
-      "vectorP90": 0.01131,
-      "angleP90": 0.67535,
-      "floorVectorP90": 0.00964,
-      "floorAngleP90": 0.96183,
-      "coverage": 0.99984,
-      "floorCoverage": 0.99988,
-      "otherOccupancy": 3e-05,
-      "vectorPassed": true,
-      "comparisons": {
-        "whole": {
-          "compare": 787,
-          "a": 791,
-          "b": 789,
-          "p90": 0.0132
-        },
-        "bottom": {
-          "compare": 58,
-          "a": 58,
-          "b": 58,
-          "p90": 0.006
-        },
-        "side": {
-          "compare": 187,
-          "a": 187,
-          "b": 189,
-          "p90": 0.0072
-        }
-      },
-      "trajectoryPassed": true,
-      "passed": true,
-      "forcePassed": true
+      "vectorPassed": false,
+      "passed": false,
+      "forcePassed": false
     },
     {
       "endpoints": [
@@ -553,37 +355,16 @@
       ],
       "heldOut": "air-185",
       "weight": 0.4999999999999987,
-      "vectorP90": 0.0005,
-      "angleP90": 0.02742,
-      "floorVectorP90": 0.00096,
-      "floorAngleP90": 0.09044,
-      "coverage": 1.0,
-      "floorCoverage": 1.0,
+      "vectorP90": 0.14954,
+      "angleP90": 8.01898,
+      "floorVectorP90": 0.18723,
+      "floorAngleP90": 15.84387,
+      "coverage": 0.99755,
+      "floorCoverage": 0.99376,
       "otherOccupancy": 0.0,
-      "vectorPassed": true,
-      "comparisons": {
-        "whole": {
-          "compare": 791,
-          "a": 791,
-          "b": 791,
-          "p90": 0.0002
-        },
-        "bottom": {
-          "compare": 56,
-          "a": 56,
-          "b": 56,
-          "p90": 0.0008
-        },
-        "side": {
-          "compare": 187,
-          "a": 187,
-          "b": 187,
-          "p90": 0.0001
-        }
-      },
-      "trajectoryPassed": true,
-      "passed": true,
-      "forcePassed": true
+      "vectorPassed": false,
+      "passed": false,
+      "forcePassed": false
     },
     {
       "endpoints": [

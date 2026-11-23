@@ -14,6 +14,14 @@ CASES = ROOT / 'cfd/library/cases'
 COARSE = {'shape': [88, 34, 32], 'min': [-4, -1.65, .025], 'max': [9, 1.65, 1.65]}
 YAW = {'shape': [78, 60, 26], 'min': [-5.5, -4.5, .025], 'max': [6.5, 4.5, 1.75]}
 DRS_SWEEP_NODES = {'drs-025': 'base-quarter-drs', 'drs-050': 'base-mid-drs', 'drs-075': 'base-three-quarter-drs'}
+REFINED_CORE_ANCHORS = (
+    'base', 'open', 'low', 'high', 'left', 'right',
+    'yaw-p015', 'yaw-m015', 'yaw-p045', 'yaw-m045',
+)
+SUPERSEDED_COARSE_NODES = {
+    'roll-100', 'roll-260',
+    'base-quarter-drs', 'base-mid-drs', 'base-three-quarter-drs',
+}
 RB16B_ENDPOINT_GROUPS = (
     {'base': 'base-drs-000', 'open': 'base-drs-100'},
     {'low': 'roll-050', 'high': 'roll-350'},
@@ -41,8 +49,18 @@ def coordinates(record):
             record['steer'], record['drs']]
 
 
-def velocity_samples(case, grid, at, threshold):
-    rows = np.loadtxt(case / 'postProcessing/grid/650/grid.xy')
+def sampled_spec(case):
+    log = case / 'log.foamRun'
+    if not log.is_file() or not re.search(r'^End$', log.read_text(), re.M):
+        return None
+    for step, window in ((1000, range(851, 1001)), (650, range(551, 651))):
+        if (case / f'postProcessing/grid/{step}/grid.xy').is_file():
+            return step, window
+    return None
+
+
+def velocity_samples(case, grid, at, threshold, step=650):
+    rows = np.loadtxt(case / f'postProcessing/grid/{step}/grid.xy')
     shape = np.asarray(grid['shape'])
     origin = np.asarray(grid['min'])
     steps = (np.asarray(grid['max']) - origin) / (shape - 1)
@@ -63,7 +81,7 @@ def velocity_samples(case, grid, at, threshold):
     return field, valid
 
 
-def forces(case, yaw):
+def forces(case, yaw, window=range(551, 651), side_floor=.1):
     samples = {}
     for path in sorted((case / 'postProcessing/forces').glob('*/forces.dat'), key=lambda p: float(p.parent.name)):
         for line in path.read_text().splitlines():
@@ -72,9 +90,9 @@ def forces(case, yaw):
             values = np.fromstring(line.translate(str.maketrans('()', '  ')), sep=' ')
             if len(values) >= 7:
                 samples[values[0]] = values[1:4] + values[4:7]
-    if not all(i in samples for i in range(551, 651)):
+    if not all(i in samples for i in window):
         return None
-    last = np.array([samples[i] for i in range(551, 651)])
+    last = np.array([samples[i] for i in window])
     angle = np.deg2rad(yaw)
     drag = last @ [np.cos(angle), -np.sin(angle), 0]
     mean = last.mean(axis=0)
@@ -82,7 +100,7 @@ def forces(case, yaw):
     if not np.isfinite(last).all() or drag.mean() < 0:
         return None
     # Only use the measured mean if the final window is sufficiently stable.
-    scales = np.maximum(np.abs(mean), max(.1, abs(drag.mean()) * .1))
+    scales = np.maximum(np.abs(mean), max(.1, abs(drag.mean()) * side_floor))
     if (np.ptp(last, axis=0) / scales).max() > .5:
         return None
     return values
@@ -170,12 +188,17 @@ def audit_segment(a, middle, b, grid):
 
 
 def sampled_case(case):
-    return (case / 'postProcessing/grid/650/grid.xy').is_file() and re.search(
-        r'^End$', (case / 'log.foamRun').read_text(), re.M)
+    return sampled_spec(case) is not None
 
 
 def inputs(car):
     base = PUBLIC / 'flow' / car
+    refined_cases = {
+        key: CASES / f'{car}-refined-{key}'
+        for key in REFINED_CORE_ANCHORS
+        if sampled_spec(CASES / f'{car}-refined-{key}') is not None
+    }
+    skip_superseded = {'low', 'base', 'high', 'open'}.issubset(refined_cases)
     matched_endpoints = {}
     replacement_cases = set()
     if car == 'rb16b':
@@ -196,6 +219,16 @@ def inputs(car):
                 continue
             if family == 'sweep' and (record.get('reused') or key in DRS_SWEEP_NODES):
                 continue
+            if skip_superseded and key in SUPERSEDED_COARSE_NODES:
+                continue
+            if key in refined_cases:
+                case = refined_cases[key]
+                grid = YAW if key.startswith('yaw-') else COARSE
+                meta = json.loads((case / 'anchor.json').read_text())
+                if 'groundSpeedMps' not in meta:
+                    meta['groundSpeedMps'] = meta['wheelSpeedMps']
+                yield meta | {'grid': grid, 'anchor': key, 'refined': True}, case, True
+                continue
             if family == 'road010':
                 case = CASES / f'{car}-headwind-audit-road010-wind{record["naturalWindMps"]:02.0f}'
             else:
@@ -210,9 +243,13 @@ def inputs(car):
     for case in sorted(CASES.glob(f'{car}-display-*')):
         if case not in replacement_cases and sampled_case(case):
             meta = json.loads((case / 'anchor.json').read_text())
+            if skip_superseded and meta.get('anchor') in SUPERSEDED_COARSE_NODES:
+                continue
             meta['grid'] = YAW if 'freestreamVelocity' in (case / '0/U').read_text() else COARSE
             yield meta, case, True
     for pose, key in DRS_SWEEP_NODES.items():
+        if skip_superseded and key in SUPERSEDED_COARSE_NODES:
+            continue
         case = CASES / f'{car}-sweep-{pose}'
         if sampled_case(case):
             yield json.loads((case / 'anchor.json').read_text()) | {'grid': COARSE, 'anchor': key}, case, True
@@ -231,7 +268,8 @@ def build(car):
              ('low-wind4', 'low-wind8', 'low-wind15'),
              ('roll-005', 'road010-wind-00000', 'roll-020'), ('roll-005', 'low-closed', 'roll-020'),
              ('road010-wind-00000', 'roll-020', 'low'), ('low-closed', 'roll-020', 'low'),
-             ('low', 'roll-100', 'base'), ('base', 'roll-260', 'high')]
+             ('low', 'roll-100', 'base'), ('base', 'roll-260', 'high'),
+             ('low', 'base', 'high')]
     pairs.extend([('base', 'base-quarter-drs', 'base-mid-drs'),
                   ('base-mid-drs', 'base-three-quarter-drs', 'open')])
     # At 180 km/h road speed, the headwind slider uses this existing sweep axis.
@@ -243,10 +281,12 @@ def build(car):
         key = record['anchor']
         grid_id = 'yaw' if grid == YAW else 'headwind'
         grids[grid_id] = grid
-        if not (case / 'postProcessing/grid/650/grid.xy').exists():
+        spec = sampled_spec(case)
+        if spec is None:
             omitted.append(str(case.relative_to(ROOT)))
             continue
-        field, valid = velocity_samples(case, grid, at, record.get('exclusionThresholdMps'))
+        step, window = spec
+        field, valid = velocity_samples(case, grid, at, record.get('exclusionThresholdMps'), step=step)
         if new:
             assert 'Mesh OK.' in (case / 'log.checkMesh').read_text(), case
             scale = max(1e-6, float(np.max(np.abs(field))) / 32760)
@@ -265,7 +305,9 @@ def build(car):
         store(PUBLIC / mask_path[1:], mask)
         node = {'id': key, 'at': at, 'grid': grid_id, 'file': file, 'mask': mask_path, 'scale': scale,
                 'sha256': digest(data), 'maskSha256': mask_hash, 'case': case.name}
-        result = forces(case, at[2])
+        if record.get('refined'):
+            node['refined'] = True
+        result = forces(case, at[2], window=window, side_floor=.15 if record.get('refined') else .1)
         if result is not None:
             node['forces'] = result
         nodes.append(node)

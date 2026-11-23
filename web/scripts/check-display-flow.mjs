@@ -159,17 +159,23 @@ for (const modelId of cars) {
       const partOpen = makeCondition(modelId, { drsCurrent });
       assert.equal(selectCoverage(catalog, partOpen.coordinates).mode, 'interpolated');
     }
+    for (const coreId of ['base', 'open', 'low', 'high', 'left', 'right', 'yaw-p015', 'yaw-m015', 'yaw-p045', 'yaw-m045']) {
+      const coreNode = catalog.byId.get(coreId);
+      assert(coreNode?.refined === true, `${modelId}/${coreId} must be backed by the refined prism-layer anchor`);
+      assert(coreNode?.forces && Number.isFinite(coreNode.forces.drag) && Number.isFinite(coreNode.forces.downforce),
+        `${modelId}/${coreId} must carry converged forces`);
+    }
     if (modelId === 'rb16b') {
-      const drsNodes = [0, .25, .5, .75, 1];
       const forces = new FlowCatalog();
       forces.catalog = catalog;
       for (let i = 0; i <= 8; i++) {
         const drsCurrent = i / 8;
         const atSpeed = makeCondition(modelId, { groundSpeed: 180, drsCurrent });
-        const expected = drsNodes.includes(drsCurrent) ? 'exact' : 'interpolated';
-        const selection = selectCoverage(catalog, atSpeed.coordinates);
+        const expected = (drsCurrent === 0 || drsCurrent === 1) ? 'exact' : 'synthesized';
+        const selection = resolveCoverage(catalog, atSpeed.coordinates);
         assert.equal(selection.mode, expected, `RB16B 180 km/h at DRS ${drsCurrent}`);
-        assert.equal(forces.forcesAt(atSpeed)?.mode, expected, `RB16B 180 km/h forces at DRS ${drsCurrent}`);
+        const f = forces.forcesAt(atSpeed);
+        assert(f && Number.isFinite(f.drag) && Number.isFinite(f.downforce), `RB16B 180 km/h forces at DRS ${drsCurrent}`);
         const result = await trace(atSpeed, selection);
         assert(Object.values(result.layers).every(layer => layer.lines > 0));
       }
