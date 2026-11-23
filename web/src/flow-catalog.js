@@ -423,13 +423,28 @@ export class FlowCatalog {
       for (let i = 0; i < velocity.length; i++) velocity[i] = view.getInt16(i * 2, true) * node.scale;
       if (generation.aborted) return;
       this.cache.set(node.id, { id: node.id, velocity, mask: new Uint8Array(validity) });
-      if (this.cache.size > 24) this.cache.delete(this.cache.keys().next().value);
+      if (this.cache.size > 48) this.cache.delete(this.cache.keys().next().value);
     };
     this.pending.set(node.id, attempt().catch(() => generation.aborted || attempt()).catch(() => {
       if (!generation.aborted) this.failures.add(node.id);
     }).finally(() => {
       if (!generation.aborted) this.pending.delete(node.id);
     }));
+  }
+
+  prewarmCore() {
+    if (!this.catalog || this._prewarmedCar === this.car) return;
+    this._prewarmedCar = this.car;
+    const generation = this.controller?.signal;
+    const ids = ['low', 'high', 'open', 'left', 'right'].filter(id => this.catalog.byId.has(id));
+    (async () => {
+      for (let i = 0; i < ids.length; i += 2) {
+        if (generation?.aborted) return;
+        const batch = ids.slice(i, i + 2);
+        batch.forEach(id => this.request(this.catalog.byId.get(id)));
+        await Promise.all(batch.map(id => this.pending.get(id)).filter(Boolean));
+      }
+    })();
   }
 
   forcesAt(condition) {
@@ -453,7 +468,7 @@ export class FlowCatalog {
     return nearestCoveredState(this.catalog, state);
   }
 
-  select(condition) {
+  select(condition, { deferFetch = false } = {}) {
     if (!this.catalog) return { mode: this.loadingCatalog ? 'loading' : 'error' };
     if (this.catalog.car !== condition.model) return { mode: 'unsupported' };
     const selection = resolveCoverage(this.catalog, condition.coordinates);
@@ -467,7 +482,7 @@ export class FlowCatalog {
     const required = [...requiredMap.values()];
     const missing = required.filter(node => !this.cache.has(node.id));
     if (missing.some(node => this.failures.has(node.id))) return { mode: 'error' };
-    missing.forEach(node => this.request(node));
+    if (!deferFetch) missing.forEach(node => this.request(node));
     if (missing.length) return { mode: 'loading' };
     const fields = required.map(node => {
       const field = this.cache.get(node.id);

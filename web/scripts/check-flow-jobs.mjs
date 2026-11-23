@@ -89,4 +89,92 @@ assert(firstWorker.terminated);
 visible(0);
 assert.equal(jobs.result, null);
 assert.equal(jobs.presented, null);
-console.log('Relative-wind vector, frozen DRS, atomic results, stale pose rejection, missing data and car isolation passed');
+
+// Live multi-axis drag: intermediate speed, steer, and density traces publish immediately
+// without discarding, and uncached yaw sweeps activate instant preview with fetch deferral.
+const previewCalls = [];
+const mockPreview = {
+  visible: false,
+  hide() { this.visible = false; },
+  update(cond) { this.visible = true; previewCalls.push(cond.effWindAngle); },
+};
+let deferFlags = [];
+let dragMode = 'exact';
+const dragCatalog = {
+  car: 'rb19',
+  prewarmed: 0,
+  prewarmCore() { this.prewarmed++; },
+  select(cond, opts = {}) {
+    deferFlags.push(Boolean(opts.deferFetch));
+    return dragMode !== 'exact' ? { mode: dragMode } : {
+      mode: dragMode, sources: [{ node: { id: 'test' }, weight: 1 }], fields: [], forces: { drag: 12 },
+    };
+  },
+};
+const dragLayers = { whole: makeLayer(), bottom: makeLayer(), side: makeLayer() };
+let dragStatus = '';
+const dragJobs = new FlowJobs(dragCatalog, dragLayers, v => dragStatus = v, mockPreview);
+const dragState = { ...initial, groundSpeed: 180 };
+const dragUpdate = (at, patch = {}) => { Object.assign(dragState, patch); dragJobs.update(dragState, rig, at); };
+dragUpdate(1000);
+const w2 = dragJobs.worker;
+w2.emit({ type: 'ready' });
+dragUpdate(1010);
+complete(w2, w2.job);
+dragUpdate(1020);
+assert.equal(dragJobs.presented.condition.speed, 180);
+assert.equal(mockPreview.visible, false);
+assert(dragCatalog.prewarmed >= 1, 'Core prewarm triggers once baseline frame settles');
+
+// Continuous speed drag: 180 -> 210 (job starts) -> 240 (210 finishes and MUST publish live!)
+dragUpdate(1040, { groundSpeed: 210 });
+const speedMidJob = w2.job;
+assert.equal(speedMidJob.condition.speed, 210);
+complete(w2, speedMidJob);
+dragUpdate(1060, { groundSpeed: 240 });
+assert.equal(dragJobs.presented.condition.speed, 210, 'Intermediate speed trace publishes live while dragging');
+assert.equal(dragLayers.whole.group.visible, true);
+assert.equal(mockPreview.visible, false);
+
+// Continuous steer drag: 0 -> 8 (job starts) -> 16 (8 finishes and MUST publish live!)
+complete(w2, w2.job);
+dragUpdate(1080, { groundSpeed: 240 });
+dragUpdate(1100, { steer: 8 });
+const steerMidJob = w2.job;
+complete(w2, steerMidJob);
+dragUpdate(1120, { steer: 16 });
+assert.equal(dragJobs.presented.condition.steer, 8, 'Intermediate steer trace publishes live while dragging');
+
+// Continuous density drag: 100 -> 60 (job starts) -> 30 (60 finishes and MUST publish live!)
+complete(w2, w2.job);
+dragUpdate(1140, { steer: 16 });
+dragUpdate(1160, { flowDensity: 60 });
+const densityMidJob = w2.job;
+complete(w2, densityMidJob);
+dragUpdate(1180, { flowDensity: 30 });
+assert.equal(dragJobs.presented.condition.flowDensity, 60, 'Intermediate density trace publishes live while dragging');
+complete(w2, w2.job);
+dragUpdate(1200, { flowDensity: 30 });
+
+// Uncached yaw sweep: immediately shows 60-FPS preview, defers fetch during fast sweep, hides preview when CFD arrives.
+dragMode = 'loading';
+deferFlags = [];
+dragUpdate(1220, { windAngle: 25 });
+assert.equal(mockPreview.visible, true, 'Yaw divergence shows instant direction preview');
+assert.equal(dragLayers.whole.group.visible, false, 'Stale 0-deg CFD hides while yaw preview leads');
+assert.equal(deferFlags.at(-1), true, 'Rapid yaw tick defers uncached network fetch');
+assert.match(dragStatus, /实时方向预览/);
+dragUpdate(1250, { windAngle: 45 });
+assert.equal(previewCalls.at(-1), 45);
+assert.equal(deferFlags.at(-1), true);
+dragUpdate(1360, { windAngle: 45 });
+assert.equal(deferFlags.at(-1), false, 'Settled yaw releases network fetch after settle window');
+dragMode = 'exact';
+dragUpdate(1380, { windAngle: 45 });
+complete(w2, w2.job);
+dragUpdate(1400, { windAngle: 45 });
+assert.equal(mockPreview.visible, false, 'Preview hides as soon as real yaw CFD renders');
+assert.equal(dragLayers.whole.group.visible, true);
+assert.equal(dragJobs.presented.condition.effWindAngle, 45);
+dragJobs.reset();
+console.log('Relative-wind vector, frozen DRS, atomic results, live multi-axis drags, yaw preview, stale pose rejection, missing data and car isolation passed');

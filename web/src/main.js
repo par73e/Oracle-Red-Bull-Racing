@@ -9,6 +9,7 @@ import { FlowLayer, makeFlowMaterial } from './flow-tracing.js';
 import { FlowCatalog, selectCoverage } from './flow-catalog.js';
 import { captureCondition, resolveRelativeWind } from './flow-condition.js';
 import { FlowJobs } from './flow-jobs.js';
+import { FlowPreview } from './flow-preview.js';
 import { Environments } from './environments.js';
 import { createSpaShadowGeometry } from './spa-scene.js';
 import { computeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
@@ -217,11 +218,12 @@ const flowMaterial = makeFlowMaterial();
 const airflow = new FlowLayer(carTurntable, flowMaterial, 'CFD_FLOW');
 const underbody = new FlowLayer(carTurntable, flowMaterial, 'UNDERBODY_FLOW');
 const sidepod = new FlowLayer(carTurntable, flowMaterial, 'SIDEPOD_FLOW');
+const flowPreview = new FlowPreview(carTurntable, flowMaterial);
 const flowCatalog = new FlowCatalog(() => {
   updateCoverageGuidance();
   updateForcesDisplay();
 });
-const flowJobs = new FlowJobs(flowCatalog, { whole: airflow, bottom: underbody, side: sidepod }, updateFlowStatus);
+const flowJobs = new FlowJobs(flowCatalog, { whole: airflow, bottom: underbody, side: sidepod }, updateFlowStatus, flowPreview);
 worlds.set(state.environment, state.model === 'rb19' ? 2023 : 2021);
 
 function syncTurntable() {
@@ -1572,7 +1574,7 @@ renderer.setAnimationLoop(now => {
 window.aeroStudio = {
   get ready() { return Boolean(rig); },
   get airflow() { return { ...flowJobs.presented, visible: airflow.group.visible,
-    workerPending: Boolean(flowJobs.sent), state: { ...state } }; },
+    previewVisible: flowPreview.lines.visible, workerPending: Boolean(flowJobs.sent), state: { ...state } }; },
   get forces() { return readForces(); },
   get turntable() { return { carYawDeg: THREE.MathUtils.radToDeg(carTurntable.rotation.y), environmentYawDeg: THREE.MathUtils.radToDeg(worlds.turntableYaw), fanPosition: worlds.root?.userData.fan?.getWorldPosition(new THREE.Vector3()).toArray() || null }; },
   get sidepod() { return { visible: sidepod.group.visible, lines: sidepod.count, stops: sidepod.stops }; },

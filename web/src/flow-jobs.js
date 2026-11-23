@@ -6,16 +6,22 @@ const TRACE_TIMEOUT_MS = 12000;
 const INIT_TIMEOUT_MS = 25000;
 const PREVIOUS_RESULT_MS = 500;
 const MAX_DRS_PREVIEW_DELTA = .05;
+const YAW_FETCH_SETTLE_MS = 90;
+const YAW_PREVIEW_THRESHOLD_DEG = 1.5;
 
-function drsPoseDistance(condition, other) {
-  if (!other || condition.model !== other.model || condition.flowDensity !== other.flowDensity) return Infinity;
-  if (!condition.coordinates.slice(0, -1).every((value, i) => value === other.coordinates[i])) return Infinity;
-  return Math.abs(condition.drs - other.drs);
+function conditionDistance(condition, other) {
+  if (!other || condition.model !== other.model) return Infinity;
+  return Math.abs(condition.speed - other.speed) / 350
+    + Math.abs(condition.wheelSpeedMps - other.wheelSpeedMps) / 100
+    + Math.abs(condition.effWindAngle - other.effWindAngle) / 90
+    + Math.abs(condition.steer - other.steer) / 18
+    + Math.abs(condition.drs - other.drs)
+    + Math.abs(condition.flowDensity - other.flowDensity) / 100;
 }
 
 export class FlowJobs {
-  constructor(catalog, layers, onStatus) {
-    Object.assign(this, { catalog, layers, onStatus, sequence: 0, generation: 0 });
+  constructor(catalog, layers, onStatus, preview = null) {
+    Object.assign(this, { catalog, layers, onStatus, preview, sequence: 0, generation: 0 });
   }
 
   reset() {
@@ -25,7 +31,10 @@ export class FlowJobs {
     this.worker = this.sent = this.result = this.presented = this.failed = this.rig = null;
     this.ready = false;
     this.departedAt = null;
+    this.lastYaw = null;
+    this.yawChangedAt = null;
     this.setVisible(false);
+    this.preview?.hide();
   }
 
   setVisible(visible) {
@@ -91,37 +100,55 @@ export class FlowJobs {
     if (!state.flow || !state.flowDensity) return this.hide('流线已隐藏');
     if (!condition.speed && !condition.wheelSpeedMps) return this.hide('静止 · 来流与车轮均为 0');
     if (!rig || rig.config.id !== condition.model || this.catalog.car !== condition.model) return this.hide('正在加载车辆气流…');
-    const selection = this.catalog.select(condition);
-    if (this.result && selection.sources) {
+    if (this.lastYaw !== null && Math.abs(condition.effWindAngle - this.lastYaw) > 1e-4) {
+      this.yawChangedAt = now;
+    }
+    this.lastYaw = condition.effWindAngle;
+    const deferFetch = Boolean(this.preview)
+      && this.yawChangedAt !== null
+      && (now - this.yawChangedAt < YAW_FETCH_SETTLE_MS);
+    const selection = this.catalog.select(condition, { deferFetch });
+    if (this.result && selection.mode !== 'unsupported' && selection.mode !== 'error') {
       const { job } = this.result;
-      if (job.key === key) this.publish(this.result);
-      else {
-        const distance = drsPoseDistance(condition, job.condition);
-        // A completed trace can follow the moving wing if it improves the currently displayed pose.
-        if (distance <= MAX_DRS_PREVIEW_DELTA && distance < drsPoseDistance(condition, this.presented?.condition)) {
-          this.publish(this.result);
-          this.departedAt = now;
-        }
+      if (job.key === key && selection.sources) this.publish(this.result);
+      else if (job.condition.model === condition.model
+          && Math.abs(condition.drs - job.condition.drs) <= MAX_DRS_PREVIEW_DELTA
+          && conditionDistance(condition, job.condition) < conditionDistance(condition, this.presented?.condition)) {
+        // Publish completed intermediate slider poses live so speed, yaw, steer,
+        // and density drags update real CFD streamlines continuously at 30-50 FPS.
+        this.publish(this.result);
+        this.departedAt = now;
       }
     }
     this.result = null;
     if (this.presented?.key === key && selection.sources) {
       this.departedAt = null;
+      this.preview?.hide();
       this.setVisible(true);
       this.onStatus(this.presented.mode === 'exact'
         ? '已求解 CFD 工况'
         : this.presented.mode === 'interpolated'
           ? '相邻 CFD 工况插值'
           : 'CFD 组合近似');
+      this.catalog.prewarmCore?.();
       return;
     }
     if (this.failed) return this.hide('流线计算暂不可用 · 请重试');
     if (selection.mode === 'unsupported') return this.hide('当前组合暂无 CFD 覆盖');
     if (selection.mode === 'error') return this.hide('CFD 数据暂不可用 · 请重试');
     this.departedAt ??= now;
-    const keep = this.presented?.condition.model === condition.model && now - this.departedAt <= PREVIOUS_RESULT_MS;
-    this.setVisible(keep);
-    this.onStatus((selection.mode === 'loading' ? '正在加载 CFD 数据' : '正在计算流线') + (keep ? ' · 显示上一工况' : '…'));
+    const sameModel = this.presented?.condition.model === condition.model;
+    const yawDiverged = !sameModel || Math.abs(this.presented.condition.effWindAngle - condition.effWindAngle) > YAW_PREVIEW_THRESHOLD_DEG;
+    const keepCfd = sameModel && !yawDiverged && (Boolean(selection.sources) || now - this.departedAt <= PREVIOUS_RESULT_MS);
+    if (this.preview && !keepCfd) {
+      this.setVisible(false);
+      this.preview.update(condition, rig);
+      this.onStatus((selection.mode === 'loading' ? '正在加载侧风 CFD' : '正在计算流线') + ' · 实时方向预览');
+    } else {
+      this.preview?.hide();
+      this.setVisible(keepCfd);
+      this.onStatus((selection.mode === 'loading' ? '正在加载 CFD 数据' : '正在计算流线') + (keepCfd ? ' · 显示上一工况' : '…'));
+    }
     if (!selection.sources) return;
     if (this.rig !== rig) this.initialize(rig, condition.model);
     if (!this.ready || this.sent) return;
@@ -143,6 +170,7 @@ export class FlowJobs {
   hide(status) {
     this.departedAt = -Infinity;
     this.setVisible(false);
+    this.preview?.hide();
     this.onStatus(status);
   }
 
