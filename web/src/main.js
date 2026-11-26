@@ -10,6 +10,16 @@ import { FlowCatalog, selectCoverage } from './flow-catalog.js';
 import { captureCondition, resolveRelativeWind } from './flow-condition.js';
 import { FlowJobs } from './flow-jobs.js';
 import { FlowPreview } from './flow-preview.js';
+import { FlowSlice } from './flow-slice.js';
+import { FlowSmoke } from './flow-smoke.js';
+import { FlowProbe } from './flow-probe.js';
+import { computeCalibratedForces } from './aero-forces-calc.js';
+import { AeroCompare, CurtainCompare } from './aero-compare.js';
+import { F1_SCENARIOS } from './scenarios.js';
+import { ShowroomTour } from './showroom-tour.js';
+import { capturePhoto2K } from './photo-capture.js';
+import { AeroAudio } from './aero-audio.js';
+import { AeroHotspots } from './hotspots.js';
 import { Environments } from './environments.js';
 import { createSpaShadowGeometry } from './spa-scene.js';
 import { computeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
@@ -219,11 +229,48 @@ const airflow = new FlowLayer(carTurntable, flowMaterial, 'CFD_FLOW');
 const underbody = new FlowLayer(carTurntable, flowMaterial, 'UNDERBODY_FLOW');
 const sidepod = new FlowLayer(carTurntable, flowMaterial, 'SIDEPOD_FLOW');
 const flowPreview = new FlowPreview(carTurntable, flowMaterial);
+const flowSlice = new FlowSlice(carTurntable);
+const flowSmoke = new FlowSmoke(carTurntable);
+const flowProbe = new FlowProbe(carTurntable, $('probe-readout'));
+const aeroAudio = new AeroAudio();
+const studioExt = {
+  flowStyle: 'lines', // 'lines' | 'smoke'
+  smokeRakeX: 0,
+  sliceEnabled: false,
+  sliceAxis: 'x',
+  slicePosition: 0,
+  sliceMetric: 'speed',
+  photoWatermark: true,
+};
 const flowCatalog = new FlowCatalog(() => {
   updateCoverageGuidance();
   updateForcesDisplay();
+  if (state.panel === 'analysis') aeroCompare.render(flowCatalog, state);
 });
 const flowJobs = new FlowJobs(flowCatalog, { whole: airflow, bottom: underbody, side: sidepod }, updateFlowStatus, flowPreview);
+flowJobs.setExtras({
+  smokeLayer: flowSmoke,
+  getStyle: () => studioExt.flowStyle,
+  getSmokeRakeX: () => studioExt.smokeRakeX,
+  getSliceRequest: cond => studioExt.sliceEnabled ? {
+    axis: studioExt.sliceAxis,
+    position: studioExt.slicePosition,
+    metric: studioExt.sliceMetric,
+    refSpeedMps: Math.max(1, (cond?.speed ?? state.speed ?? 180) / 3.6),
+  } : null,
+  onSliceResult: res => {
+    if (studioExt.sliceEnabled) flowSlice.applyResult(res);
+    else flowSlice.setVisible(false);
+  },
+  onProbeResult: res => {
+    flowProbe.applyResult(res, Math.max(1, (state.speed || 0) / 3.6));
+  },
+  onFieldUpdated: () => {
+    if (flowProbe.enabled && flowProbe.pinned && flowProbe.pinnedPoint) {
+      flowJobs.requestProbe(flowProbe.pinnedPoint);
+    }
+  },
+});
 worlds.set(state.environment, state.model === 'rb19' ? 2023 : 2021);
 
 function syncTurntable() {
@@ -629,6 +676,10 @@ window.addEventListener('keydown', e => {
     return;
   }
   if (e.code === 'Escape') {
+    if (curtainCompare?.active) { curtainCompare.deactivate(); return; }
+    if (showroomTour?.active) { showroomTour.stop(); return; }
+    if (aeroHotspots?.activeId) { aeroHotspots.clearSelection(); return; }
+    if ($('scenario-banner') && !$('scenario-banner').hidden) { $('scenario-banner').hidden = true; return; }
     if (state.panel) setPanel(null);
     closeAllTelemetryPopovers();
     return;
@@ -876,6 +927,11 @@ function setPanel(name) {
   document.querySelectorAll('.drawer .panel').forEach(panel => {
     panel.hidden = panel.id !== `panel-${next}`;
   });
+  if (next === 'analysis') {
+    const peer = state.model === 'rb19' ? 'rb16b' : 'rb19';
+    flowCatalog.loadPeerManifest(peer, () => aeroCompare.render(flowCatalog, state));
+    aeroCompare.render(flowCatalog, state);
+  }
 }
 
 document.querySelectorAll('.rail-button').forEach(btn => {
@@ -1036,11 +1092,6 @@ function formatWindLabel(deg) {
   return `${deg < 0 ? '左侧' : '右侧'} ${deg > 0 ? '+' : ''}${deg}°`;
 }
 
-const F1_REF_180 = {
-  rb19: { downforce: 6355, drag: 1920 },
-  rb16b: { downforce: 5895, drag: 1860 },
-};
-
 let lastForcesKey = '';
 const forceNodes = {
   tDownforce: $('t-downforce'),
@@ -1057,39 +1108,7 @@ const forceNodes = {
 };
 function readForces() {
   const condition = captureCondition(state);
-  if (condition.speed === 0 && condition.wheelSpeedMps === 0) {
-    return {
-      source: 'still', downforceN: 0, dragN: 0, sideN: 0, liftToDrag: null,
-      rawDownforceN: 0, rawDragN: 0, calibrated: true,
-    };
-  }
-  const raw = flowCatalog.forcesAt(condition);
-  if (!raw) {
-    return {
-      source: flowCatalog.loadingCatalog ? 'loading' : 'unavailable',
-      downforceN: null, dragN: null, sideN: null, liftToDrag: null,
-      rawDownforceN: null, rawDragN: null, calibrated: false,
-    };
-  }
-  const ref = F1_REF_180[condition.model] || F1_REF_180.rb16b;
-  const baseRaw = flowCatalog.catalog?.byId?.get('base')?.forces;
-  const dfScale = baseRaw?.downforce > 1 ? ref.downforce / baseRaw.downforce : 1;
-  const dragScale = baseRaw?.drag > 1 ? ref.drag / baseRaw.drag : 1;
-  const downforceN = raw.downforce >= 0
-    ? raw.downforce * dfScale
-    : raw.downforce * Math.min(dfScale, 1.5);
-  const dragN = raw.drag * dragScale;
-  const sideN = raw.side * dragScale;
-  return {
-    source: raw.mode,
-    downforceN,
-    dragN,
-    sideN,
-    liftToDrag: dragN > 1e-3 ? downforceN / dragN : null,
-    rawDownforceN: raw.downforce,
-    rawDragN: raw.drag,
-    calibrated: true,
-  };
+  return computeCalibratedForces(flowCatalog.catalog, condition, flowCatalog.loadingCatalog);
 }
 
 const forceDescriptions = {
@@ -1427,6 +1446,287 @@ $('flow-toggle').addEventListener('click', () => {
   showState();
 });
 
+// === 8 Expansion Features Wiring ===
+function flyCameraTo(pose) {
+  const v = rotateViewByTurntable(pose);
+  transition = {
+    start: performance.now(),
+    position: camera.position.clone(),
+    target: orbit.target.clone(),
+    endPosition: new THREE.Vector3(...v.position),
+    endTarget: new THREE.Vector3(...v.target),
+    savePose: false,
+  };
+}
+
+// 1. Flow style (Fine CFD lines vs Wind Tunnel Smoke Rake)
+document.querySelectorAll('[data-flow-style]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const next = btn.dataset.flowStyle === 'smoke' ? 'smoke' : 'lines';
+    studioExt.flowStyle = next;
+    document.querySelectorAll('[data-flow-style]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.flowStyle === next)));
+    if ($('smoke-rake-group')) $('smoke-rake-group').hidden = next !== 'smoke';
+    flowJobs.setVisible(state.flow && state.flowDensity > 0);
+  });
+});
+$('smoke-rake-x')?.addEventListener('input', e => {
+  studioExt.smokeRakeX = Number(e.target.value);
+  if ($('smoke-rake-x-value')) $('smoke-rake-x-value').textContent = `${studioExt.smokeRakeX >= 0 ? '+' : ''}${studioExt.smokeRakeX.toFixed(2)} m`;
+});
+
+// 2. PIV Laser Slice
+const SLICE_RANGES = {
+  x: { min: -1.5, max: 1.5, step: 0.05, def: 0 },
+  z: { min: -3.8, max: 2.8, step: 0.1, def: 0 },
+  y: { min: 0.06, max: 1.45, step: 0.03, def: 0.18 },
+};
+function syncSliceSlider() {
+  const cfg = SLICE_RANGES[studioExt.sliceAxis];
+  const sl = $('slice-pos');
+  if (sl) {
+    sl.min = String(cfg.min);
+    sl.max = String(cfg.max);
+    sl.step = String(cfg.step);
+    studioExt.slicePosition = THREE.MathUtils.clamp(studioExt.slicePosition, cfg.min, cfg.max);
+    sl.value = String(studioExt.slicePosition);
+  }
+  if ($('slice-pos-value')) $('slice-pos-value').textContent = `${studioExt.slicePosition.toFixed(2)} m`;
+}
+function triggerSliceUpdate() {
+  if (!studioExt.sliceEnabled) { flowSlice.setVisible(false); return; }
+  flowJobs.requestSlice({
+    axis: studioExt.sliceAxis,
+    position: studioExt.slicePosition,
+    metric: studioExt.sliceMetric,
+    refSpeedMps: Math.max(1, (state.speed || 180) / 3.6),
+  });
+}
+$('slice-toggle')?.addEventListener('click', () => {
+  studioExt.sliceEnabled = !studioExt.sliceEnabled;
+  $('slice-toggle').setAttribute('aria-checked', String(studioExt.sliceEnabled));
+  if ($('slice-controls')) $('slice-controls').hidden = !studioExt.sliceEnabled;
+  if (studioExt.sliceEnabled) triggerSliceUpdate();
+  else flowSlice.setVisible(false);
+});
+document.querySelectorAll('[data-slice-axis]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const axis = btn.dataset.sliceAxis;
+    studioExt.sliceAxis = axis;
+    studioExt.slicePosition = SLICE_RANGES[axis].def;
+    document.querySelectorAll('[data-slice-axis]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.sliceAxis === axis)));
+    syncSliceSlider();
+    triggerSliceUpdate();
+  });
+});
+$('slice-pos')?.addEventListener('input', e => {
+  studioExt.slicePosition = Number(e.target.value);
+  if ($('slice-pos-value')) $('slice-pos-value').textContent = `${studioExt.slicePosition.toFixed(2)} m`;
+  triggerSliceUpdate();
+});
+document.querySelectorAll('[data-slice-metric]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const metric = btn.dataset.sliceMetric;
+    studioExt.sliceMetric = metric;
+    document.querySelectorAll('[data-slice-metric]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.sliceMetric === metric)));
+    triggerSliceUpdate();
+  });
+});
+
+// 3. Virtual Pitot Wind Probe
+let probeRafPending = false;
+let probeDownPos = null;
+$('probe-toggle')?.addEventListener('click', () => {
+  const next = !flowProbe.enabled;
+  flowProbe.setEnabled(next);
+  $('probe-toggle').setAttribute('aria-checked', String(next));
+});
+viewport.addEventListener('pointerdown', e => {
+  showroomTour.stop();
+  if (flowProbe.enabled) probeDownPos = [e.clientX, e.clientY];
+});
+viewport.addEventListener('wheel', () => showroomTour.stop(), { passive: true });
+viewport.addEventListener('pointermove', e => {
+  if (!flowProbe.enabled || flowProbe.pinned || e.buttons !== 0 || probeRafPending) return;
+  probeRafPending = true;
+  requestAnimationFrame(() => {
+    probeRafPending = false;
+    const pt = flowProbe.pickPoint({ clientX: e.clientX, clientY: e.clientY, domElement: renderer.domElement, camera, rig, slice: flowSlice });
+    if (pt) flowJobs.requestProbe(pt);
+    else if (!flowProbe.pinned) {
+      flowProbe.group.visible = false;
+      if ($('probe-readout')) $('probe-readout').hidden = true;
+    }
+  });
+});
+viewport.addEventListener('pointerup', e => {
+  if (!flowProbe.enabled || !probeDownPos) return;
+  const moved = Math.hypot(e.clientX - probeDownPos[0], e.clientY - probeDownPos[1]);
+  probeDownPos = null;
+  if (moved > 5) return;
+  if (flowProbe.pinned) {
+    flowProbe.unpin();
+    return;
+  }
+  const pt = flowProbe.pickPoint({ clientX: e.clientX, clientY: e.clientY, domElement: renderer.domElement, camera, rig, slice: flowSlice });
+  if (pt) {
+    flowProbe.pinned = true;
+    flowProbe.pinnedPoint = pt;
+    flowJobs.requestProbe(pt);
+  }
+});
+
+// 4. Dual-Car Comparison & Curtain Wipe
+const aeroCompare = new AeroCompare({
+  tableEl: $('compare-table'),
+  chartEl: $('compare-chart'),
+});
+const curtainCompare = new CurtainCompare(
+  $('compare-curtain'),
+  $('compare-curtain-canvas'),
+  $('compare-curtain-handle'),
+  $('compare-curtain-left'),
+  $('compare-curtain-right'),
+  () => { orbit.enabled = !state.freeMode; },
+);
+document.querySelectorAll('[data-compare-axis]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const axis = btn.dataset.compareAxis;
+    aeroCompare.setAxis(axis);
+    document.querySelectorAll('[data-compare-axis]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.compareAxis === axis)));
+    aeroCompare.render(flowCatalog, state);
+  });
+});
+$('compare-swap-btn')?.addEventListener('click', async () => {
+  const savedPos = camera.position.clone();
+  const savedTarget = orbit.target.clone();
+  const other = state.model === 'rb19' ? 'rb16b' : 'rb19';
+  await loadModel(other);
+  applyInstantOrbitPose(savedPos, savedTarget);
+  aeroHotspots.refreshModel(state.model);
+  aeroCompare.render(flowCatalog, state);
+});
+$('compare-curtain-btn')?.addEventListener('click', async () => {
+  if (curtainCompare.active) { curtainCompare.deactivate(); return; }
+  showroomTour.stop();
+  const leftCar = state.model;
+  const rightCar = leftCar === 'rb19' ? 'rb16b' : 'rb19';
+  const savedPos = camera.position.clone();
+  const savedTarget = orbit.target.clone();
+  curtainCompare.activate({ renderer, scene, camera, worlds, leftCar, rightCar });
+  orbit.enabled = false;
+  await loadModel(rightCar);
+  applyInstantOrbitPose(savedPos, savedTarget);
+  aeroHotspots.refreshModel(state.model);
+});
+$('compare-curtain-exit')?.addEventListener('click', () => curtainCompare.deactivate());
+
+// 5. Classic F1 Corner Scenarios
+const scenarioListEl = $('scenario-list');
+if (scenarioListEl) {
+  scenarioListEl.innerHTML = '';
+  for (const sc of F1_SCENARIOS) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'scenario-btn';
+    btn.dataset.scenario = sc.id;
+    btn.innerHTML = `<b>${sc.title}</b><span>${sc.tag}</span>`;
+    btn.addEventListener('click', () => {
+      showroomTour.stop();
+      if (curtainCompare.active) curtainCompare.deactivate();
+      if (state.environment !== sc.environment) setEnvironment(sc.environment);
+      Object.assign(state, sc.condition);
+      state.flow = true;
+      showState();
+      flyCameraTo(sc.camera);
+      if ($('scenario-banner-title')) $('scenario-banner-title').textContent = sc.title;
+      if ($('scenario-banner-text')) $('scenario-banner-text').textContent = sc.caption;
+      if ($('scenario-banner')) $('scenario-banner').hidden = false;
+    });
+    scenarioListEl.appendChild(btn);
+  }
+}
+$('scenario-banner-close')?.addEventListener('click', () => {
+  if ($('scenario-banner')) $('scenario-banner').hidden = true;
+});
+
+// 6. Showroom Tour
+const showroomTour = new ShowroomTour({
+  onPose: (pos, target) => {
+    transition = null;
+    applyInstantOrbitPose(pos, target);
+  },
+  onState: patch => {
+    Object.assign(state, patch);
+    showState();
+  },
+  onStop: () => {
+    $('tour-toggle')?.setAttribute('aria-checked', 'false');
+    if ($('tour-badge')) $('tour-badge').hidden = true;
+  },
+});
+function setTourActive(active) {
+  if (active) {
+    if (curtainCompare.active) curtainCompare.deactivate();
+    if ($('scenario-banner')) $('scenario-banner').hidden = true;
+    state.flow = true;
+    showroomTour.start();
+    $('tour-toggle')?.setAttribute('aria-checked', 'true');
+    if ($('tour-badge')) $('tour-badge').hidden = false;
+  } else {
+    showroomTour.stop();
+  }
+}
+$('tour-toggle')?.addEventListener('click', () => setTourActive(!showroomTour.active));
+$('tour-stop-btn')?.addEventListener('click', () => setTourActive(false));
+
+// 7. 2K Photo Mode
+$('photo-watermark')?.addEventListener('click', () => {
+  studioExt.photoWatermark = !studioExt.photoWatermark;
+  $('photo-watermark').setAttribute('aria-checked', String(studioExt.photoWatermark));
+});
+$('photo-capture-btn')?.addEventListener('click', async () => {
+  const statusEl = $('photo-status');
+  if (statusEl) statusEl.textContent = '正在渲染 2560×1440 高清 PNG…';
+  try {
+    const underCar = (!state.freeMode && state.view === 'floor') || camera.position.y < -.05;
+    const res = await capturePhoto2K({
+      renderer, scene, camera, worlds, state, forces: readForces(),
+      withWatermark: studioExt.photoWatermark,
+      underCar,
+      onRestore: () => applyFraming(),
+    });
+    if (statusEl && res) statusEl.textContent = `已导出 ${res.filename} (${Math.round(res.bytes / 1024)} KB)`;
+  } catch (err) {
+    if (statusEl) statusEl.textContent = `导出失败：${err?.message || '未知错误'}`;
+  }
+});
+
+// 8. Procedural Wind Tunnel Audio
+$('audio-toggle')?.addEventListener('click', () => {
+  const next = aeroAudio.setEnabled(!aeroAudio.enabled);
+  $('audio-toggle').setAttribute('aria-pressed', String(next));
+});
+
+// 9. Aerodynamic Hotspots
+const aeroHotspots = new AeroHotspots(carTurntable, $('hotspot-layer'), $('hotspot-card'), {
+  onSelect: spot => {
+    showroomTour.stop();
+    flyCameraTo(spot.camera);
+  },
+  onToggleDrs: () => toggleDrs(),
+});
+$('hotspots-toggle')?.addEventListener('click', () => {
+  const next = !aeroHotspots.enabled;
+  aeroHotspots.setEnabled(next);
+  $('hotspots-toggle').setAttribute('aria-checked', String(next));
+});
+// Keep hotspot card in sync when model switches via topbar
+document.querySelectorAll('[data-model]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    setTimeout(() => aeroHotspots.refreshModel(state.model), 50);
+  });
+});
+
 async function resetToInitialState() {
   setPanel(null);
   closeAllTelemetryPopovers();
@@ -1544,8 +1844,14 @@ renderer.setAnimationLoop(now => {
   }
 
   flowMaterial.uniforms.clock.value += dt;
+  flowSmoke.setClock(flowMaterial.uniforms.clock.value);
+  showroomTour.update(dt, carTurntable.rotation.y);
   flowJobs.update(state, rig, now);
   updateForcesDisplay();
+  if (state.panel === 'analysis') aeroCompare.render(flowCatalog, state);
+  aeroAudio.update(state.speed, state.effWindAngle, state.drs);
+  flowProbe.updateOverlay(camera, viewport);
+  aeroHotspots.update(camera, rig, viewport);
 
   const prevForestReady = worlds.lastForestReady;
   worlds.update(dt, state.speed, state.groundSpeed);
@@ -1574,7 +1880,28 @@ renderer.setAnimationLoop(now => {
 window.aeroStudio = {
   get ready() { return Boolean(rig); },
   get airflow() { return { ...flowJobs.presented, visible: airflow.group.visible,
-    previewVisible: flowPreview.lines.visible, workerPending: Boolean(flowJobs.sent), state: { ...state } }; },
+    previewVisible: flowPreview.lines.visible, smokeVisible: flowSmoke.group.visible,
+    smokeLines: flowSmoke.count, sliceVisible: flowSlice.group.visible,
+    probeActive: flowProbe.enabled, probeResult: flowProbe.lastResult,
+    workerPending: Boolean(flowJobs.sent), state: { ...state } }; },
+  get extensions() {
+    return {
+      flowStyle: studioExt.flowStyle,
+      sliceEnabled: studioExt.sliceEnabled,
+      sliceAxis: studioExt.sliceAxis,
+      sliceMetric: studioExt.sliceMetric,
+      probeEnabled: flowProbe.enabled,
+      hotspotsEnabled: aeroHotspots.enabled,
+      tourActive: showroomTour.active,
+      audioEnabled: aeroAudio.enabled,
+      curtainActive: curtainCompare.active,
+    };
+  },
+  capturePhoto2K: (withWatermark = true) => capturePhoto2K({
+    renderer, scene, camera, worlds, state, forces: readForces(), withWatermark,
+    underCar: (!state.freeMode && state.view === 'floor') || camera.position.y < -.05,
+    onRestore: () => applyFraming(),
+  }),
   get forces() { return readForces(); },
   get turntable() { return { carYawDeg: THREE.MathUtils.radToDeg(carTurntable.rotation.y), environmentYawDeg: THREE.MathUtils.radToDeg(worlds.turntableYaw), fanPosition: worlds.root?.userData.fan?.getWorldPosition(new THREE.Vector3()).toArray() || null }; },
   get sidepod() { return { visible: sidepod.group.visible, lines: sidepod.count, stops: sidepod.stops }; },

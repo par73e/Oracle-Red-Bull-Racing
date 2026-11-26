@@ -376,6 +376,40 @@ async function readAsset(file, sha256, size, signal) {
 export class FlowCatalog {
   constructor(onCatalogReady = null) {
     this.onCatalogReady = onCatalogReady;
+    this.peerCatalogs = new Map();
+    this.peerPending = new Map();
+  }
+
+  getCatalog(car) {
+    if (this.catalog?.car === car) return this.catalog;
+    return this.peerCatalogs.get(car) ?? null;
+  }
+
+  loadPeerManifest(car, onReady = null) {
+    if (this.getCatalog(car)) {
+      onReady?.(this.getCatalog(car));
+      return Promise.resolve(this.getCatalog(car));
+    }
+    if (this.peerPending.has(car)) return this.peerPending.get(car);
+    const p = (async () => {
+      try {
+        const response = await fetch(`/flow/${car}/display/manifest.json`, {
+          cache: 'no-cache',
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        });
+        if (!response.ok) return null;
+        const catalog = readCatalog(await response.json(), car);
+        this.peerCatalogs.set(car, catalog);
+        onReady?.(catalog);
+        return catalog;
+      } catch {
+        return null;
+      } finally {
+        this.peerPending.delete(car);
+      }
+    })();
+    this.peerPending.set(car, p);
+    return p;
   }
 
   load(car) {

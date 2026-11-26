@@ -20,8 +20,32 @@ function conditionDistance(condition, other) {
 }
 
 export class FlowJobs {
-  constructor(catalog, layers, onStatus, preview = null) {
-    Object.assign(this, { catalog, layers, onStatus, preview, sequence: 0, generation: 0 });
+  constructor(catalog, layers, onStatus, preview = null, extras = null) {
+    Object.assign(this, { catalog, layers, onStatus, preview, extras, sequence: 0, generation: 0, sliceSeq: 0, probeSeq: 0 });
+  }
+
+  setExtras(extras) {
+    this.extras = extras;
+  }
+
+  requestSlice(sliceReq) {
+    if (!this.ready || !this.worker || !sliceReq) return false;
+    const id = ++this.sliceSeq;
+    this.latestSliceId = id;
+    try {
+      this.worker.postMessage({ type: 'slice', id, slice: sliceReq });
+      return true;
+    } catch { return false; }
+  }
+
+  requestProbe(point) {
+    if (!this.ready || !this.worker || !point) return false;
+    const id = ++this.probeSeq;
+    this.latestProbeId = id;
+    try {
+      this.worker.postMessage({ type: 'probe', id, point });
+      return true;
+    } catch { return false; }
   }
 
   reset() {
@@ -35,10 +59,13 @@ export class FlowJobs {
     this.yawChangedAt = null;
     this.setVisible(false);
     this.preview?.hide();
+    this.extras?.smokeLayer?.setVisible(false);
   }
 
   setVisible(visible) {
-    for (const layer of Object.values(this.layers)) layer.group.visible = visible && layer.count > 0;
+    const useSmoke = this.extras?.getStyle?.() === 'smoke' && Boolean(this.extras?.smokeLayer?.count);
+    for (const layer of Object.values(this.layers)) layer.group.visible = visible && !useSmoke && layer.count > 0;
+    if (this.extras?.smokeLayer) this.extras.smokeLayer.setVisible(visible && useSmoke);
   }
 
   initialize(rig, car) {
@@ -63,6 +90,10 @@ export class FlowJobs {
         if (data.type === 'ready') {
           clearTimeout(this.watchdog);
           this.ready = true;
+        } else if (data.type === 'sliceResult') {
+          if (data.id === this.latestSliceId) this.extras?.onSliceResult?.(data.slice);
+        } else if (data.type === 'probeResult') {
+          if (data.id === this.latestProbeId) this.extras?.onProbeResult?.(data.probe);
         } else if (data.type === 'result' && data.id === this.sent?.id && data.key === this.sent.key) {
           clearTimeout(this.watchdog);
           this.known = new Set(data.cachedKeys);
@@ -89,13 +120,24 @@ export class FlowJobs {
       layer.count = next.lines;
       layer.stops = next.stops;
     }
+    if (result.data.smoke && this.extras?.smokeLayer) {
+      this.extras.smokeLayer.applyResult(result.data.smoke);
+    }
+    if (result.data.slice) {
+      this.extras?.onSliceResult?.(result.data.slice);
+    }
+    this.extras?.onFieldUpdated?.(result.job.condition);
     this.presented = { ...result.job, workerMs: result.data.workerMs, peakMps: result.data.layers.whole.peakMps,
       lines: result.data.layers.whole.lines };
   }
 
   update(state, rig, now) {
     const condition = captureCondition(state);
-    const key = conditionKey(condition);
+    const style = this.extras?.getStyle?.() ?? 'lines';
+    const smokeRakeX = style === 'smoke' ? (this.extras?.getSmokeRakeX?.() ?? 0) : 0;
+    const key = style === 'smoke'
+      ? `${conditionKey(condition)}|smoke:${smokeRakeX.toFixed(2)}`
+      : conditionKey(condition);
     this.key = key;
     if (!state.flow || !state.flowDensity) return this.hide('流线已隐藏');
     if (!condition.speed && !condition.wheelSpeedMps) return this.hide('静止 · 来流与车轮均为 0');
@@ -158,10 +200,12 @@ export class FlowJobs {
     const deltas = (selection.deltas ?? []).map(({ posNode, negNode, weight, grid }) => ({
       posId: posNode.id, negId: negNode.id, weight, grid,
     }));
+    const sliceReq = this.extras?.getSliceRequest?.(condition) ?? null;
     this.sent = { id, key, condition, mode: selection.mode, sources, deltas };
     this.watchdog = setTimeout(this.fail, TRACE_TIMEOUT_MS);
     try {
       this.worker.postMessage({ type: 'compute', id, key, condition, sources, deltas, grid: selection.grid,
+        smoke: style === 'smoke', smokeRakeX, slice: sliceReq,
         fields: selection.fields.filter(field => !this.known.has(field.id)),
         rig: snapshotRig(rig, this.meshes, this.versions) });
     } catch { this.fail(); }

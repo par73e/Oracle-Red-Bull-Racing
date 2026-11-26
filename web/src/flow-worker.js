@@ -1,12 +1,144 @@
 import * as T from 'three';
 import { computeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
 import { FlowSampler } from './flow-tracing.js';
-import { traceLayers } from './flow-integrator.js';
+import { traceLayers, traceSmoke } from './flow-integrator.js';
 
 T.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 T.Mesh.prototype.raycast = acceleratedRaycast;
 let rig, meshes, sampler;
 const fields = new Map();
+const _v0 = new T.Vector3(), _v1 = new T.Vector3(), _v2 = new T.Vector3();
+
+function colorSpeed(ratio, out, offset) {
+  // Turbo-inspired PIV speed colormap: 0 (deep navy) -> 0.5 (cyan) -> 1.0 (emerald/gold) -> 1.45+ (red/magenta)
+  const t = Math.max(0, Math.min(1, ratio / 1.55));
+  let r, g, b;
+  if (t < 0.25) {
+    const k = t / 0.25;
+    r = 18 + 12 * k; g = 34 + 135 * k; b = 128 + 115 * k;
+  } else if (t < 0.55) {
+    const k = (t - 0.25) / 0.30;
+    r = 30 + 75 * k; g = 169 + 66 * k; b = 243 - 135 * k;
+  } else if (t < 0.80) {
+    const k = (t - 0.55) / 0.25;
+    r = 105 + 145 * k; g = 235 - 50 * k; b = 108 - 76 * k;
+  } else {
+    const k = (t - 0.80) / 0.20;
+    r = 250 - 8 * k; g = 185 - 140 * k; b = 32 + 128 * k;
+  }
+  out[offset] = r;
+  out[offset + 1] = g;
+  out[offset + 2] = b;
+  out[offset + 3] = Math.round(165 + 65 * Math.min(1, t * 1.15));
+}
+
+function colorVorticity(val, out, offset) {
+  const t = Math.max(0, Math.min(1, val));
+  const a = t < 0.08 ? 0 : Math.min(1, (t - 0.08) / 0.32);
+  let r, g, b;
+  if (t < 0.45) {
+    const k = t / 0.45;
+    r = 20 + 40 * k; g = 190 + 55 * k; b = 255;
+  } else if (t < 0.78) {
+    const k = (t - 0.45) / 0.33;
+    r = 60 + 195 * k; g = 245 - 85 * k; b = 255 - 210 * k;
+  } else {
+    const k = (t - 0.78) / 0.22;
+    r = 255; g = 160 + 95 * k; b = 45 + 210 * k;
+  }
+  out[offset] = r;
+  out[offset + 1] = g;
+  out[offset + 2] = b;
+  out[offset + 3] = Math.round(a * 230);
+}
+
+function computeSlice(req) {
+  if (!sampler?.grid || !sampler?.spec) return null;
+  const { axis = 'x', position = 0, metric = 'speed', refSpeedMps = 50 } = req;
+  const { shape: [nx, ny, nz], min, max } = sampler.spec;
+  const dx = (max[0] - min[0]) / (nx - 1);
+  const dy = (max[1] - min[1]) / (ny - 1);
+  const dz = (max[2] - min[2]) / (nz - 1);
+  const ref = Math.max(1, refSpeedMps || 50);
+
+  let width, height, bounds;
+  if (axis === 'x') {
+    width = nx; height = nz;
+    bounds = { uMin: -max[0], uMax: -min[0], vMin: min[2] + 0.005, vMax: max[2] + 0.005 };
+  } else if (axis === 'z') {
+    width = ny; height = nz;
+    bounds = { uMin: -max[1], uMax: -min[1], vMin: min[2] + 0.005, vMax: max[2] + 0.005 };
+  } else {
+    width = ny; height = nx;
+    bounds = { uMin: -max[1], uMax: -min[1], vMin: -max[0], vMax: -min[0] };
+  }
+  const rgba = new Uint8Array(width * height * 4);
+  const clampedPos = axis === 'x'
+    ? Math.max(-max[1] + 1e-4, Math.min(-min[1] - 1e-4, position))
+    : axis === 'z'
+      ? Math.max(-max[0] + 1e-4, Math.min(-min[0] - 1e-4, position))
+      : Math.max(min[2] + 0.006, Math.min(max[2] + 0.004, position));
+
+  for (let iv = 0; iv < height; iv++) {
+    const fv = iv / Math.max(1, height - 1);
+    const vCoord = bounds.vMin + fv * (bounds.vMax - bounds.vMin);
+    for (let iu = 0; iu < width; iu++) {
+      const fu = iu / Math.max(1, width - 1);
+      const uCoord = bounds.uMin + fu * (bounds.uMax - bounds.uMin);
+      let dispX, dispY, dispZ;
+      if (axis === 'x') { dispX = clampedPos; dispY = vCoord; dispZ = uCoord; }
+      else if (axis === 'z') { dispX = uCoord; dispY = vCoord; dispZ = clampedPos; }
+      else { dispX = uCoord; dispY = clampedPos; dispZ = vCoord; }
+
+      const sx = -dispZ, sy = -dispX, sz = dispY - 0.005;
+      const off = (iv * width + iu) * 4;
+      if (!sampler.sampleRaw(sx, sy, sz, _v0, sampler.grid, true)) {
+        rgba[off + 3] = 0;
+        continue;
+      }
+      if (metric === 'vorticity') {
+        const okX = sampler.sampleRaw(sx + dx, sy, sz, _v1, sampler.grid, true)
+          && sampler.sampleRaw(sx - dx, sy, sz, _v2, sampler.grid, true);
+        const dvdx = okX ? (_v1.y - _v2.y) / (2 * dx) : 0;
+        const dwdx = okX ? (_v1.z - _v2.z) / (2 * dx) : 0;
+        const okY = sampler.sampleRaw(sx, sy + dy, sz, _v1, sampler.grid, true)
+          && sampler.sampleRaw(sx, sy - dy, sz, _v2, sampler.grid, true);
+        const dudy = okY ? (_v1.x - _v2.x) / (2 * dy) : 0;
+        const dwdy = okY ? (_v1.z - _v2.z) / (2 * dy) : 0;
+        const okZ = sampler.sampleRaw(sx, sy, sz + dz, _v1, sampler.grid, true)
+          && sampler.sampleRaw(sx, sy, sz - dz, _v2, sampler.grid, true);
+        const dudz = okZ ? (_v1.x - _v2.x) / (2 * dz) : 0;
+        const dvdz = okZ ? (_v1.y - _v2.y) / (2 * dz) : 0;
+        const ox = dwdy - dvdz, oy = dudz - dwdx, oz = dvdx - dudy;
+        const mag = Math.hypot(ox, oy, oz);
+        colorVorticity((mag * 0.36) / ref, rgba, off);
+      } else {
+        colorSpeed(_v0.length() / ref, rgba, off);
+      }
+    }
+  }
+  return { axis, position: clampedPos, metric, width, height, bounds, rgba };
+}
+
+function sampleProbe(point) {
+  if (!sampler?.grid || !sampler?.spec || !Array.isArray(point) || point.length !== 3) {
+    return { valid: false, point };
+  }
+  const [x, y, z] = point;
+  if (!sampler.sample(-z, -x, y - 0.005, _v0, sampler.grid, true)) {
+    return { valid: false, point };
+  }
+  const speedMps = _v0.length();
+  const yawDeg = T.MathUtils.radToDeg(Math.atan2(_v0.x, -_v0.z));
+  return {
+    valid: true,
+    point,
+    velocity: [_v0.x, _v0.y, _v0.z],
+    speedMps,
+    speedKmh: speedMps * 3.6,
+    yawDeg,
+  };
+}
 
 function initialize(message) {
   const scene = new T.Scene(), model = new T.Group();
@@ -150,11 +282,28 @@ function composeField(message) {
 self.onmessage = ({ data: message }) => {
   try {
     if (message.type === 'init') { initialize(message); return; }
+    if (message.type === 'slice') {
+      const slice = computeSlice(message.slice);
+      self.postMessage(
+        { type: 'sliceResult', id: message.id, slice },
+        slice?.rgba ? [slice.rgba.buffer] : [],
+      );
+      return;
+    }
+    if (message.type === 'probe') {
+      const probe = sampleProbe(message.point);
+      self.postMessage({ type: 'probeResult', id: message.id, probe });
+      return;
+    }
     const start = performance.now();
     for (const field of message.fields) fields.set(field.id, field);
     applySnapshot(message.rig);
     composeField(message);
     const layers = traceLayers(sampler, rig, message.condition, message.stepScale);
+    const smoke = message.smoke
+      ? traceSmoke(sampler, rig, message.condition, { rakeX: message.smokeRakeX ?? 0, stepScale: message.stepScale })
+      : null;
+    const slice = message.slice ? computeSlice(message.slice) : null;
     const keep = new Set(message.sources.map(source => source.id));
     for (const delta of message.deltas ?? []) {
       keep.add(delta.posId);
@@ -164,9 +313,14 @@ self.onmessage = ({ data: message }) => {
       if (fields.size <= 20) break;
       if (!keep.has(id)) fields.delete(id);
     }
-    self.postMessage({ type: 'result', id: message.id, key: message.key, layers, cachedKeys: [...fields.keys()],
-      workerMs: performance.now() - start }, Object.values(layers).flatMap(layer =>
-      Object.values(layer.attributes).map(array => array.buffer)));
+    const transfers = Object.values(layers).flatMap(layer =>
+      Object.values(layer.attributes).map(array => array.buffer));
+    if (smoke) {
+      for (const array of Object.values(smoke.attributes)) transfers.push(array.buffer);
+    }
+    if (slice?.rgba) transfers.push(slice.rgba.buffer);
+    self.postMessage({ type: 'result', id: message.id, key: message.key, layers, smoke, slice, cachedKeys: [...fields.keys()],
+      workerMs: performance.now() - start }, transfers);
   } catch (error) {
     self.postMessage({ type: 'error', id: message.id, message: error.message });
   }

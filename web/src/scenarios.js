@@ -1,0 +1,38 @@
+export const F1_SCENARIOS = [
+  {
+    id: 'spa-eau-rouge',
+    title: '斯帕 Eau Rouge · 满油爬坡',
+    tag: '高速贴地',
+    environment: 'eau-rouge',
+    condition: { groundSpeed: 305, windAngle: 0, steer: 4, drs: 0 },
+    camera: { position: [3.9, 1.05, 5.4], target: [0.0, 0.42, -0.3] },
+    caption: '305 km/h 全油门冲上 Raidillon 坡底，底板文丘里通道高速抽吸提供核心下压力（风洞直行+微转向 CFD 合成复现）。',
+  },
+  {
+    id: 'monza-drs',
+    title: '蒙扎大直道 · 尾流开 DRS',
+    tag: '极速降阻',
+    environment: 'wind',
+    condition: { groundSpeed: 345, windAngle: 0, steer: 0, drs: 1 },
+    camera: { position: [2.8, 1.48, -3.7], target: [0.0, 0.78, -1.6] },
+    caption: '345 km/h 全开 DRS 尾翼，尾翼后方上洗尾流明显压平、诱导阻力显著下降以换取直道尾速（风洞工况复现）。',
+  },
+  {
+    id: 'silverstone-crosswind',
+    title: '银石高速 S 弯 · 强侧风变向',
+    tag: '侧风稳定',
+    environment: 'wind',
+    condition: { groundSpeed: 260, windAngle: 15, steer: -8, drs: 0 },
+    camera: { position: [5.4, 2.35, 5.8], target: [0.0, 0.48, -0.2] },
+    caption: '260 km/h 遭遇 +15° 阵风侧吹并向左切入高速弯，转台与精算 ±15° 侧风场直观呈现迎风/背风侧尾流偏移（风洞工况复现）。',
+  },
+  {
+    id: 'monaco-hairpin',
+    title: '摩纳哥发卡弯 · 低速满舵',
+    tag: '机构特写',
+    environment: 'wind',
+    condition: { groundSpeed: 55, windAngle: 0, steer: 18, drs: 0 },
+    camera: { position: [2.45, 0.92, 3.25], target: [0.08, 0.36, 1.55] },
+    caption: '55 km/h 低速 +18° 满舵过发卡弯，近距离观察前轮主销转向、等长拉杆联动与低速绕流结构（风洞工况复现）。',
+  },
+];
