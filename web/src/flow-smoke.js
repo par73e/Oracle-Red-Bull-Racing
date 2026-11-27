@@ -25,7 +25,7 @@ void main() {
   float wisp2 = 0.5 + 0.5 * sin(t * 27.0 - vUv.x * 3.1 + 1.3);
   float puff = 0.72 + 0.28 * (0.65 * wisp1 + 0.35 * wisp2);
   float core = smoothstep(0.05, 0.92, across);
-  vec3 col = mix(vec3(0.76, 0.88, 0.98), vec3(0.96, 0.98, 1.0), core);
+  vec3 col = mix(vec3(0.70, 0.80, 0.92), vec3(0.97, 0.98, 1.0), core);
   float alpha = across * puff * vAlpha * opacity;
   if (alpha < 0.01) discard;
   gl_FragColor = vec4(col, alpha);
@@ -46,7 +46,7 @@ export class FlowSmoke {
       side: T.DoubleSide,
       uniforms: {
         clock: { value: 0 },
-        opacity: { value: 0.54 },
+        opacity: { value: 0.48 },
       },
       vertexShader: SMOKE_VERT,
       fragmentShader: SMOKE_FRAG,
@@ -75,6 +75,10 @@ export class FlowSmoke {
 
   setClock(clock) {
     this.material.uniforms.clock.value = clock;
+  }
+
+  setOpacity(opacity) {
+    this.material.uniforms.opacity.value = opacity;
   }
 
   clear() {

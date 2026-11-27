@@ -116,7 +116,7 @@ function windTunnel() {
   // surfaces form the room without putting nearby barriers across the car.
   const shell = new T.Mesh(
     new T.BoxGeometry(70, 55, 90),
-    new T.MeshStandardMaterial({ color: '#1b262d', roughness: .9, side: T.BackSide })
+    new T.MeshStandardMaterial({ color: '#151c22', roughness: .9, side: T.BackSide })
   );
   shell.position.set(0, 2, -3);
   root.add(shell);
@@ -521,8 +521,27 @@ const OUTDOOR_CONFIG = {
  silverstone: { useCloudHdr: true, fogColor: '#c4ccd1', fogNear: 210, fogFar: 920, bgColor: '#c4ccd1', sunPos: [-55, 62, 35], sunColor: 0xf6f3ea, sunIntensity: 1.25, envIntensity: 0.68 },
  monaco: { useCloudHdr: false, fogColor: '#bfd9ec', fogNear: 180, fogFar: 820, bgColor: '#5ea1de', sunPos: [50, 95, 72], sunColor: 0xfff8e2, sunIntensity: 1.65, envIntensity: 0.78 },
 };
+function createStudioBackdropTexture() {
+  if (typeof document === 'undefined') return new T.Color('#eceef1');
+  const canvas = document.createElement('canvas');
+  canvas.width = 2;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 256);
+  grad.addColorStop(0.0, '#f4f5f7');
+  grad.addColorStop(0.58, '#eceef1');
+  grad.addColorStop(1.0, '#dfe2e6');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 2, 256);
+  const tex = new T.CanvasTexture(canvas);
+  tex.colorSpace = T.SRGBColorSpace;
+  tex.magFilter = T.LinearFilter;
+  tex.minFilter = T.LinearFilter;
+  return tex;
+}
+
  export class Environments {
- constructor(renderer,roomTexture){this.renderer=renderer;this.roomTexture=roomTexture;this.turntableYaw=0;this.scene=new T.Scene();this.scene.background=new T.Color('#bec9cb');this.scene.add(new T.HemisphereLight(0xdde7eb,0x6b7259,.75));const sun=new T.DirectionalLight(0xfff4dd,1.35);sun.position.set(-45,60,20);this.scene.add(sun);this.sun=sun;sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-180,right:180,top:180,bottom:-180,near:.5,far:450});sun.shadow.bias=-.00025;sun.shadow.autoUpdate=false;sun.shadow.needsUpdate=true;this.kind='studio';this.year=2023;
+ constructor(renderer,envTextures){this.renderer=renderer;const isMap=envTextures&&!envTextures.isTexture;this.studioEnvTexture=isMap?(envTextures.studio||envTextures.wind):envTextures;this.windEnvTexture=isMap?(envTextures.wind||envTextures.studio):envTextures;this.roomTexture=this.windEnvTexture;this.studioBackdrop=createStudioBackdropTexture();this.turntableYaw=0;this.scene=new T.Scene();this.scene.background=new T.Color('#bec9cb');this.scene.add(new T.HemisphereLight(0xdde7eb,0x6b7259,.75));const sun=new T.DirectionalLight(0xfff4dd,1.35);sun.position.set(-45,60,20);this.scene.add(sun);this.sun=sun;sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-180,right:180,top:180,bottom:-180,near:.5,far:450});sun.shadow.bias=-.00025;sun.shadow.autoUpdate=false;sun.shadow.needsUpdate=true;this.kind='studio';this.year=2023;
   this.target=new T.WebGLRenderTarget(640,360,{type:T.HalfFloatType});this.target.depthTexture=new T.DepthTexture(640,360);
   this.output=new T.WebGLRenderTarget(640,360,{type:T.HalfFloatType});this.output.texture.colorSpace=T.SRGBColorSpace;this.quadScene=new T.Scene();this.quadCamera=new T.OrthographicCamera(-1,1,1,-1,0,1);
   this.blur=new T.ShaderMaterial({depthTest:false,depthWrite:false,uniforms:{map:{value:this.target.texture},depthMap:{value:this.target.depthTexture},pixel:{value:new T.Vector2(1/640,1/360)},near:{value:.025},far:{value:700},focusNear:{value:18},focusFar:{value:68},strength:{value:1}},vertexShader:'varying vec2 uv0;void main(){uv0=uv;gl_Position=vec4(position.xy,0.,1.);}',fragmentShader:`uniform sampler2D map,depthMap;uniform vec2 pixel;uniform float near,far,focusNear,focusFar,strength;varying vec2 uv0;void main(){float z=texture2D(depthMap,uv0).x;float d=(near*far)/(far-z*(far-near));float r=smoothstep(focusNear,focusFar,d)*strength*2.6;vec3 c=texture2D(map,uv0).rgb*.28;c+=texture2D(map,uv0+pixel*vec2(r,0)).rgb*.12;c+=texture2D(map,uv0-pixel*vec2(r,0)).rgb*.12;c+=texture2D(map,uv0+pixel*vec2(0,r)).rgb*.12;c+=texture2D(map,uv0-pixel*vec2(0,r)).rgb*.12;c+=texture2D(map,uv0+pixel*vec2(r,r)).rgb*.11;c+=texture2D(map,uv0-pixel*vec2(r,r)).rgb*.11;gl_FragColor=vec4(c,1.);
@@ -550,12 +569,12 @@ const OUTDOOR_CONFIG = {
    :createSpaScene();
   if(!this.root.userData.keepMeshes)mergeStatic(this.root);this.scene.add(this.root);
   if(kind==='wind'&&this.root.userData.turntable)this.root.userData.turntable.rotation.y=this.turntableYaw;
-  const envTex=kind==='wind'?this.roomTexture:(cfg&&!cfg.useCloudHdr?this.sunnyTarget.texture:this.skyTarget.texture);
+  const envTex=kind==='wind'?this.windEnvTexture:kind==='studio'?this.studioEnvTexture:(cfg&&!cfg.useCloudHdr?this.sunnyTarget.texture:this.skyTarget.texture);
   this.scene.environment=envTex;this.scene.environmentIntensity=kind==='wind'?.85:(cfg?.envIntensity??.65);
-  this.scene.fog=kind==='wind'?new T.Fog('#111b21',26,72):new T.Fog(cfg?.fogColor||'#c5cdd0',cfg?.fogNear||220,cfg?.fogFar||950);
+  this.scene.fog=kind==='wind'?new T.Fog('#0f151a',22,60):new T.Fog(cfg?.fogColor||'#c5cdd0',cfg?.fogNear||220,cfg?.fogFar||950);
   if(cfg){this.sun.position.set(...cfg.sunPos);this.sun.color.setHex(cfg.sunColor);this.sun.intensity=cfg.sunIntensity;}
   this.sun.castShadow=isTrackEnvironment(kind);this.sun.shadow.needsUpdate=true;this.lastForestReady=false;
-  this.scene.background=cfg?.useCloudHdr&&this.skyPhoto?this.skyPhoto:new T.Color(kind==='wind'?'#111b21':kind==='studio'?'#ffffff':(cfg?.bgColor||'#c5cdd0'));
+  this.scene.background=cfg?.useCloudHdr&&this.skyPhoto?this.skyPhoto:kind==='studio'?this.studioBackdrop:new T.Color(kind==='wind'?'#0f151a':(cfg?.bgColor||'#c5cdd0'));
  }
  setYaw(rad){this.turntableYaw=rad;if(this.kind==='wind'&&this.root?.userData.turntable)this.root.userData.turntable.rotation.y=rad;}
  update(dt,speed,groundSpeed=speed,windAngleDeg=0){
@@ -565,5 +584,5 @@ const OUTDOOR_CONFIG = {
   this.root?.userData.updateDynamic?.(dt,speed,windAngleDeg);
  }
  resize(w,h){const scale=(innerWidth<620?.68:.8)*this.renderer.getPixelRatio();this.target.setSize(Math.round(w*scale),Math.round(h*scale));this.output.setSize(Math.round(w*scale),Math.round(h*scale));this.blur.uniforms.pixel.value.set(1/this.target.width,1/this.target.height);}
- render(camera,main,occlude=true){this.renderer.autoClear=true;if(this.kind==='studio'){main.background=new T.Color('#ffffff');main.environment=this.roomTexture;return;}const r=this.renderer;const cfg=OUTDOOR_CONFIG[this.kind];r.setRenderTarget(this.target);r.render(this.scene,camera);this.environmentTriangles=r.info.render.triangles;this.environmentCalls=r.info.render.calls;this.blur.uniforms.near.value=camera.near;this.blur.uniforms.far.value=camera.far;this.blur.uniforms.focusNear.value=this.kind==='wind'?18:190;this.blur.uniforms.focusFar.value=this.kind==='wind'?68:440;this.blur.uniforms.strength.value=this.kind==='wind'?.08:.07;r.setRenderTarget(this.output);r.render(this.quadScene,this.quadCamera);r.setRenderTarget(null);if(occlude&&this.kind!=='wind'){r.clear();r.render(this.depthScene,this.quadCamera);r.autoClear=false;}main.background=this.output.texture;main.environment=this.kind==='wind'?this.roomTexture:(cfg&&!cfg.useCloudHdr?this.sunnyTarget.texture:this.skyTarget.texture);}
+ render(camera,main,occlude=true){this.renderer.autoClear=true;if(this.kind==='studio'){main.background=this.studioBackdrop;main.environment=this.studioEnvTexture;return;}const r=this.renderer;const cfg=OUTDOOR_CONFIG[this.kind];r.setRenderTarget(this.target);r.render(this.scene,camera);this.environmentTriangles=r.info.render.triangles;this.environmentCalls=r.info.render.calls;this.blur.uniforms.near.value=camera.near;this.blur.uniforms.far.value=camera.far;this.blur.uniforms.focusNear.value=this.kind==='wind'?18:190;this.blur.uniforms.focusFar.value=this.kind==='wind'?68:440;this.blur.uniforms.strength.value=this.kind==='wind'?.10:.09;r.setRenderTarget(this.output);r.render(this.quadScene,this.quadCamera);r.setRenderTarget(null);if(occlude&&this.kind!=='wind'){r.clear();r.render(this.depthScene,this.quadCamera);r.autoClear=false;}main.background=this.output.texture;main.environment=this.kind==='wind'?this.windEnvTexture:(cfg&&!cfg.useCloudHdr?this.sunnyTarget.texture:this.skyTarget.texture);}
 }

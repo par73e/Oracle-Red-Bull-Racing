@@ -96,7 +96,7 @@
               <span class="force-title">实时气动力</span>
               <span class="label-tail">
                 <output id="hud-downforce-value">—</output>
-                <button id="forces-close-btn" type="button" class="icon-button popover-pin-close" aria-label="收起气动力面板" title="收起（悬停可预览，点击胶囊可固定展开）" hidden>✕</button>
+                <button id="forces-close-btn" type="button" class="icon-button popover-pin-close" aria-label="收起气动力面板" title="收起（悬停停留或点击面板内按钮可自动固定）" hidden>✕</button>
               </span>
             </div>
             <div class="segmented forces-tabs" role="tablist" aria-label="气动力视图切换">
@@ -112,10 +112,6 @@
                 <span>升阻比 (L/D)</span><strong id="hud-ld-ratio">—</strong>
                 <span>OpenFOAM 原始积分</span><strong id="hud-raw-forces">—</strong>
               </div>
-              <button id="compare-summary-btn" type="button" class="compare-teaser" title="切换至 RB16B vs RB19 完整双车对比与极曲线">
-                <span id="compare-summary-text">点击查看 RB16B vs RB19 同工况对比与极曲线</span>
-                <span aria-hidden="true">→</span>
-              </button>
             </div>
             <div id="forces-tab-compare" class="forces-tab-pane" hidden>
               <div id="compare-table" class="compare-table"></div>
@@ -323,11 +319,11 @@
         </div>
 
         <div class="control-group">
-          <div class="switch-row">
+          <button id="photo-capture-btn" type="button" class="primary-action">导出 2K 高清 PNG (2560×1440)</button>
+          <div class="switch-row" style="margin-top:10px">
             <span id="photo-wm-label">2K 拍照叠加遥测水印</span>
             <button id="photo-watermark" type="button" class="switch" role="switch" aria-checked="true" aria-labelledby="photo-wm-label"><i aria-hidden="true"></i></button>
           </div>
-          <button id="photo-capture-btn" type="button" class="primary-action" style="margin-top:10px">导出 2K 高清 PNG (2560×1440)</button>
           <p id="photo-status" class="mini-note"></p>
         </div>
       </section>

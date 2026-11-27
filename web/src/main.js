@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { cachedArrayBuffer, hasCachedAsset } from './asset-cache.js';
 import { bindRig, applyRig, inspectRig } from './rig.js';
 import { FlowLayer, makeFlowMaterial } from './flow-tracing.js';
@@ -182,8 +181,9 @@ scene.background = new THREE.Color('#11161d');
 const camera = new THREE.PerspectiveCamera(34, 1, .025, 700);
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth < 620 ? 1.25 : 1.5));
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.08;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NeutralToneMapping;
+renderer.toneMappingExposure = 1.0;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.shadowMap.autoUpdate = false;
@@ -191,15 +191,97 @@ renderer.shadowMap.needsUpdate = true;
 viewport.appendChild(renderer.domElement);
 renderer.domElement.setAttribute('aria-label', '赛车三维自由观察视图：拖动以自身视角转向，右键平移，滚轮进退，WASD与QE移动，双击车身聚焦');
 
+function bakeCustomPmrem(pmrem, kind) {
+  const envScene = new THREE.Scene();
+  const disposables = [];
+  const addMesh = (geo, mat, pos, lookAtOrigin = false) => {
+    const mesh = new THREE.Mesh(geo, mat);
+    if (pos) mesh.position.set(...pos);
+    if (lookAtOrigin) mesh.lookAt(0, 0, 0);
+    envScene.add(mesh);
+    disposables.push(geo, mat);
+    return mesh;
+  };
+  if (kind === 'studio') {
+    addMesh(
+      new THREE.SphereGeometry(22, 32, 16),
+      new THREE.MeshBasicMaterial({ color: '#d9dde2', side: THREE.BackSide, toneMapped: false }),
+    );
+    // Overhead softbox (6 x 2.5 m, HDR x8.0)
+    addMesh(
+      new THREE.PlaneGeometry(6, 2.5),
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(8, 8, 8), side: THREE.DoubleSide, toneMapped: false }),
+      [0, 7.5, 0],
+      true,
+    );
+    // Left & right vertical strip lights (0.6 x 4 m, HDR x4.0)
+    for (const side of [-1, 1]) {
+      const strip = addMesh(
+        new THREE.PlaneGeometry(0.6, 4),
+        new THREE.MeshBasicMaterial({ color: new THREE.Color(4, 4, 4), side: THREE.DoubleSide, toneMapped: false }),
+        [side * 8.5, 2.8, 1.5],
+      );
+      strip.lookAt(0, 2.8, 1.5);
+    }
+    // Rear horizon strip light (10 x 0.35 m, HDR x2.5)
+    const horizon = addMesh(
+      new THREE.PlaneGeometry(10, 0.35),
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(2.5, 2.5, 2.5), side: THREE.DoubleSide, toneMapped: false }),
+      [0, 1.3, -9.5],
+    );
+    horizon.lookAt(0, 1.3, 0);
+    // Grounded bounce floor card
+    const groundCard = addMesh(
+      new THREE.PlaneGeometry(28, 28),
+      new THREE.MeshBasicMaterial({ color: '#9aa2ac', side: THREE.DoubleSide, toneMapped: false }),
+      [0, -2.5, 0],
+    );
+    groundCard.rotation.x = -Math.PI / 2;
+  } else {
+    addMesh(
+      new THREE.SphereGeometry(22, 32, 16),
+      new THREE.MeshBasicMaterial({ color: '#14191e', side: THREE.BackSide, toneMapped: false }),
+    );
+    // Twin Z-axis cool-white overhead tunnel light banks (0.45 x 12 m, #e8f0ff x5.0)
+    for (const side of [-1, 1]) {
+      const bank = addMesh(
+        new THREE.PlaneGeometry(0.45, 12),
+        new THREE.MeshBasicMaterial({ color: new THREE.Color(0.91 * 5, 0.94 * 5, 1.0 * 5), side: THREE.DoubleSide, toneMapped: false }),
+        [side * 3.6, 7.0, 0],
+      );
+      bank.rotation.x = Math.PI / 2;
+    }
+    // Subtle center spine strip for crisp canopy/nose highlight
+    const centerStrip = addMesh(
+      new THREE.PlaneGeometry(0.25, 10),
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(0.86 * 2.8, 0.91 * 2.8, 1.0 * 2.8), side: THREE.DoubleSide, toneMapped: false }),
+      [0, 8.2, 0],
+    );
+    centerStrip.rotation.x = Math.PI / 2;
+    // Floor reflection deck
+    const deck = addMesh(
+      new THREE.PlaneGeometry(28, 28),
+      new THREE.MeshBasicMaterial({ color: '#20262c', side: THREE.DoubleSide, toneMapped: false }),
+      [0, -2.5, 0],
+    );
+    deck.rotation.x = -Math.PI / 2;
+  }
+  const target = pmrem.fromScene(envScene, 0.02);
+  for (const d of disposables) d.dispose();
+  return target;
+}
+
 const pmrem = new THREE.PMREMGenerator(renderer);
-const environment = new RoomEnvironment();
-const envTarget = pmrem.fromScene(environment, .04);
-scene.environment = envTarget.texture;
-scene.environmentIntensity = .75;
-environment.dispose();
+const studioEnvTarget = bakeCustomPmrem(pmrem, 'studio');
+const windEnvTarget = bakeCustomPmrem(pmrem, 'wind');
+scene.environment = windEnvTarget.texture;
+scene.environmentIntensity = .90;
 pmrem.dispose();
 
-const worlds = new Environments(renderer, envTarget.texture);
+const worlds = new Environments(renderer, {
+  studio: studioEnvTarget.texture,
+  wind: windEnvTarget.texture,
+});
 function updateFlowStatus(message) {
   const statusEl = $('flow-status');
   if (statusEl && statusEl.textContent !== message) statusEl.textContent = message;
@@ -299,30 +381,34 @@ function syncTurntable() {
   worlds.setYaw(yawRad);
 }
 
-const hemi = new THREE.HemisphereLight(0xdce8ff, 0x45505c, .95);
+const hemi = new THREE.HemisphereLight(0xdce8ff, 0x5c6876, .34);
 scene.add(hemi);
-const key = new THREE.DirectionalLight(0xfff8ee, 3.3);
+const key = new THREE.DirectionalLight(0xfff8ee, 3.05);
 key.position.set(3, 6, 4);
 key.castShadow = true;
 key.shadow.mapSize.set(2048, 2048);
 Object.assign(key.shadow.camera, { left: -4, right: 4, top: 4, bottom: -4, near: .5, far: 18 });
 key.shadow.bias = -.00015;
 key.shadow.normalBias = .025;
-key.shadow.radius = 4;
 scene.add(key);
 
-const fill = new THREE.DirectionalLight(0xdce9ff, 1.35);
+const fill = new THREE.DirectionalLight(0xdce9ff, .72);
 fill.position.set(-4, 3, -2);
 scene.add(fill);
 
-const rim = new THREE.DirectionalLight(0xffffff, 1.65);
+const rim = new THREE.DirectionalLight(0xcfe0ff, 2.2);
 rim.position.set(1, 4, -5);
 scene.add(rim);
 
-const floorInspectionLight = new THREE.DirectionalLight(0xe7efff, 2.4);
-floorInspectionLight.position.set(2, -4, 1);
+const floorInspectionLight = new THREE.DirectionalLight(0xeef4ff, 3.4);
+floorInspectionLight.position.set(2.2, -5.0, 1.5);
 floorInspectionLight.visible = false;
 scene.add(floorInspectionLight);
+
+const floorInspectionFill = new THREE.DirectionalLight(0xdce8ff, 1.8);
+floorInspectionFill.position.set(-2.5, -4.5, -2.0);
+floorInspectionFill.visible = false;
+scene.add(floorInspectionFill);
 
 const floor = new THREE.Mesh(
   new THREE.PlaneGeometry(200, 200),
@@ -387,7 +473,7 @@ function syncLookFromTarget(pos = camera.position, target = orbit.target) {
     lookState.focusDistance = len;
     dir.divideScalar(len);
     lookState.pitch = THREE.MathUtils.clamp(Math.asin(THREE.MathUtils.clamp(dir.y, -1, 1)), -MAX_PITCH, MAX_PITCH);
-    lookState.yaw = Math.atan2(dir.x, dir.z);
+    if (Math.hypot(dir.x, dir.z) > 1e-5) lookState.yaw = Math.atan2(dir.x, dir.z);
     lookState.targetYaw = lookState.yaw;
     lookState.targetPitch = lookState.pitch;
   }
@@ -909,13 +995,11 @@ function setView(name, instant = false, keepFreeBadge = false, resetSavedPose = 
 
 function activateFreeView() {
   showroomTour?.stop();
-  if (state.view === 'floor' || camera.position.y < 0) {
-    setView('hero', false, true);
-  } else {
-    transition = null;
-    captureCameraPose();
-    markFreeCameraActive();
-  }
+  transition = null;
+  orbit._sphericalDelta?.set(0, 0, 0);
+  orbit._panOffset?.set(0, 0, 0);
+  captureCameraPose();
+  markFreeCameraActive();
 }
 
 $('free-camera')?.addEventListener('click', e => {
@@ -966,6 +1050,80 @@ renderer.domElement.addEventListener('dblclick', e => {
   }
 });
 
+const DRAWER_EDGE_PAD = 8;
+const drawerEl = $('drawer');
+let drawerFloatPos = null;
+
+function clampFloatingDrawer() {
+  if (!drawerEl || !drawerFloatPos || drawerEl.hidden) return;
+  const appRect = $('app')?.getBoundingClientRect();
+  const maxW = appRect ? appRect.width : window.innerWidth;
+  const maxH = appRect ? appRect.height : window.innerHeight;
+  const w = drawerEl.offsetWidth || 292;
+  const h = drawerEl.offsetHeight || 200;
+  const x = THREE.MathUtils.clamp(drawerFloatPos.x, DRAWER_EDGE_PAD, Math.max(DRAWER_EDGE_PAD, maxW - w - DRAWER_EDGE_PAD));
+  const y = THREE.MathUtils.clamp(drawerFloatPos.y, DRAWER_EDGE_PAD, Math.max(DRAWER_EDGE_PAD, maxH - h - DRAWER_EDGE_PAD));
+  drawerFloatPos = { x, y };
+  drawerEl.style.left = `${Math.round(x)}px`;
+  drawerEl.style.top = `${Math.round(y)}px`;
+}
+
+function resetDrawerPosition() {
+  if (!drawerEl) return;
+  drawerFloatPos = null;
+  drawerEl.classList.remove('is-floating', 'is-dragging');
+  drawerEl.style.left = '';
+  drawerEl.style.top = '';
+}
+
+if (drawerEl) {
+  let drawerDrag = null;
+  drawerEl.querySelectorAll('.panel-head').forEach(head => {
+    head.title = '拖动可自由移动面板，双击恢复默认位置';
+    head.addEventListener('dblclick', e => {
+      if (e.target.closest('button')) return;
+      resetDrawerPosition();
+    });
+    head.addEventListener('pointerdown', e => {
+      if (e.button !== 0 || e.target.closest('button, input, select, textarea, a')) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const appRect = $('app')?.getBoundingClientRect() || { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+      const rect = drawerEl.getBoundingClientRect();
+      drawerDrag = {
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        originX: rect.left - appRect.left,
+        originY: rect.top - appRect.top,
+        moved: false,
+      };
+      try { head.setPointerCapture(e.pointerId); } catch {}
+    });
+    head.addEventListener('pointermove', e => {
+      if (!drawerDrag || e.pointerId !== drawerDrag.pointerId) return;
+      const dx = e.clientX - drawerDrag.startX;
+      const dy = e.clientY - drawerDrag.startY;
+      if (!drawerDrag.moved && Math.hypot(dx, dy) < 3) return;
+      if (!drawerDrag.moved) {
+        drawerDrag.moved = true;
+        drawerEl.classList.add('is-floating', 'is-dragging');
+      }
+      drawerFloatPos = { x: drawerDrag.originX + dx, y: drawerDrag.originY + dy };
+      clampFloatingDrawer();
+    });
+    const finishDrawerDrag = e => {
+      if (!drawerDrag || e.pointerId !== drawerDrag.pointerId) return;
+      drawerDrag = null;
+      drawerEl.classList.remove('is-dragging');
+      try { if (head.hasPointerCapture?.(e.pointerId)) head.releasePointerCapture(e.pointerId); } catch {}
+    };
+    head.addEventListener('pointerup', finishDrawerDrag);
+    head.addEventListener('pointercancel', finishDrawerDrag);
+  });
+  window.addEventListener('resize', () => clampFloatingDrawer());
+}
+
 function setPanel(name) {
   const next = state.panel === name ? null : name;
   state.panel = next;
@@ -978,10 +1136,30 @@ function setPanel(name) {
   document.querySelectorAll('.drawer .panel').forEach(panel => {
     panel.hidden = panel.id !== `panel-${next}`;
   });
+  if (next && drawerFloatPos) requestAnimationFrame(() => clampFloatingDrawer());
   updateActiveToolIndicators?.();
 }
 
 const forcesItem = document.querySelector('.downforce-dock .telemetry-item[data-telemetry="downforce"]');
+const forcesPopover = forcesItem?.querySelector('.telemetry-popover');
+const FORCES_HOVER_PIN_MS = 650;
+let forcesHoverPinTimer = null;
+function clearForcesHoverPinTimer() {
+  if (forcesHoverPinTimer) {
+    clearTimeout(forcesHoverPinTimer);
+    forcesHoverPinTimer = null;
+  }
+}
+function scheduleForcesHoverPin() {
+  clearForcesHoverPinTimer();
+  if (!forcesItem || forcesItem.classList.contains('is-pinned') || !forcesItem.classList.contains('is-open')) return;
+  forcesHoverPinTimer = setTimeout(() => {
+    forcesHoverPinTimer = null;
+    if (forcesItem.classList.contains('is-open') && forcesPopover?.matches(':hover')) {
+      setForcesPopoverPinned(true);
+    }
+  }, FORCES_HOVER_PIN_MS);
+}
 function isForcesPopoverOpen() {
   return Boolean(forcesItem?.classList.contains('is-open'));
 }
@@ -992,6 +1170,7 @@ function ensureCompareManifestLoaded() {
 }
 function setForcesPopoverPinned(pinned) {
   if (!forcesItem) return;
+  clearForcesHoverPinTimer();
   const btn = forcesItem.querySelector('.readout');
   forcesItem.classList.toggle('is-pinned', pinned);
   if ($('forces-close-btn')) $('forces-close-btn').hidden = !pinned;
@@ -1006,9 +1185,29 @@ function setForcesPopoverPinned(pinned) {
   }
 }
 function unpinForcesPopover() {
+  clearForcesHoverPinTimer();
   if (forcesItem?.classList.contains('is-pinned') || forcesItem?.classList.contains('is-open')) {
     setForcesPopoverPinned(false);
   }
+}
+if (forcesPopover) {
+  forcesPopover.addEventListener('pointerenter', e => {
+    if (e.pointerType !== 'touch') scheduleForcesHoverPin();
+  });
+  forcesPopover.addEventListener('pointermove', e => {
+    if (e.pointerType !== 'touch' && !forcesHoverPinTimer && forcesItem?.classList.contains('is-open') && !forcesItem.classList.contains('is-pinned')) {
+      scheduleForcesHoverPin();
+    }
+  });
+  forcesPopover.addEventListener('pointerleave', () => {
+    clearForcesHoverPinTimer();
+  });
+  forcesPopover.addEventListener('click', e => {
+    if (e.target.closest('#forces-close-btn, #popover-curtain-btn')) return;
+    if (e.target.closest('button, [role="tab"], input, select, a')) {
+      setForcesPopoverPinned(true);
+    }
+  }, true);
 }
 function setForcesTab(tabName) {
   const next = tabName === 'compare' ? 'compare' : 'current';
@@ -1028,11 +1227,6 @@ document.querySelectorAll('[data-forces-tab]').forEach(btn => {
     setForcesTab(btn.dataset.forcesTab);
   });
 });
-$('compare-summary-btn')?.addEventListener('click', e => {
-  e.stopPropagation();
-  setForcesPopoverPinned(true);
-  setForcesTab('compare');
-});
 $('forces-close-btn')?.addEventListener('click', e => {
   e.stopPropagation();
   setForcesPopoverPinned(false);
@@ -1051,6 +1245,7 @@ function updatePopoverPosition(item) {
   const topDock = item.closest('.downforce-dock')?.getBoundingClientRect();
   if (topDock) {
     const lift = Math.max(10, Math.round(topDock.bottom - itemRect.bottom + 10));
+    item.style.setProperty('--popover-lift', `${lift}px`);
     pop.style.setProperty('--popover-lift', `${lift}px`);
     return;
   }
@@ -1077,7 +1272,15 @@ document.querySelectorAll('.telemetry-item').forEach(item => {
   const shortcut = telemetrySteps[item.dataset.telemetry];
   const isForces = item.dataset.telemetry === 'downforce';
   if (!item.querySelector('.telemetry-popover')) return;
+  let leaveCloseTimer = null;
+  const clearLeaveTimer = () => {
+    if (leaveCloseTimer) {
+      clearTimeout(leaveCloseTimer);
+      leaveCloseTimer = null;
+    }
+  };
   const openItem = () => {
+    clearLeaveTimer();
     document.querySelectorAll('.telemetry-item.is-open').forEach(other => {
       if (other !== item && !other.classList.contains('is-dragging') && !other.classList.contains('is-pinned')) {
         other.classList.remove('is-open');
@@ -1090,15 +1293,26 @@ document.querySelectorAll('.telemetry-item').forEach(item => {
     if (isForces) ensureCompareManifestLoaded();
   };
   const closeItem = () => {
+    clearLeaveTimer();
+    if (isForces) clearForcesHoverPinTimer();
     if (item.classList.contains('is-pinned')) return;
     item.classList.remove('is-open', 'is-dragging');
     btn?.setAttribute('aria-expanded', 'false');
   };
   item.addEventListener('pointerenter', e => {
+    clearLeaveTimer();
     if (e.pointerType !== 'touch') openItem();
   });
   item.addEventListener('pointerleave', e => {
-    if (e.pointerType !== 'touch' && !item.classList.contains('is-dragging') && !item.classList.contains('is-pinned') && !item.querySelector(':focus-visible')) closeItem();
+    if (e.pointerType !== 'touch' && !item.classList.contains('is-dragging') && !item.classList.contains('is-pinned') && !item.querySelector(':focus-visible')) {
+      clearLeaveTimer();
+      leaveCloseTimer = setTimeout(() => {
+        leaveCloseTimer = null;
+        if (!item.matches(':hover') && !item.classList.contains('is-dragging') && !item.classList.contains('is-pinned') && !item.querySelector(':focus-visible')) {
+          closeItem();
+        }
+      }, isForces ? 260 : 120);
+    }
   });
   item.addEventListener('focusout', e => {
     if (!item.contains(e.relatedTarget) && !item.matches(':hover') && !item.classList.contains('is-dragging') && !item.classList.contains('is-pinned')) closeItem();
@@ -1160,35 +1374,58 @@ document.querySelector('.flow-state')?.addEventListener('click', e => {
 const SCENE_META = {
   studio: {
     label: '纯白无缝影棚',
-    detail: '纯白影棚打光 · 聚焦赛车曲面与流线细节',
-    keyPos: [3, 6, 4], keyInt: 3.5, fillInt: 1.45, envInt: .82,
+    detail: '柔光箱无缝影棚打光 · 聚焦赛车曲面与流线细节',
+    keyPos: [3, 6, 4], keyInt: 3.35, fillInt: .80, hemiInt: .42,
+    rimPos: [-2, 3.5, -6], rimInt: 2.6, rimColor: 0xffffff,
+    envInt: 1.08, exposure: .98,
   },
   wind: {
     label: '风洞试验段',
     detail: '原创全尺寸风洞场景 · 气流来自自由外流算例',
-    keyPos: [3, 6, 4], keyInt: 3.2, fillInt: 1.2, envInt: .68,
+    keyPos: [3, 6, 4], keyInt: 3.05, fillInt: .72, hemiInt: .34,
+    rimPos: [1, 4, -5], rimInt: 2.3, rimColor: 0xcfe0ff,
+    envInt: 1.02, exposure: 1.08,
   },
   'eau-rouge': {
     label: '斯帕 · Eau Rouge 谷底望向 Raidillon',
     detail: '斯帕 LiDAR 地形 · 谷底左弯仰冲 +35 m 盲顶',
-    keyPos: [-4.5, 6.0, 2.0], keyInt: 2.2, fillInt: .8, envInt: .9,
+    keyPos: [-4.5, 6.0, 2.0], keyInt: 2.4, fillInt: .72, hemiInt: .48,
+    rimPos: [1, 4, -5], rimInt: 1.35, rimColor: 0xffffff,
+    envInt: .95, exposure: 1.10,
   },
   monza: {
     label: '蒙扎 · 主大直道（Rettifilo Tribune）',
     detail: '速度殿堂 520 m 主直道 · 起跑龙门架、主看台、维修区与一号减速弯',
-    keyPos: [4.2, 6.6, 5.2], keyInt: 2.7, fillInt: 1.0, envInt: .85,
+    keyPos: [4.2, 6.6, 5.2], keyInt: 2.9, fillInt: .72, hemiInt: .48,
+    rimPos: [1, 4, -5], rimInt: 1.35, rimColor: 0xffffff,
+    envInt: .90, exposure: 1.10,
   },
   silverstone: {
     label: '银石 · Maggotts–Becketts 高速 S 弯',
     detail: 'T11 右弯弯心 · 开阔二战机场地貌与实时侧风联动风向袋',
-    keyPos: [-4.8, 6.2, 3.2], keyInt: 2.25, fillInt: .88, envInt: .88,
+    keyPos: [-4.8, 6.2, 3.2], keyInt: 2.45, fillInt: .72, hemiInt: .48,
+    rimPos: [1, 4, -5], rimInt: 1.35, rimColor: 0xffffff,
+    envInt: .92, exposure: 1.10,
   },
   monaco: {
     label: '摩纳哥 · 费尔蒙 180° 发卡弯',
     detail: 'Mirabeau 陡下坡 180° 左转发卡弯 · 棕榈岛台、贴墙护栏与费尔蒙酒店',
-    keyPos: [3.8, 7.2, 4.5], keyInt: 2.85, fillInt: 1.05, envInt: .9,
+    keyPos: [3.8, 7.2, 4.5], keyInt: 3.05, fillInt: .72, hemiInt: .48,
+    rimPos: [1, 4, -5], rimInt: 1.35, rimColor: 0xffffff,
+    envInt: .95, exposure: 1.10,
   },
 };
+
+function applyFlowMaterialForEnvironment(name) {
+  const isStudio = name === 'studio';
+  flowMaterial.blending = isStudio ? THREE.NormalBlending : THREE.AdditiveBlending;
+  flowMaterial.uniforms.opacity.value = isStudio ? 0.84 : 0.54;
+  flowMaterial.uniforms.brightness.value = isStudio ? 0.78 : 1.0;
+  flowMaterial.needsUpdate = true;
+  const smokeOpacity = name === 'wind' ? 0.48 : 0.40;
+  flowSmoke.setOpacity(smokeOpacity);
+  peerFlowSmoke?.setOpacity(smokeOpacity);
+}
 
 function setEnvironment(name, { preserveCamera = false, fromScenario = false } = {}) {
   if (!VALID_ENVS.has(name)) return;
@@ -1205,8 +1442,8 @@ function setEnvironment(name, { preserveCamera = false, fromScenario = false } =
   $('scene-detail').textContent = meta.detail;
   orbit.maxDistance = isTrack ? 120 : 18;
   orbit.maxPolarAngle = ORBIT_MAX_POLAR;
-  floor.position.y = name === 'studio' ? -.035 : -.003;
-  floor.material.opacity = name === 'studio' ? .42 : .24;
+  floor.position.y = name === 'studio' ? -.004 : -.003;
+  floor.material.opacity = name === 'studio' ? .26 : .34;
   floor.visible = !isTrack;
   for (const [k, mesh] of Object.entries(trackShadowFloors)) {
     mesh.visible = k === name;
@@ -1221,9 +1458,15 @@ function setEnvironment(name, { preserveCamera = false, fromScenario = false } =
     far: isTrack ? 24 : 18,
   });
   key.shadow.camera.updateProjectionMatrix();
+  renderer.toneMappingExposure = meta.exposure ?? 1.0;
   scene.environmentIntensity = meta.envInt;
+  hemi.intensity = meta.hemiInt;
   key.intensity = meta.keyInt;
   fill.intensity = meta.fillInt;
+  rim.intensity = meta.rimInt;
+  rim.position.set(...meta.rimPos);
+  rim.color.setHex(meta.rimColor);
+  applyFlowMaterialForEnvironment(name);
   syncTurntable();
   if (!preserveCamera) setView(state.view, true, state.freeMode, false);
   renderer.shadowMap.needsUpdate = true;
@@ -1307,6 +1550,21 @@ function updateDrsReadout() {
   $('t-drs').innerHTML = `${percent}<small>%</small>`;
 }
 
+function syncRangeFill(el) {
+  if (!el) return;
+  const min = Number(el.min || 0);
+  const max = Number(el.max || 100);
+  const val = Number(el.value || 0);
+  const pct = max > min ? THREE.MathUtils.clamp(((val - min) / (max - min)) * 100, 0, 100) : 0;
+  el.style.setProperty('--fill', `${pct.toFixed(2)}%`);
+}
+function syncAllRangeFills() {
+  document.querySelectorAll('input[type="range"]').forEach(syncRangeFill);
+}
+document.addEventListener('input', e => {
+  if (e.target?.matches?.('input[type="range"]')) syncRangeFill(e.target);
+});
+
 function showState() {
   const rel = resolveRelativeWind(state);
   state.speed = rel.relSpeedKmh;
@@ -1358,6 +1616,7 @@ function showState() {
   if ($('t-steer')) $('t-steer').innerHTML = `${steerText}<small>°</small>`;
   if ($('t-rpm')) $('t-rpm').innerHTML = `${rpmRounded}<small>rpm</small>`;
   syncTurntable();
+  syncAllRangeFills();
   updateForcesDisplay();
   updateCoverageGuidance();
   saveState();
@@ -1443,6 +1702,186 @@ function disposeModel(model) {
   textures.forEach(t => t.dispose());
 }
 
+let mainContactShadow = null;
+let peerContactShadow = null;
+
+function disposeContactShadow(mesh) {
+  if (!mesh) return;
+  mesh.parent?.remove(mesh);
+  mesh.geometry?.dispose();
+  mesh.material?.map?.dispose();
+  mesh.material?.dispose();
+}
+
+function createIndoorContactShadow(config) {
+  const W = 4.2, L = 7.2, cw = 256, ch = 512;
+  const canvas = document.createElement('canvas');
+  canvas.width = cw;
+  canvas.height = ch;
+  const ctx = canvas.getContext('2d');
+  const stamp = (x, z, rx, rz, alpha) => {
+    ctx.save();
+    ctx.translate(((x + W / 2) / W) * cw, ((z + L / 2) / L) * ch);
+    ctx.scale((rx / W) * cw, (rz / L) * ch);
+    const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+    grad.addColorStop(0, `rgba(6, 10, 16, ${alpha})`);
+    grad.addColorStop(0.58, `rgba(6, 10, 16, ${(alpha * 0.48).toFixed(3)})`);
+    grad.addColorStop(1, 'rgba(6, 10, 16, 0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(-1, -1, 2, 2);
+    ctx.restore();
+  };
+  // Soft underbody chassis ambient-occlusion shadow
+  stamp(0, -0.12, 0.86, 2.35, 0.32);
+  // Per-wheel contact patches anchored to each car's exact wheelbase & track
+  const w = config?.wheels || {};
+  const wheelEntries = [
+    [w.FL?.center || [0.80, 0.35, 1.50], 0.28, 0.44],
+    [w.FR?.center || [-0.80, 0.35, 1.50], 0.28, 0.44],
+    [w.RL?.center || [0.79, 0.35, -2.00], 0.33, 0.48],
+    [w.RR?.center || [-0.79, 0.35, -2.00], 0.33, 0.48],
+  ];
+  for (const [center, rx, rz] of wheelEntries) {
+    stamp(center[0], center[2], rx, rz, 0.85);
+  }
+  const map = new THREE.CanvasTexture(canvas);
+  map.colorSpace = THREE.SRGBColorSpace;
+  const geo = new THREE.PlaneGeometry(W, L);
+  geo.rotateX(-Math.PI / 2);
+  const mat = new THREE.MeshBasicMaterial({
+    map,
+    transparent: true,
+    depthWrite: false,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.name = 'CAR_CONTACT_SHADOW';
+  mesh.position.y = -0.001;
+  mesh.renderOrder = 1;
+  return mesh;
+}
+
+const SATIN_PAINT_MATS = new Set([
+  'rb_paint', 'redbull_paint', 'redbull_detail', 'rb_number',
+  'redbull_number_33', 'driver_number', 'generics', 'RB19_Paint_Satin_Atlas',
+]);
+const BARE_CARBON_MATS = new Set([
+  'redbull_carbon1', 'redbull_carbon2', 'toro_rosso_carbon4',
+  'AERO_DRS_Woven_Carbon', 'RB19_Carbon_Atlas', 'AERO_Carbon_Satin',
+]);
+const ALLOY_TRIM_MATS = new Set([
+  'AERO_DRS_Machined_Gland', 'AERO_DRS_Anodized_Alloy', 'AERO_Actuator_Alloy',
+  'RB16B_Exhaust_HeatAlloy', 'RB19_Exhaust_HeatAlloy', 'RB19_Exhaust_HeatTint',
+]);
+
+function upgradeToPhysical(src, overrides) {
+  const next = new THREE.MeshPhysicalMaterial({
+    name: src.name,
+    color: src.color?.clone(),
+    map: src.map,
+    normalMap: src.normalMap,
+    normalScale: src.normalScale?.clone(),
+    roughnessMap: src.roughnessMap,
+    metalnessMap: src.metalnessMap,
+    aoMap: src.aoMap,
+    aoMapIntensity: src.aoMapIntensity,
+    emissive: src.emissive?.clone(),
+    emissiveMap: src.emissiveMap,
+    emissiveIntensity: src.emissiveIntensity,
+    alphaMap: src.alphaMap,
+    transparent: src.transparent,
+    opacity: src.opacity,
+    alphaTest: src.alphaTest,
+    depthWrite: src.depthWrite,
+    depthTest: src.depthTest,
+    side: src.side,
+    vertexColors: src.vertexColors,
+    roughness: src.roughness,
+    metalness: src.metalness,
+  });
+  Object.assign(next, overrides);
+  return next;
+}
+
+function tuneCarMaterial(id, m, cache) {
+  if (!m) return m;
+  if (cache.has(m)) return cache.get(m);
+  const name = m.name || '';
+  if (id === 'rb16b' && (name === 'gp21_cinture.001' || name === 'chrome.001')) {
+    m.transparent = false;
+    m.depthWrite = true;
+  }
+  let out = m;
+  if (SATIN_PAINT_MATS.has(name)) {
+    out = upgradeToPhysical(m, {
+      roughness: 0.52,
+      metalness: 0.0,
+      clearcoat: 0.18,
+      clearcoatRoughness: 0.38,
+      envMapIntensity: 1.0,
+    });
+  } else if (BARE_CARBON_MATS.has(name)) {
+    out = upgradeToPhysical(m, {
+      roughness: 0.34,
+      metalness: 0.0,
+      clearcoat: 0.85,
+      clearcoatRoughness: 0.10,
+      envMapIntensity: 1.15,
+    });
+    if (out.normalMap && out.normalScale) out.normalScale.multiplyScalar(0.6);
+  } else if (name === 'tread_medium') {
+    out = upgradeToPhysical(m, {
+      roughness: 0.90,
+      metalness: 0.0,
+      envMapIntensity: 0.35,
+      sheen: 0.18,
+      sheenRoughness: 0.82,
+    });
+    out.color?.multiplyScalar(0.58);
+  } else if (name === 'sidewall' || name === 'RB19_Rubber_Atlas') {
+    out = upgradeToPhysical(m, {
+      roughness: 0.88,
+      metalness: 0.0,
+      envMapIntensity: 0.32,
+      sheen: 0.16,
+      sheenRoughness: 0.85,
+    });
+    out.color?.multiplyScalar(0.84);
+  } else if (name === 'redbull_wheel_hub') {
+    m.metalness = 0.90;
+    m.roughness = 0.30;
+    m.envMapIntensity = 1.15;
+    m.color?.set('#5a6068');
+  } else if (name === 'RB19_Wheel_Atlas') {
+    m.metalness = 0.35;
+    m.roughness = 0.28;
+    m.envMapIntensity = 1.05;
+  } else if (name === 'chrome.001') {
+    m.metalness = 1.0;
+    m.roughness = 0.18;
+    m.envMapIntensity = 1.2;
+  } else if (name === 'redbull_mirror_left' || name === 'redbull_mirror_right') {
+    m.metalness = 1.0;
+    m.roughness = 0.08;
+    m.envMapIntensity = 1.3;
+  } else if (name === 'AERO_DRS_Polished_Piston') {
+    m.metalness = 1.0;
+    m.roughness = 0.16;
+    m.envMapIntensity = 1.2;
+  } else if (ALLOY_TRIM_MATS.has(name)) {
+    m.envMapIntensity = 1.15;
+  }
+  const maxAniso = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
+  for (const value of Object.values(out)) {
+    if (value?.isTexture) value.anisotropy = maxAniso;
+  }
+  cache.set(m, out);
+  if (out !== m) m.dispose();
+  return out;
+}
+
 async function parsePreparedCarModel(id, config, onProgress = null) {
   const modelFile = config.web_file || config.file;
   const modelVersion = config.web_revision || config.revision || config.web_glb_bytes || config.glb_bytes;
@@ -1465,17 +1904,16 @@ async function parsePreparedCarModel(id, config, onProgress = null) {
     unfastenedHarness.forEach(o => o.removeFromParent());
   }
   const nextRig = bindRig(loaded.scene, config);
+  const materialCache = new Map();
   loaded.scene.traverse(o => {
     if (o.isMesh) {
       o.castShadow = true;
       o.receiveShadow = true;
       if (o.geometry.attributes.position.count > 30) o.geometry.computeBoundsTree();
-      for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
-        if (id === 'rb16b' && (m.name === 'gp21_cinture.001' || m.name === 'chrome.001')) {
-          m.transparent = false;
-          m.depthWrite = true;
-        }
-        for (const value of Object.values(m)) if (value?.isTexture) value.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
+      if (Array.isArray(o.material)) {
+        o.material = o.material.map(m => tuneCarMaterial(id, m, materialCache));
+      } else if (o.material) {
+        o.material = tuneCarMaterial(id, o.material, materialCache);
       }
     }
   });
@@ -1513,9 +1951,12 @@ async function loadModel(id, { preserveCamera = false } = {}) {
     });
     if (serial !== loadSerial) { disposeModel(nextScene); return; }
     if (currentModel) { carTurntable.remove(currentModel); disposeModel(currentModel); }
+    disposeContactShadow(mainContactShadow);
     currentModel = nextScene;
     rig = nextRig;
     carTurntable.add(currentModel);
+    mainContactShadow = createIndoorContactShadow(config);
+    carTurntable.add(mainContactShadow);
     setEnvironment(state.environment, { preserveCamera, fromScenario: true });
     showState();
     state.spin = 0;
@@ -1709,6 +2150,7 @@ function syncSliceSlider() {
     sl.step = String(cfg.step);
     studioExt.slicePosition = THREE.MathUtils.clamp(studioExt.slicePosition, cfg.min, cfg.max);
     sl.value = String(studioExt.slicePosition);
+    syncRangeFill(sl);
   }
   if ($('slice-pos-value')) $('slice-pos-value').textContent = `${studioExt.slicePosition.toFixed(2)} m`;
 }
@@ -1837,7 +2279,6 @@ viewport.addEventListener('pointerup', e => {
 const aeroCompare = new AeroCompare({
   tableEl: $('compare-table'),
   chartEl: $('compare-chart'),
-  summaryEl: $('compare-summary-text'),
 });
 
 let peerModel = null, peerRig = null, peerCarId = null, peerLoadSerial = 0;
@@ -1881,6 +2322,8 @@ function disposePeerSession() {
     peerModel = null;
     peerRig = null;
   }
+  disposeContactShadow(peerContactShadow);
+  peerContactShadow = null;
   peerCarId = null;
 }
 
@@ -1892,6 +2335,7 @@ function createPeerFlowStack(carId) {
   };
   peerFlowPreview = new FlowPreview(carTurntable, flowMaterial);
   peerFlowSmoke = new FlowSmoke(carTurntable);
+  peerFlowSmoke.setOpacity(state.environment === 'wind' ? 0.48 : 0.40);
   peerFlowSlice = new FlowSlice(carTurntable);
   peerFlowCatalog = new FlowCatalog();
   peerFlowJobs = new FlowJobs(peerFlowCatalog, peerFlowLayers, () => {}, peerFlowPreview);
@@ -1998,6 +2442,9 @@ async function startCurtainSession() {
     peerRig = pRig;
     peerCarId = peerId;
     carTurntable.add(peerModel);
+    peerContactShadow = createIndoorContactShadow(peerCfg);
+    peerContactShadow.visible = false;
+    carTurntable.add(peerContactShadow);
     applyRig(peerRig, { drs: state.drsCurrent, steer: state.steer, spin: state.spin });
     createPeerFlowStack(peerId);
     curtainCompare.setLoading('');
@@ -2302,6 +2749,7 @@ function applyFlowVis(layers, preview, smoke, slice, vis, show) {
 
 function renderSceneFrame(w, h, underCar) {
   worlds.render(camera, scene, !underCar);
+  const showIndoorShadow = !underCar && !isTrackEnvironment(state.environment);
   const sliceWant = Boolean(studioExt.sliceEnabled && (state.speed > 0 || state.wheelSpeedMps > 0));
   if (curtainCompare.active && peerModel && currentModel) {
     const mainLayers = { whole: airflow, bottom: underbody, side: sidepod };
@@ -2313,6 +2761,8 @@ function renderSceneFrame(w, h, underCar) {
     const showSide = isMain => {
       currentModel.visible = isMain;
       peerModel.visible = !isMain;
+      if (mainContactShadow) mainContactShadow.visible = showIndoorShadow && isMain;
+      if (peerContactShadow) peerContactShadow.visible = showIndoorShadow && !isMain;
       applyFlowVis(mainLayers, flowPreview, flowSmoke, flowSlice, mainVis, isMain);
       applyFlowVis(peerFlowLayers, peerFlowPreview, peerFlowSmoke, peerFlowSlice, peerVis, !isMain);
     };
@@ -2332,10 +2782,14 @@ function renderSceneFrame(w, h, underCar) {
     // Restore logical visibility for BOTH flow stacks (never corrupt peer slice/lines/smoke!)
     currentModel.visible = true;
     peerModel.visible = false;
+    if (mainContactShadow) mainContactShadow.visible = showIndoorShadow;
+    if (peerContactShadow) peerContactShadow.visible = false;
     applyFlowVis(mainLayers, flowPreview, flowSmoke, flowSlice, mainVis, true);
     applyFlowVis(peerFlowLayers, peerFlowPreview, peerFlowSmoke, peerFlowSlice, peerVis, true);
   } else {
     if (peerModel) peerModel.visible = false;
+    if (mainContactShadow) mainContactShadow.visible = showIndoorShadow;
+    if (peerContactShadow) peerContactShadow.visible = false;
     flowSlice.setVisible(sliceWant);
     renderer.render(scene, camera);
   }
@@ -2408,6 +2862,7 @@ renderer.setAnimationLoop(now => {
     mesh.visible = !underCar && k === state.environment;
   }
   floorInspectionLight.visible = underCar;
+  floorInspectionFill.visible = underCar;
 
   const near = THREE.MathUtils.clamp((state.freeMode ? camera.position.length() : camera.position.distanceTo(orbit.target)) * .004, .025, .5);
   if (Math.abs(camera.near - near) > .001) {

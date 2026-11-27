@@ -15,7 +15,7 @@ varying vec2 vUv;
 void main() {
   vec4 c = texture2D(map, vUv);
   if (c.a < 0.02) discard;
-  vec2 edge = smoothstep(0.0, 0.035, vUv) * smoothstep(1.0, 0.965, vUv);
+  vec2 edge = smoothstep(0.0, 0.06, vUv) * smoothstep(1.0, 0.94, vUv);
   float border = edge.x * edge.y;
   gl_FragColor = vec4(c.rgb, c.a * opacity * border);
 }
@@ -42,7 +42,7 @@ export class FlowSlice {
       side: T.DoubleSide,
       uniforms: {
         map: { value: this.texture },
-        opacity: { value: 0.86 },
+        opacity: { value: 0.80 },
       },
       vertexShader: SLICE_VERT,
       fragmentShader: SLICE_FRAG,
@@ -61,7 +61,7 @@ export class FlowSlice {
     ]);
     this.frame = new T.LineLoop(
       frameGeom,
-      new T.LineBasicMaterial({ color: 0x38e8ff, transparent: true, opacity: 0.55, depthWrite: false }),
+      new T.LineBasicMaterial({ color: 0x9fe7f5, transparent: true, opacity: 0.32, depthWrite: false }),
     );
     this.frame.renderOrder = 3;
     this.mesh.add(this.frame);

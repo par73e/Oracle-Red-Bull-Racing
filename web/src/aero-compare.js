@@ -96,7 +96,7 @@ export class AeroCompare {
           <span class="cg-head">指标</span>
           <span class="cg-head cg-16 ${!is19 ? 'is-cur' : ''}">RB16B<small>${!is19 ? '当前 · 2021' : '2021'}</small></span>
           <span class="cg-head cg-19 ${is19 ? 'is-cur' : ''}">RB19<small>${is19 ? '当前 · 2023' : '2023'}</small></span>
-          <span class="cg-head" style="text-align:right">19 vs 16B</span>
+          <span class="cg-head cg-head-right">增幅<small>较 RB16B</small></span>
 
           <span>下压力 Fz</span>
           <strong>${fmtN(f16.downforceN)}</strong>
@@ -116,7 +116,7 @@ export class AeroCompare {
           <span>侧向力 Fy</span>
           <strong>${fmtSignedN(f16.sideN)}</strong>
           <strong>${fmtSignedN(f19.sideN)}</strong>
-          <em class="cg-delta">${fmtPct(Math.abs(f16.sideN ?? 0), Math.abs(f19.sideN ?? 0), 25)}</em>
+          <em class="cg-delta" title="${Math.abs(f16.sideN ?? 0) < 25 ? '正迎风基准近零（< 25 N），调偏航角后显示侧力增幅' : ''}">${fmtPct(Math.abs(f16.sideN ?? 0), Math.abs(f19.sideN ?? 0), 25)}</em>
 
           <span class="cg-raw">原始 Fz</span>
           <span class="cg-raw">${fmtN(f16.rawDownforceN)}</span>
@@ -167,8 +167,10 @@ export class AeroCompare {
       ${pts19Drs.length ? `<path d="${pathOf(pts19Drs, 'downforceN')}" class="p-line p-19 p-drs"/>` : ''}
       <path d="${pathOf(pts16, 'downforceN')}" class="p-line p-16"/>
       <path d="${pathOf(pts19, 'downforceN')}" class="p-line p-19"/>
-      <circle cx="${curX.toFixed(1)}" cy="${sy(cur16?.downforceN ?? 0).toFixed(1)}" r="3.4" class="p-dot p-16"/>
-      <circle cx="${curX.toFixed(1)}" cy="${sy(cur19?.downforceN ?? 0).toFixed(1)}" r="3.4" class="p-dot p-19"/>
+      <circle cx="${curX.toFixed(1)}" cy="${sy(cur16?.downforceN ?? 0).toFixed(1)}" r="7" class="p-dot-halo p-16"/>
+      <circle cx="${curX.toFixed(1)}" cy="${sy(cur19?.downforceN ?? 0).toFixed(1)}" r="7" class="p-dot-halo p-19"/>
+      <circle cx="${curX.toFixed(1)}" cy="${sy(cur16?.downforceN ?? 0).toFixed(1)}" r="4" class="p-dot p-16"/>
+      <circle cx="${curX.toFixed(1)}" cy="${sy(cur19?.downforceN ?? 0).toFixed(1)}" r="4" class="p-dot p-19"/>
       <text x="${padL}" y="${H - 5}" class="p-axis">0</text>
       <text x="${sx(180).toFixed(1)}" y="${H - 5}" class="p-axis" text-anchor="middle">180 km/h</text>
       <text x="${W - padR}" y="${H - 5}" class="p-axis" text-anchor="end">350</text>
@@ -205,8 +207,10 @@ export class AeroCompare {
       <text x="${padL - 4}" y="${(sy(0) + 3).toFixed(1)}" class="p-axis" text-anchor="end">0</text>
       <path d="${pathOf(pts16)}" class="p-line p-16"/>
       <path d="${pathOf(pts19)}" class="p-line p-19"/>
-      <circle cx="${curX.toFixed(1)}" cy="${sy(cur16?.downforceN ?? 0).toFixed(1)}" r="3.4" class="p-dot p-16"/>
-      <circle cx="${curX.toFixed(1)}" cy="${sy(cur19?.downforceN ?? 0).toFixed(1)}" r="3.4" class="p-dot p-19"/>
+      <circle cx="${curX.toFixed(1)}" cy="${sy(cur16?.downforceN ?? 0).toFixed(1)}" r="7" class="p-dot-halo p-16"/>
+      <circle cx="${curX.toFixed(1)}" cy="${sy(cur19?.downforceN ?? 0).toFixed(1)}" r="7" class="p-dot-halo p-19"/>
+      <circle cx="${curX.toFixed(1)}" cy="${sy(cur16?.downforceN ?? 0).toFixed(1)}" r="4" class="p-dot p-16"/>
+      <circle cx="${curX.toFixed(1)}" cy="${sy(cur19?.downforceN ?? 0).toFixed(1)}" r="4" class="p-dot p-19"/>
       <text x="${padL}" y="${H - 5}" class="p-axis">-90°</text>
       <text x="${sx(0).toFixed(1)}" y="${H - 5}" class="p-axis" text-anchor="middle">0° (${speed} km/h)</text>
       <text x="${W - padR}" y="${H - 5}" class="p-axis" text-anchor="end">+90°</text>

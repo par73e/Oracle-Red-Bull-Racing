@@ -2,6 +2,7 @@ import * as T from 'three';
 import { computeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
 import { FlowSampler } from './flow-tracing.js';
 import { traceLayers, traceSmoke } from './flow-integrator.js';
+import { sampleTurboRgb } from './flow-colormap.js';
 
 T.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 T.Mesh.prototype.raycast = acceleratedRaycast;
@@ -10,31 +11,19 @@ const fields = new Map();
 const _v0 = new T.Vector3(), _v1 = new T.Vector3(), _v2 = new T.Vector3();
 
 function colorSpeed(ratio, out, offset) {
-  // Turbo-inspired PIV speed colormap: 0 (deep navy) -> 0.5 (cyan) -> 1.0 (emerald/gold) -> 1.45+ (red/magenta)
-  const t = Math.max(0, Math.min(1, ratio / 1.55));
-  let r, g, b;
-  if (t < 0.25) {
-    const k = t / 0.25;
-    r = 18 + 12 * k; g = 34 + 135 * k; b = 128 + 115 * k;
-  } else if (t < 0.55) {
-    const k = (t - 0.25) / 0.30;
-    r = 30 + 75 * k; g = 169 + 66 * k; b = 243 - 135 * k;
-  } else if (t < 0.80) {
-    const k = (t - 0.55) / 0.25;
-    r = 105 + 145 * k; g = 235 - 50 * k; b = 108 - 76 * k;
-  } else {
-    const k = (t - 0.80) / 0.20;
-    r = 250 - 8 * k; g = 185 - 140 * k; b = 32 + 128 * k;
-  }
-  out[offset] = r;
-  out[offset + 1] = g;
-  out[offset + 2] = b;
-  out[offset + 3] = Math.round(165 + 65 * Math.min(1, t * 1.15));
+  // Standard Turbo polynomial over ratio 0.2..1.4, with deviation-coupled alpha
+  // so freestream (ratio ~ 1) recedes semi-transparently while wake & suction pop.
+  const t = Math.max(0, Math.min(1, (ratio - 0.2) / 1.2));
+  sampleTurboRgb(t, out, offset);
+  const dev = Math.abs(ratio - 1);
+  const s = Math.max(0, Math.min(1, (dev - 0.04) / 0.31));
+  const smooth = s * s * (3 - 2 * s);
+  out[offset + 3] = Math.round(70 + 170 * smooth);
 }
 
 function colorVorticity(val, out, offset) {
   const t = Math.max(0, Math.min(1, val));
-  const a = t < 0.08 ? 0 : Math.min(1, (t - 0.08) / 0.32);
+  const a = t < 0.10 ? 0 : Math.min(1, (t - 0.10) / 0.30);
   let r, g, b;
   if (t < 0.45) {
     const k = t / 0.45;

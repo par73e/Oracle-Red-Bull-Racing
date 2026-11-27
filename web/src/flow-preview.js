@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { sampleFlowSpeedRgb } from './flow-colormap.js';
 
 const MAX_COLUMNS = 20;
 const MAX_ROWS = 6;
@@ -61,13 +62,14 @@ export class FlowPreview {
     const density = Math.sqrt(densityPct / 100);
     const geometry = this.lines.geometry;
     const { position, color, flight, lineAlpha } = geometry.attributes;
-    const tint = new T.Color(), a = new T.Vector3(), b = new T.Vector3();
+    const rgb = [0, 0, 0], a = new T.Vector3(), b = new T.Vector3();
+    const refSpeedMps = Math.max(1, air, rolling);
     let vertex = 0;
     this.count = 0;
 
     const emitLine = (pointAt, speed, opacity) => {
       this.count++;
-      tint.setHSL(.55 - .52 * Math.min(1, speed / 120), .85, .65);
+      sampleFlowSpeedRgb(speed / refSpeedMps, rgb, 0);
       let time = 0;
       pointAt(0, a);
       for (let i = 1; i <= SEGMENTS; i++) {
@@ -77,7 +79,7 @@ export class FlowPreview {
           const point = end ? b : a;
           const fade = Math.min(1, (i - 1 + end) / 3, (SEGMENTS - i + 1 - end) / 3);
           position.setXYZ(vertex, point.x, point.y, point.z);
-          color.setXYZ(vertex, tint.r, tint.g, tint.b);
+          color.setXYZ(vertex, rgb[0], rgb[1], rgb[2]);
           flight.setX(vertex, end ? nextTime : time);
           lineAlpha.setX(vertex++, fade * opacity);
         }

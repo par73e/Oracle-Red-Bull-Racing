@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { TraceScratch, wholeCarSeeds } from './flow-tracing.js';
 import { floorBoundary, floorSeeds, sideSeeds } from './flow-seeds.js';
+import { sampleFlowSpeedRgb } from './flow-colormap.js';
 
 export function traceLayers(sampler, rig, condition, stepScale = 1) {
   sampler._rayContext = null;
@@ -13,12 +14,13 @@ export function traceLayers(sampler, rig, condition, stepScale = 1) {
     const along = offset.dot(wheel.axis);
     return Math.abs(along) < wheel.width / 2 + .012 && offset.lengthSq() - along ** 2 < (wheel.radius + .009) ** 2;
   });
+  const refSpeedMps = Math.max(1, speed / 3.6, wheelSpeedMps);
   const speedFloor = Math.max(.001, Math.max(speed / 3.6, wheelSpeedMps) * .005);
   const sample = (point, velocity) => sampler.sample(-point.z, -point.x, point.y - .005, velocity, sampler.grid, true);
   const scratch = new TraceScratch(8192);
   const point = new T.Vector3(), midpoint = new T.Vector3(), next = new T.Vector3();
   const velocity = new T.Vector3(), middleVelocity = new T.Vector3(), direction = new T.Vector3();
-  const color = new T.Color();
+  const rgb = [0, 0, 0];
 
   function trace(candidates, windowContains = () => true, maxLength = 12.35, fadeLength = .22) {
     scratch.reset();
@@ -55,8 +57,8 @@ export function traceLayers(sampler, rig, condition, stepScale = 1) {
         if (!clearSegment(next)) { reason = 'collision'; break; }
         if (!sample(next, velocity)) { reason = 'masked'; break; }
         const nextTime = travel + ds / speedMid;
-        color.setHSL(.55 - .52 * Math.min(speedMid / 120, 1), .85, .65);
-        scratch.pushSeg(...point, ...next, color.r, color.g, color.b, travel, nextTime);
+        sampleFlowSpeedRgb(speedMid / refSpeedMps, rgb, 0);
+        scratch.pushSeg(...point, ...next, rgb[0], rgb[1], rgb[2], travel, nextTime);
         peakMps = Math.max(peakMps, speedMid);
         travel = nextTime;
         point.copy(next);
