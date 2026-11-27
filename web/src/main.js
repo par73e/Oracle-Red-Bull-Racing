@@ -1631,6 +1631,7 @@ function updateActiveToolIndicators() {
   document.querySelector('.rail-button[data-panel="flow"]')?.classList.toggle('has-active', flowActive);
   document.querySelector('.rail-button[data-panel="analysis"]')?.classList.toggle('has-active', analysisActive);
   document.querySelector('.rail-button[data-panel="explore"]')?.classList.toggle('has-active', exploreActive);
+  $('compare-curtain-btn')?.setAttribute('aria-pressed', String(Boolean(curtainCompare?.active)));
 
   const pillsEl = $('active-pills');
   if (!pillsEl) return;
@@ -2016,9 +2017,22 @@ document.querySelectorAll('[data-compare-axis]').forEach(btn => {
     aeroCompare.render(flowCatalog, state);
   });
 });
-$('compare-swap-btn')?.addEventListener('click', async () => {
-  const other = state.model === 'rb19' ? 'rb16b' : 'rb19';
-  await loadModel(other, { preserveCamera: true });
+let compareSwapFlashTimer = null;
+$('compare-swap-btn')?.addEventListener('click', async e => {
+  const btn = e.currentTarget;
+  if (compareSwapFlashTimer) { clearTimeout(compareSwapFlashTimer); compareSwapFlashTimer = null; }
+  btn?.classList.add('is-clicking');
+  const startedAt = performance.now();
+  try {
+    const other = state.model === 'rb19' ? 'rb16b' : 'rb19';
+    await loadModel(other, { preserveCamera: true });
+  } finally {
+    const remain = Math.max(0, 260 - (performance.now() - startedAt));
+    compareSwapFlashTimer = setTimeout(() => {
+      btn?.classList.remove('is-clicking');
+      compareSwapFlashTimer = null;
+    }, remain);
+  }
 });
 $('compare-curtain-btn')?.addEventListener('click', () => { startCurtainSession().catch(() => {}); });
 $('popover-curtain-btn')?.addEventListener('click', e => {

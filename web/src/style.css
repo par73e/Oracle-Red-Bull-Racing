@@ -1732,6 +1732,15 @@ dialog p:last-child {
   padding: 5px 8px;
 }
 
+.compare-actions .chip:active,
+.compare-actions .chip.is-clicking,
+.compare-actions .chip[aria-pressed="true"],
+.compare-actions .chip[aria-pressed="true"]:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
 /* Curtain Wipe A/B Real-Time Scissor Overlay */
 .compare-curtain {
   --wipe: 50%;
@@ -1935,17 +1944,6 @@ dialog p:last-child {
   align-items: flex-start;
   gap: 2px;
   padding: 8px 10px;
-}
-
-.chip-accent {
-  background: var(--accent-soft);
-  border-color: rgba(224, 43, 40, 0.55);
-  color: #ffffff;
-}
-
-.chip-accent:hover {
-  background: var(--accent);
-  border-color: var(--accent);
 }
 
 /* Top-Right Merged Telemetry + Dual-Car Compare Popover */
