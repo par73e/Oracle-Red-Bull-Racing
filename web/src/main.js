@@ -20,8 +20,11 @@ import { ShowroomTour } from './showroom-tour.js';
 import { capturePhoto2K } from './photo-capture.js';
 import { AeroAudio } from './aero-audio.js';
 import { AeroHotspots } from './hotspots.js';
-import { Environments } from './environments.js';
+import { Environments, isTrackEnvironment } from './environments.js';
 import { createSpaShadowGeometry } from './spa-scene.js';
+import { createMonzaShadowGeometry } from './monza-scene.js';
+import { createSilverstoneShadowGeometry } from './silverstone-scene.js';
+import { createMonacoShadowGeometry } from './monaco-scene.js';
 import { computeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
@@ -78,7 +81,7 @@ function applyOperatingDefaults({ includeFlow = false } = {}) {
 }
 
 const STORAGE_KEY = 'aero-studio:config:v3';
-const VALID_ENVS = new Set(['studio', 'wind', 'eau-rouge']);
+const VALID_ENVS = new Set(['studio', 'wind', 'eau-rouge', 'monza', 'silverstone', 'monaco']);
 const VALID_VIEWS = new Set(['hero', 'front', 'side', 'drs', 'floor']);
 let persistenceReady = false;
 let savedCameraPose = null;
@@ -245,13 +248,14 @@ const studioExt = {
 const flowCatalog = new FlowCatalog(() => {
   updateCoverageGuidance();
   updateForcesDisplay();
-  if (state.panel === 'analysis') aeroCompare.render(flowCatalog, state);
+  if (isForcesPopoverOpen()) aeroCompare.render(flowCatalog, state);
 });
 const flowJobs = new FlowJobs(flowCatalog, { whole: airflow, bottom: underbody, side: sidepod }, updateFlowStatus, flowPreview);
 flowJobs.setExtras({
   smokeLayer: flowSmoke,
   getStyle: () => studioExt.flowStyle,
   getSmokeRakeX: () => studioExt.smokeRakeX,
+  needsField: () => Boolean(studioExt.sliceEnabled || flowProbe.enabled),
   getSliceRequest: cond => studioExt.sliceEnabled ? {
     axis: studioExt.sliceAxis,
     position: studioExt.slicePosition,
@@ -259,15 +263,27 @@ flowJobs.setExtras({
     refSpeedMps: Math.max(1, (cond?.speed ?? state.speed ?? 180) / 3.6),
   } : null,
   onSliceResult: res => {
-    if (studioExt.sliceEnabled) flowSlice.applyResult(res);
+    if (studioExt.sliceEnabled && (state.speed > 0 || state.wheelSpeedMps > 0)) flowSlice.applyResult(res);
     else flowSlice.setVisible(false);
   },
   onProbeResult: res => {
-    flowProbe.applyResult(res, Math.max(1, (state.speed || 0) / 3.6));
+    const label = curtainCompare?.active ? state.model.toUpperCase() : null;
+    flowProbe.applyResult(res, Math.max(1, (state.speed || 0) / 3.6), label);
+  },
+  onStill: () => {
+    flowSlice.setVisible(false);
+    flowProbe.clearResult();
+  },
+  onReset: () => {
+    flowSlice.clear();
+    flowProbe.clearResult();
   },
   onFieldUpdated: () => {
-    if (flowProbe.enabled && flowProbe.pinned && flowProbe.pinnedPoint) {
-      flowJobs.requestProbe(flowProbe.pinnedPoint);
+    if (flowProbe.enabled && flowProbe.pinned && flowProbe.pinnedRequest && !probePinnedIsPeer) {
+      flowJobs.requestProbe(flowProbe.pinnedRequest);
+    }
+    if (studioExt.sliceEnabled && !flowSlice.hasData && (state.speed > 0 || state.wheelSpeedMps > 0)) {
+      triggerSliceUpdate();
     }
   },
 });
@@ -317,20 +333,25 @@ floor.position.y = -.035;
 floor.receiveShadow = true;
 scene.add(floor);
 
-const eauRougeFloor = new THREE.Mesh(
-  createSpaShadowGeometry(),
-  new THREE.ShadowMaterial({
-    color: '#05080c',
-    opacity: .38,
-    polygonOffset: true,
-    polygonOffsetFactor: -2,
-    polygonOffsetUnits: -2,
-    depthWrite: false,
-  })
-);
-eauRougeFloor.receiveShadow = true;
-eauRougeFloor.visible = false;
-scene.add(eauRougeFloor);
+const trackShadowMat = new THREE.ShadowMaterial({
+  color: '#05080c',
+  opacity: .38,
+  polygonOffset: true,
+  polygonOffsetFactor: -2,
+  polygonOffsetUnits: -2,
+  depthWrite: false,
+});
+const trackShadowFloors = {
+  'eau-rouge': new THREE.Mesh(createSpaShadowGeometry(), trackShadowMat),
+  monza: new THREE.Mesh(createMonzaShadowGeometry(), trackShadowMat),
+  silverstone: new THREE.Mesh(createSilverstoneShadowGeometry(), trackShadowMat),
+  monaco: new THREE.Mesh(createMonacoShadowGeometry(), trackShadowMat),
+};
+for (const mesh of Object.values(trackShadowFloors)) {
+  mesh.receiveShadow = true;
+  mesh.visible = false;
+  scene.add(mesh);
+}
 
 const ORBIT_MAX_POLAR = Math.PI * .995;
 const SPA_OVERVIEW_MAX_POLAR = THREE.MathUtils.degToRad(48);
@@ -433,10 +454,12 @@ orbit.addEventListener('end', () => {
   scheduleCameraPoseSave();
 });
 
-function closeAllTelemetryPopovers() {
+function closeAllTelemetryPopovers({ includePinned = false } = {}) {
   document.querySelectorAll('.telemetry-item.is-open').forEach(item => {
-    item.classList.remove('is-open', 'is-dragging');
+    if (!includePinned && item.classList.contains('is-pinned')) return;
+    item.classList.remove('is-open', 'is-dragging', 'is-pinned');
     item.querySelector('.readout')?.setAttribute('aria-expanded', 'false');
+    if (item.dataset.telemetry === 'downforce' && $('forces-close-btn')) $('forces-close-btn').hidden = true;
   });
 }
 
@@ -583,7 +606,7 @@ window.addEventListener('pointerdown', e => {
     button: e.button,
     panMode: e.button === 2 || e.button === 1 || e.shiftKey || e.ctrlKey,
     onCanvas,
-    startedOutsideDrawer: !e.target.closest?.('#drawer, .rail, .flow-state, #credits'),
+    startedOutsideDrawer: !e.target.closest?.('#drawer, .rail, .flow-state, #credits, #hotspot-layer, #hotspot-card, #scenario-banner, #tour-badge, #compare-curtain, #active-pills, .topbar, .top-right'),
     moved: false,
     lockRequested: false,
     skipNextLockDelta: false,
@@ -636,8 +659,11 @@ window.addEventListener('pointerup', e => {
   if (!wasMoved && state.autoHidden) {
     setAutoHidden(false);
   }
-  if (!wasMoved && button === 0 && state.panel && startedOutsideDrawer && !e.target.closest?.('#drawer, .rail, .flow-state, #credits, .telemetry-popover')) {
+  if (!wasMoved && button === 0 && state.panel && startedOutsideDrawer && !e.target.closest?.('#drawer, .rail, .flow-state, #credits, .telemetry-popover, #hotspot-layer, #hotspot-card, #scenario-banner, #tour-badge, #compare-curtain, #active-pills, .topbar, .top-right')) {
     setPanel(null);
+  }
+  if (!wasMoved && button === 0 && !e.target.closest?.('.downforce-dock, .telemetry-popover, .hud')) {
+    unpinForcesPopover();
   }
 }, { passive: true });
 
@@ -672,17 +698,26 @@ const FREE_MOVE_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 
 const freeKeys = new Set();
 window.addEventListener('keydown', e => {
   if (e.target.closest?.('input, textarea, select, button, dialog, [contenteditable]')) {
-    if (e.code === 'Escape' && state.panel) setPanel(null);
+    if (e.code === 'Escape' && state.panel) { setPanel(null); return; }
+    // Curtain-bar buttons keep focus after a click; a second Esc must still close the curtain.
+    if (e.code === 'Escape' && curtainCompare?.active && e.target.closest?.('button') && !e.target.closest?.('dialog')) curtainCompare.deactivate();
     return;
   }
   if (e.code === 'Escape') {
+    if (curtainCompare?.active && state.panel) { setPanel(null); return; }
     if (curtainCompare?.active) { curtainCompare.deactivate(); return; }
     if (showroomTour?.active) { showroomTour.stop(); return; }
     if (aeroHotspots?.activeId) { aeroHotspots.clearSelection(); return; }
-    if ($('scenario-banner') && !$('scenario-banner').hidden) { $('scenario-banner').hidden = true; return; }
+    if (flowProbe?.pinned) { flowProbe.unpin(); return; }
+    if ($('scenario-banner') && !$('scenario-banner').hidden) { clearScenarioBanner(); return; }
+    if (isForcesPopoverOpen()) { unpinForcesPopover(); return; }
     if (state.panel) setPanel(null);
     closeAllTelemetryPopovers();
     return;
+  }
+  if (curtainCompare?.active && !e.metaKey && !e.ctrlKey && !e.altKey) {
+    if (e.code === 'BracketLeft') { e.preventDefault(); curtainCompare.nudge(-0.05); return; }
+    if (e.code === 'BracketRight') { e.preventDefault(); curtainCompare.nudge(0.05); return; }
   }
   if (e.code === 'KeyH' && !e.metaKey && !e.ctrlKey && !e.altKey) {
     e.preventDefault();
@@ -690,15 +725,16 @@ window.addEventListener('keydown', e => {
     return;
   }
   if (!e.metaKey && !e.ctrlKey && !e.altKey) {
-    if (e.code === 'Digit0') { activateFreeView(); return; }
-    if (e.code === 'Digit1') { setView('hero'); return; }
-    if (e.code === 'Digit2') { setView('front'); return; }
-    if (e.code === 'Digit3') { setView('side'); return; }
-    if (e.code === 'Digit4') { setView('drs'); return; }
-    if (e.code === 'Digit5') { setView('floor'); return; }
+    if (e.code === 'Digit0') { showroomTour?.stop(); activateFreeView(); return; }
+    if (e.code === 'Digit1') { showroomTour?.stop(); setView('hero'); return; }
+    if (e.code === 'Digit2') { showroomTour?.stop(); setView('front'); return; }
+    if (e.code === 'Digit3') { showroomTour?.stop(); setView('side'); return; }
+    if (e.code === 'Digit4') { showroomTour?.stop(); setView('drs'); return; }
+    if (e.code === 'Digit5') { showroomTour?.stop(); setView('floor'); return; }
   }
   if (FREE_MOVE_KEYS.has(e.code)) {
     e.preventDefault();
+    showroomTour?.stop();
     transition = null;
     markFreeCameraActive();
     freeKeys.add(e.code);
@@ -776,6 +812,15 @@ function resolveView(name, forFreeLanding = false) {
         ? { position: [3.5, 2.3, -11], target: [-4, 4.6, 22] }
         : { position: [4.2, 2.15, -9.2], target: [0, .62, 0] };
     }
+    if (state.environment === 'monza') {
+      return { position: [4.2, 1.85, 6.8], target: [0.2, .72, 2.0] };
+    }
+    if (state.environment === 'silverstone') {
+      return { position: [4.8, 2.25, 6.2], target: [-0.4, .48, -0.8] };
+    }
+    if (state.environment === 'monaco') {
+      return { position: [3.25, 1.32, 4.15], target: [0.35, .44, 0.55] };
+    }
     return views.hero;
   }
   if (name === 'front') {
@@ -793,8 +838,8 @@ function applyFraming() {
   camera.aspect = width / height;
   camera.fov = width <= 620
     ? (state.environment === 'wind' && state.view === 'side' ? 80 : 60)
-    : state.environment === 'eau-rouge' && state.view === 'hero'
-      ? 46
+    : isTrackEnvironment(state.environment) && state.view === 'hero'
+      ? (state.environment === 'eau-rouge' ? 46 : 40)
       : 34;
   camera.clearViewOffset();
   camera.updateProjectionMatrix();
@@ -807,8 +852,8 @@ function applyFraming() {
 }
 
 function orbitMaxPolarAt(distance) {
-  if (state.environment !== 'eau-rouge' || state.freeMode || state.view === 'floor') return ORBIT_MAX_POLAR;
-  // Raise the distant orbit above Spa's wooded slopes and grandstand.
+  if (!isTrackEnvironment(state.environment) || state.freeMode || state.view === 'floor') return ORBIT_MAX_POLAR;
+  // Raise the distant orbit above wooded slopes, grandstands, and street walls.
   const overview = THREE.MathUtils.smoothstep(distance, 18, 80);
   return THREE.MathUtils.lerp(ORBIT_MAX_POLAR, SPA_OVERVIEW_MAX_POLAR, overview);
 }
@@ -835,8 +880,8 @@ function setView(name, instant = false, keepFreeBadge = false, resetSavedPose = 
   });
   camera.fov = viewport.clientWidth <= 620
     ? (state.environment === 'wind' && name === 'side' ? 80 : 60)
-    : state.environment === 'eau-rouge' && name === 'hero'
-      ? 46
+    : isTrackEnvironment(state.environment) && name === 'hero'
+      ? (state.environment === 'eau-rouge' ? 46 : 40)
       : 34;
   camera.updateProjectionMatrix();
 
@@ -863,6 +908,7 @@ function setView(name, instant = false, keepFreeBadge = false, resetSavedPose = 
 }
 
 function activateFreeView() {
+  showroomTour?.stop();
   if (state.view === 'floor' || camera.position.y < 0) {
     setView('hero', false, true);
   } else {
@@ -879,12 +925,16 @@ $('free-camera')?.addEventListener('click', e => {
 
 renderer.domElement.addEventListener('dblclick', e => {
   if (!currentModel) return;
+  showroomTour?.stop();
   const rect = renderer.domElement.getBoundingClientRect();
   const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
   const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
   const ray = new THREE.Raycaster();
   ray.setFromCamera(new THREE.Vector2(x, y), camera);
-  const hits = ray.intersectObject(currentModel, true);
+  const targetModel = (curtainCompare.active && peerModel && (((e.clientX - rect.left) < rect.width * curtainCompare.ratio) !== curtainSwapped))
+    ? peerModel
+    : currentModel;
+  const hits = ray.intersectObject(targetModel, true);
   if (!hits.length) return;
   const hitPoint = hits[0].point.clone();
   const currentDist = camera.position.distanceTo(hitPoint);
@@ -921,18 +971,72 @@ function setPanel(name) {
   state.panel = next;
   const drawer = $('drawer');
   if (drawer) drawer.hidden = !next;
+  $('app')?.classList.toggle('drawer-open', Boolean(next));
   document.querySelectorAll('.rail-button').forEach(btn => {
     btn.setAttribute('aria-expanded', String(btn.dataset.panel === next));
   });
   document.querySelectorAll('.drawer .panel').forEach(panel => {
     panel.hidden = panel.id !== `panel-${next}`;
   });
-  if (next === 'analysis') {
-    const peer = state.model === 'rb19' ? 'rb16b' : 'rb19';
-    flowCatalog.loadPeerManifest(peer, () => aeroCompare.render(flowCatalog, state));
-    aeroCompare.render(flowCatalog, state);
+  updateActiveToolIndicators?.();
+}
+
+const forcesItem = document.querySelector('.downforce-dock .telemetry-item[data-telemetry="downforce"]');
+function isForcesPopoverOpen() {
+  return Boolean(forcesItem?.classList.contains('is-open'));
+}
+function ensureCompareManifestLoaded() {
+  const peer = state.model === 'rb19' ? 'rb16b' : 'rb19';
+  flowCatalog.loadPeerManifest(peer, () => aeroCompare?.render(flowCatalog, state));
+  aeroCompare?.render(flowCatalog, state);
+}
+function setForcesPopoverPinned(pinned) {
+  if (!forcesItem) return;
+  const btn = forcesItem.querySelector('.readout');
+  forcesItem.classList.toggle('is-pinned', pinned);
+  if ($('forces-close-btn')) $('forces-close-btn').hidden = !pinned;
+  if (pinned) {
+    updatePopoverPosition(forcesItem);
+    forcesItem.classList.add('is-open');
+    btn?.setAttribute('aria-expanded', 'true');
+    ensureCompareManifestLoaded();
+  } else {
+    forcesItem.classList.remove('is-open');
+    btn?.setAttribute('aria-expanded', 'false');
   }
 }
+function unpinForcesPopover() {
+  if (forcesItem?.classList.contains('is-pinned') || forcesItem?.classList.contains('is-open')) {
+    setForcesPopoverPinned(false);
+  }
+}
+function setForcesTab(tabName) {
+  const next = tabName === 'compare' ? 'compare' : 'current';
+  document.querySelectorAll('[data-forces-tab]').forEach(b => {
+    const active = b.dataset.forcesTab === next;
+    b.setAttribute('aria-pressed', String(active));
+    b.setAttribute('aria-selected', String(active));
+  });
+  if ($('forces-tab-current')) $('forces-tab-current').hidden = next !== 'current';
+  if ($('forces-tab-compare')) $('forces-tab-compare').hidden = next !== 'compare';
+  ensureCompareManifestLoaded();
+}
+document.querySelectorAll('[data-forces-tab]').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    setForcesPopoverPinned(true);
+    setForcesTab(btn.dataset.forcesTab);
+  });
+});
+$('compare-summary-btn')?.addEventListener('click', e => {
+  e.stopPropagation();
+  setForcesPopoverPinned(true);
+  setForcesTab('compare');
+});
+$('forces-close-btn')?.addEventListener('click', e => {
+  e.stopPropagation();
+  setForcesPopoverPinned(false);
+});
 
 document.querySelectorAll('.rail-button').forEach(btn => {
   btn.addEventListener('click', () => setPanel(btn.dataset.panel));
@@ -945,18 +1049,19 @@ function updatePopoverPosition(item) {
   if (!pop) return;
   const itemRect = item.getBoundingClientRect();
   const topDock = item.closest('.downforce-dock')?.getBoundingClientRect();
-  const hudRect = topDock ? null : document.querySelector('.hud')?.getBoundingClientRect();
+  if (topDock) {
+    const lift = Math.max(10, Math.round(topDock.bottom - itemRect.bottom + 10));
+    pop.style.setProperty('--popover-lift', `${lift}px`);
+    return;
+  }
+  const hudRect = document.querySelector('.hud')?.getBoundingClientRect();
   const popWidth = pop.offsetWidth || 224;
   const minLeft = hudRect ? hudRect.left : 16;
   const maxLeft = Math.max(minLeft, (hudRect ? hudRect.right : window.innerWidth - 16) - popWidth);
   const idealLeft = itemRect.left + itemRect.width / 2 - popWidth / 2;
   const clampedLeft = Math.min(maxLeft, Math.max(minLeft, idealLeft));
   pop.style.setProperty('--popover-shift', `${Math.round(clampedLeft - idealLeft)}px`);
-  const lift = topDock
-    ? Math.max(10, Math.round(topDock.bottom - itemRect.bottom + 10))
-    : hudRect
-      ? Math.max(10, Math.round(itemRect.top - hudRect.top + 10))
-      : 10;
+  const lift = hudRect ? Math.max(10, Math.round(itemRect.top - hudRect.top + 10)) : 10;
   pop.style.setProperty('--popover-lift', `${lift}px`);
 }
 
@@ -970,10 +1075,11 @@ document.querySelectorAll('.telemetry-item').forEach(item => {
   const btn = item.querySelector('.readout');
   const range = item.querySelector('input[type="range"]');
   const shortcut = telemetrySteps[item.dataset.telemetry];
+  const isForces = item.dataset.telemetry === 'downforce';
   if (!item.querySelector('.telemetry-popover')) return;
   const openItem = () => {
     document.querySelectorAll('.telemetry-item.is-open').forEach(other => {
-      if (other !== item && !other.classList.contains('is-dragging')) {
+      if (other !== item && !other.classList.contains('is-dragging') && !other.classList.contains('is-pinned')) {
         other.classList.remove('is-open');
         other.querySelector('.readout')?.setAttribute('aria-expanded', 'false');
       }
@@ -981,8 +1087,10 @@ document.querySelectorAll('.telemetry-item').forEach(item => {
     updatePopoverPosition(item);
     item.classList.add('is-open');
     btn?.setAttribute('aria-expanded', 'true');
+    if (isForces) ensureCompareManifestLoaded();
   };
   const closeItem = () => {
+    if (item.classList.contains('is-pinned')) return;
     item.classList.remove('is-open', 'is-dragging');
     btn?.setAttribute('aria-expanded', 'false');
   };
@@ -990,16 +1098,17 @@ document.querySelectorAll('.telemetry-item').forEach(item => {
     if (e.pointerType !== 'touch') openItem();
   });
   item.addEventListener('pointerleave', e => {
-    if (e.pointerType !== 'touch' && !item.classList.contains('is-dragging') && !item.querySelector(':focus-visible')) closeItem();
+    if (e.pointerType !== 'touch' && !item.classList.contains('is-dragging') && !item.classList.contains('is-pinned') && !item.querySelector(':focus-visible')) closeItem();
   });
   item.addEventListener('focusout', e => {
-    if (!item.contains(e.relatedTarget) && !item.matches(':hover') && !item.classList.contains('is-dragging')) closeItem();
+    if (!item.contains(e.relatedTarget) && !item.matches(':hover') && !item.classList.contains('is-dragging') && !item.classList.contains('is-pinned')) closeItem();
   });
   item.addEventListener('keydown', e => {
     if (e.key === 'Escape' && item.classList.contains('is-open')) {
       e.stopPropagation();
       btn?.focus();
-      closeItem();
+      if (isForces) setForcesPopoverPinned(false);
+      else closeItem();
     } else if (e.key === 'ArrowDown' && e.target === btn && range) {
       e.preventDefault();
       openItem();
@@ -1008,6 +1117,10 @@ document.querySelectorAll('.telemetry-item').forEach(item => {
   });
   btn?.addEventListener('click', e => {
     e.stopPropagation();
+    if (isForces) {
+      setForcesPopoverPinned(!item.classList.contains('is-pinned'));
+      return;
+    }
     if (e.pointerType === 'touch') {
       if (item.classList.contains('is-open')) closeItem();
       else openItem();
@@ -1044,45 +1157,75 @@ document.querySelector('.flow-state')?.addEventListener('click', e => {
   setPanel('flow');
 });
 
-function setEnvironment(name) {
-  if (!['studio', 'wind', 'eau-rouge'].includes(name)) return;
+const SCENE_META = {
+  studio: {
+    label: '纯白无缝影棚',
+    detail: '纯白影棚打光 · 聚焦赛车曲面与流线细节',
+    keyPos: [3, 6, 4], keyInt: 3.5, fillInt: 1.45, envInt: .82,
+  },
+  wind: {
+    label: '风洞试验段',
+    detail: '原创全尺寸风洞场景 · 气流来自自由外流算例',
+    keyPos: [3, 6, 4], keyInt: 3.2, fillInt: 1.2, envInt: .68,
+  },
+  'eau-rouge': {
+    label: '斯帕 · Eau Rouge 谷底望向 Raidillon',
+    detail: '斯帕 LiDAR 地形 · 谷底左弯仰冲 +35 m 盲顶',
+    keyPos: [-4.5, 6.0, 2.0], keyInt: 2.2, fillInt: .8, envInt: .9,
+  },
+  monza: {
+    label: '蒙扎 · 主大直道（Rettifilo Tribune）',
+    detail: '速度殿堂 520 m 主直道 · 起跑龙门架、主看台、维修区与一号减速弯',
+    keyPos: [4.2, 6.6, 5.2], keyInt: 2.7, fillInt: 1.0, envInt: .85,
+  },
+  silverstone: {
+    label: '银石 · Maggotts–Becketts 高速 S 弯',
+    detail: 'T11 右弯弯心 · 开阔二战机场地貌与实时侧风联动风向袋',
+    keyPos: [-4.8, 6.2, 3.2], keyInt: 2.25, fillInt: .88, envInt: .88,
+  },
+  monaco: {
+    label: '摩纳哥 · 费尔蒙 180° 发卡弯',
+    detail: 'Mirabeau 陡下坡 180° 左转发卡弯 · 棕榈岛台、贴墙护栏与费尔蒙酒店',
+    keyPos: [3.8, 7.2, 4.5], keyInt: 2.85, fillInt: 1.05, envInt: .9,
+  },
+};
+
+function setEnvironment(name, { preserveCamera = false, fromScenario = false } = {}) {
+  if (!VALID_ENVS.has(name)) return;
   const envChanged = state.environment !== name;
   state.environment = name;
-  if (envChanged) clearSavedCameraPose();
+  if (envChanged && !preserveCamera) clearSavedCameraPose();
+  if (envChanged && !fromScenario) clearScenarioBanner?.();
   $('app').dataset.environment = name;
   document.querySelectorAll('[data-environment]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.environment === name)));
   worlds.set(name, rig?.config.year || (state.model === 'rb19' ? 2023 : 2021));
-  $('scene-label').textContent = {
-    studio: '纯白无缝影棚',
-    wind: '风洞试验段',
-    'eau-rouge': 'Eau Rouge · 坡底望向 Raidillon',
-  }[name];
-  $('scene-detail').textContent = name === 'eau-rouge'
-    ? '斯帕 · 谷底仰视上坡与盲顶'
-    : name === 'wind'
-      ? '原创全尺寸风洞场景 · 气流来自自由外流算例'
-      : '纯白影棚打光 · 聚焦赛车曲面与流线细节';
-  orbit.maxDistance = name === 'eau-rouge' ? 120 : 18;
+  const meta = SCENE_META[name] || SCENE_META.wind;
+  const isTrack = isTrackEnvironment(name);
+  $('scene-label').textContent = meta.label;
+  $('scene-detail').textContent = meta.detail;
+  orbit.maxDistance = isTrack ? 120 : 18;
   orbit.maxPolarAngle = ORBIT_MAX_POLAR;
   floor.position.y = name === 'studio' ? -.035 : -.003;
   floor.material.opacity = name === 'studio' ? .42 : .24;
-  floor.visible = name !== 'eau-rouge';
-  eauRougeFloor.visible = name === 'eau-rouge';
-  key.position.set(...(name === 'wind' || name === 'studio' ? [3, 6, 4] : [-4.5, 6.0, 2.0]));
-  const shadowSpan = name === 'eau-rouge' ? 6 : 4;
+  floor.visible = !isTrack;
+  for (const [k, mesh] of Object.entries(trackShadowFloors)) {
+    mesh.visible = k === name;
+  }
+  key.position.set(...meta.keyPos);
+  const shadowSpan = isTrack ? 6 : 4;
   Object.assign(key.shadow.camera, {
     left: -shadowSpan,
     right: shadowSpan,
     top: shadowSpan,
     bottom: -shadowSpan,
-    far: name === 'eau-rouge' ? 24 : 18,
+    far: isTrack ? 24 : 18,
   });
   key.shadow.camera.updateProjectionMatrix();
-  scene.environmentIntensity = name === 'studio' ? .82 : name === 'wind' ? .68 : .9;
-  key.intensity = name === 'studio' ? 3.5 : name === 'wind' ? 3.2 : 2.2;
-  fill.intensity = name === 'studio' ? 1.45 : name === 'wind' ? 1.2 : .8;
+  scene.environmentIntensity = meta.envInt;
+  key.intensity = meta.keyInt;
+  fill.intensity = meta.fillInt;
   syncTurntable();
-  setView(state.view, true, state.freeMode, false);
+  if (!preserveCamera) setView(state.view, true, state.freeMode, false);
   renderer.shadowMap.needsUpdate = true;
   saveState();
 }
@@ -1225,7 +1368,7 @@ const FLOW_PRESETS = {
   cruise: { groundSpeed: 180, windAngle: 0, steer: 0, drs: 0 },
   high350: { groundSpeed: 350, windAngle: 0, steer: 0, drs: 0 },
   drs: { groundSpeed: 180, windAngle: 0, steer: 0, drs: 1 },
-  steer: { groundSpeed: 180, windAngle: 0, steer: -18, drs: 0 },
+  steer: { groundSpeed: 180, windAngle: 0, steer: 18, drs: 0 },
   yaw45: { groundSpeed: 180, windAngle: 45, steer: 0, drs: 0 },
 };
 
@@ -1300,8 +1443,49 @@ function disposeModel(model) {
   textures.forEach(t => t.dispose());
 }
 
-async function loadModel(id) {
+async function parsePreparedCarModel(id, config, onProgress = null) {
+  const modelFile = config.web_file || config.file;
+  const modelVersion = config.web_revision || config.revision || config.web_glb_bytes || config.glb_bytes;
+  const modelUrl = `${modelFile}?v=${modelVersion}`;
+  const expectedBytes = config.web_glb_bytes || config.glb_bytes || 0;
+  const [buffer] = await Promise.all([
+    cachedArrayBuffer(modelUrl, {
+      onProgress: (loadedBytes, headerTotal) => {
+        onProgress?.(loadedBytes, expectedBytes || headerTotal);
+      },
+    }),
+    MeshoptDecoder.ready,
+  ]);
+  const loaded = await loader.parseAsync(buffer, '/');
+  if (id === 'rb16b') {
+    const unfastenedHarness = [];
+    loaded.scene.traverse(o => {
+      if (o.isMesh && o.name.startsWith('CINTURE_OFF_')) unfastenedHarness.push(o);
+    });
+    unfastenedHarness.forEach(o => o.removeFromParent());
+  }
+  const nextRig = bindRig(loaded.scene, config);
+  loaded.scene.traverse(o => {
+    if (o.isMesh) {
+      o.castShadow = true;
+      o.receiveShadow = true;
+      if (o.geometry.attributes.position.count > 30) o.geometry.computeBoundsTree();
+      for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+        if (id === 'rb16b' && (m.name === 'gp21_cinture.001' || m.name === 'chrome.001')) {
+          m.transparent = false;
+          m.depthWrite = true;
+        }
+        for (const value of Object.values(m)) if (value?.isTexture) value.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
+      }
+    }
+  });
+  return { scene: loaded.scene, rig: nextRig, modelUrl };
+}
+
+async function loadModel(id, { preserveCamera = false } = {}) {
   if (!configs?.[id]) throw new Error('找不到车型资料');
+  showroomTour?.stop();
+  if (curtainCompare?.active) curtainCompare.deactivate();
   const serial = ++loadSerial;
   const config = configs[id];
   let loadSettled = false;
@@ -1316,7 +1500,6 @@ async function loadModel(id) {
     const modelFile = config.web_file || config.file;
     const modelVersion = config.web_revision || config.revision || config.web_glb_bytes || config.glb_bytes;
     const modelUrl = `${modelFile}?v=${modelVersion}`;
-    const expectedBytes = config.web_glb_bytes || config.glb_bytes || 0;
     if (!loadedCarsInSession.has(id)) {
       hasCachedAsset(modelUrl).then(cached => {
         if (serial === loadSerial && !loadSettled && !cached) setFirstLoadVeil(true, config);
@@ -1324,56 +1507,24 @@ async function loadModel(id) {
     }
     flowJobs.reset();
     flowCatalog.load(id);
-    const [buffer] = await Promise.all([
-      cachedArrayBuffer(modelUrl, {
-        onProgress: (loadedBytes, headerTotal) => {
-          if (serial !== loadSerial) return;
-          const denom = expectedBytes || headerTotal;
-          if (denom) $('loading-text').textContent = `${config.name} / ${Math.min(100, Math.round(loadedBytes / denom * 100))}%`;
-        },
-      }),
-      MeshoptDecoder.ready,
-    ]);
-    if (serial !== loadSerial) return;
-    const loaded = await loader.parseAsync(buffer, '/');
-    if (serial !== loadSerial) { disposeModel(loaded.scene); return; }
-    if (id === 'rb16b') {
-      // The export includes both fastened and unfastened harness geometry.
-      // Display the fastened variant on its own to avoid overlapping straps.
-      const unfastenedHarness = [];
-      loaded.scene.traverse(o => {
-        if (o.isMesh && o.name.startsWith('CINTURE_OFF_')) unfastenedHarness.push(o);
-      });
-      unfastenedHarness.forEach(o => o.removeFromParent());
-    }
-    const nextRig = bindRig(loaded.scene, config);
-    loaded.scene.traverse(o => {
-      if (o.isMesh) {
-        o.castShadow = true;
-        o.receiveShadow = true;
-        if (o.geometry.attributes.position.count > 30) o.geometry.computeBoundsTree();
-        for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
-          // Both RB16B harness materials are fully opaque. Imported blending
-          // let the cockpit draw over the straps as the camera angle changed.
-          if (id === 'rb16b' && (m.name === 'gp21_cinture.001' || m.name === 'chrome.001')) {
-            m.transparent = false;
-            m.depthWrite = true;
-          }
-          for (const value of Object.values(m)) if (value?.isTexture) value.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
-        }
-      }
+    const { scene: nextScene, rig: nextRig } = await parsePreparedCarModel(id, config, (loadedBytes, denom) => {
+      if (serial !== loadSerial) return;
+      if (denom) $('loading-text').textContent = `${config.name} / ${Math.min(100, Math.round(loadedBytes / denom * 100))}%`;
     });
+    if (serial !== loadSerial) { disposeModel(nextScene); return; }
     if (currentModel) { carTurntable.remove(currentModel); disposeModel(currentModel); }
-    currentModel = loaded.scene;
+    currentModel = nextScene;
     rig = nextRig;
     carTurntable.add(currentModel);
-    setEnvironment(state.environment);
+    setEnvironment(state.environment, { preserveCamera, fromScenario: true });
     showState();
     state.spin = 0;
     applyRig(rig, { drs: state.drsCurrent, steer: state.steer, spin: state.spin });
     renderer.shadowMap.needsUpdate = true;
     if ($('model-name')) $('model-name').innerHTML = `${config.name}<span>.</span>`;
     $('era').textContent = `${config.year} / ${id === 'rb19' ? 'GROUND EFFECT' : 'HYBRID ERA'}`;
+    aeroHotspots?.refreshModel(id);
+    if (isForcesPopoverOpen()) ensureCompareManifestLoaded();
     loadSettled = true;
     loadedCarsInSession.add(id);
     setFirstLoadVeil(false);
@@ -1392,7 +1543,10 @@ async function loadModel(id) {
 }
 
 document.querySelectorAll('[data-model]').forEach(b => b.addEventListener('click', () => loadModel(b.dataset.model).catch(() => {})));
-document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => setView(b.dataset.view, false, false)));
+document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => {
+  showroomTour?.stop();
+  setView(b.dataset.view, false, false);
+}));
 $('auto-hide-toggle')?.addEventListener('click', e => {
   state.autoHide = !state.autoHide;
   e.currentTarget.setAttribute('aria-pressed', String(state.autoHide));
@@ -1404,6 +1558,7 @@ $('interface-toggle').addEventListener('click', e => {
   state.manualHidden = hidden;
   if (hidden) {
     setAutoHidden(false);
+    unpinForcesPopover();
     closeAllTelemetryPopovers();
   }
   document.querySelectorAll('.chrome, .drawer').forEach(el => {
@@ -1435,7 +1590,9 @@ $('hud-drs-toggle').addEventListener('click', () => {
 $('hud-steer')?.addEventListener('input', e => { state.steer = Number(e.target.value); showState(); });
 $('hud-center-steering')?.addEventListener('click', () => { state.steer = 0; showState(); });
 $('reset').addEventListener('click', () => {
+  clearScenarioBanner?.();
   applyOperatingDefaults();
+  aeroAudio.syncDrs(state.drs);
   showState();
 });
 document.querySelectorAll('[data-environment]').forEach(b => b.addEventListener('click', () => setEnvironment(b.dataset.environment)));
@@ -1446,7 +1603,7 @@ $('flow-toggle').addEventListener('click', () => {
   showState();
 });
 
-// === 8 Expansion Features Wiring ===
+// === 8 Expansion Features Wiring + Real-Time Scissor Dual-Car Curtain ===
 function flyCameraTo(pose) {
   const v = rotateViewByTurntable(pose);
   transition = {
@@ -1459,15 +1616,77 @@ function flyCameraTo(pose) {
   };
 }
 
+let activeScenarioId = null;
+function clearScenarioBanner() {
+  activeScenarioId = null;
+  if ($('scenario-banner')) $('scenario-banner').hidden = true;
+  document.querySelectorAll('[data-scenario]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+}
+
+// Active rail dots & collapsed quick-close tool pills
+function updateActiveToolIndicators() {
+  const flowActive = studioExt.flowStyle === 'smoke';
+  const analysisActive = Boolean(studioExt.sliceEnabled || flowProbe.enabled || aeroHotspots?.enabled || curtainCompare?.active);
+  const exploreActive = Boolean(showroomTour?.active);
+  document.querySelector('.rail-button[data-panel="flow"]')?.classList.toggle('has-active', flowActive);
+  document.querySelector('.rail-button[data-panel="analysis"]')?.classList.toggle('has-active', analysisActive);
+  document.querySelector('.rail-button[data-panel="explore"]')?.classList.toggle('has-active', exploreActive);
+
+  const pillsEl = $('active-pills');
+  if (!pillsEl) return;
+  if (state.panel || curtainCompare?.active) {
+    pillsEl.hidden = true;
+    return;
+  }
+  const items = [];
+  if (studioExt.flowStyle === 'smoke') items.push({ id: 'smoke', label: '风洞烟雾流', panel: 'flow', off: () => setFlowStyle('lines') });
+  if (studioExt.sliceEnabled) items.push({ id: 'slice', label: `PIV ${studioExt.sliceAxis.toUpperCase()} 切面`, panel: 'analysis', off: () => setSliceEnabled(false) });
+  if (flowProbe.enabled) items.push({ id: 'probe', label: flowProbe.pinned ? '皮托管探针 (已钉住)' : '皮托管探针', panel: 'analysis', off: () => setProbeEnabled(false) });
+  if (aeroHotspots?.enabled) items.push({ id: 'hotspots', label: '气动热点', panel: 'analysis', off: () => setHotspotsEnabled(false) });
+  if (!items.length) {
+    pillsEl.hidden = true;
+    pillsEl.innerHTML = '';
+    return;
+  }
+  pillsEl.innerHTML = '';
+  for (const item of items) {
+    const chip = document.createElement('span');
+    chip.className = 'active-pill';
+    chip.dataset.activePill = item.id;
+    const openBtn = document.createElement('button');
+    openBtn.type = 'button';
+    openBtn.className = 'active-pill-open';
+    openBtn.textContent = item.label;
+    openBtn.title = '打开对应控制面板';
+    openBtn.addEventListener('click', e => { e.stopPropagation(); setPanel(item.panel); });
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'active-pill-close';
+    closeBtn.textContent = '✕';
+    closeBtn.setAttribute('aria-label', `关闭${item.label}`);
+    closeBtn.addEventListener('click', e => { e.stopPropagation(); item.off(); });
+    chip.append(openBtn, closeBtn);
+    pillsEl.appendChild(chip);
+  }
+  pillsEl.hidden = false;
+}
+
 // 1. Flow style (Fine CFD lines vs Wind Tunnel Smoke Rake)
+function setFlowStyle(nextStyle) {
+  const next = nextStyle === 'smoke' ? 'smoke' : 'lines';
+  studioExt.flowStyle = next;
+  document.querySelectorAll('[data-flow-style]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.flowStyle === next)));
+  if ($('smoke-rake-group')) $('smoke-rake-group').hidden = next !== 'smoke';
+  if (next === 'smoke') {
+    flowSmoke.clear();
+    peerFlowSmoke?.clear();
+  }
+  flowJobs.setVisible(state.flow && state.flowDensity > 0);
+  peerFlowJobs?.setVisible(state.flow && state.flowDensity > 0);
+  updateActiveToolIndicators();
+}
 document.querySelectorAll('[data-flow-style]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const next = btn.dataset.flowStyle === 'smoke' ? 'smoke' : 'lines';
-    studioExt.flowStyle = next;
-    document.querySelectorAll('[data-flow-style]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.flowStyle === next)));
-    if ($('smoke-rake-group')) $('smoke-rake-group').hidden = next !== 'smoke';
-    flowJobs.setVisible(state.flow && state.flowDensity > 0);
-  });
+  btn.addEventListener('click', () => setFlowStyle(btn.dataset.flowStyle));
 });
 $('smoke-rake-x')?.addEventListener('input', e => {
   studioExt.smokeRakeX = Number(e.target.value);
@@ -1493,21 +1712,32 @@ function syncSliceSlider() {
   if ($('slice-pos-value')) $('slice-pos-value').textContent = `${studioExt.slicePosition.toFixed(2)} m`;
 }
 function triggerSliceUpdate() {
-  if (!studioExt.sliceEnabled) { flowSlice.setVisible(false); return; }
-  flowJobs.requestSlice({
+  if (!studioExt.sliceEnabled || (state.speed <= 0 && state.wheelSpeedMps <= 0)) {
+    flowSlice.setVisible(false);
+    peerFlowSlice?.setVisible(false);
+    return;
+  }
+  const req = {
     axis: studioExt.sliceAxis,
     position: studioExt.slicePosition,
     metric: studioExt.sliceMetric,
     refSpeedMps: Math.max(1, (state.speed || 180) / 3.6),
-  });
+  };
+  flowJobs.requestSlice(req);
+  peerFlowJobs?.requestSlice(req);
 }
-$('slice-toggle')?.addEventListener('click', () => {
-  studioExt.sliceEnabled = !studioExt.sliceEnabled;
-  $('slice-toggle').setAttribute('aria-checked', String(studioExt.sliceEnabled));
+function setSliceEnabled(enabled) {
+  studioExt.sliceEnabled = Boolean(enabled);
+  $('slice-toggle')?.setAttribute('aria-checked', String(studioExt.sliceEnabled));
   if ($('slice-controls')) $('slice-controls').hidden = !studioExt.sliceEnabled;
   if (studioExt.sliceEnabled) triggerSliceUpdate();
-  else flowSlice.setVisible(false);
-});
+  else {
+    flowSlice.setVisible(false);
+    peerFlowSlice?.setVisible(false);
+  }
+  updateActiveToolIndicators();
+}
+$('slice-toggle')?.addEventListener('click', () => setSliceEnabled(!studioExt.sliceEnabled));
 document.querySelectorAll('[data-slice-axis]').forEach(btn => {
   btn.addEventListener('click', () => {
     const axis = btn.dataset.sliceAxis;
@@ -1516,6 +1746,7 @@ document.querySelectorAll('[data-slice-axis]').forEach(btn => {
     document.querySelectorAll('[data-slice-axis]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.sliceAxis === axis)));
     syncSliceSlider();
     triggerSliceUpdate();
+    updateActiveToolIndicators();
   });
 });
 $('slice-pos')?.addEventListener('input', e => {
@@ -1532,14 +1763,31 @@ document.querySelectorAll('[data-slice-metric]').forEach(btn => {
   });
 });
 
-// 3. Virtual Pitot Wind Probe
+// 3. Virtual Pitot Wind Probe (robust close-up near-wall sampling + screen-space sizing + direct re-pin)
 let probeRafPending = false;
 let probeDownPos = null;
-$('probe-toggle')?.addEventListener('click', () => {
-  const next = !flowProbe.enabled;
+let probePinnedIsPeer = false;
+function resolveProbeTarget(clientX) {
+  if (curtainCompare.active && peerModel && peerRig && peerFlowJobs) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    const onLeft = (clientX - rect.left) < rect.width * curtainCompare.ratio;
+    const targetIsPeer = onLeft !== curtainSwapped;
+    if (targetIsPeer) {
+      return { isPeer: true, rig: peerRig, slice: peerFlowSlice, jobs: peerFlowJobs };
+    }
+  }
+  return { isPeer: false, rig, slice: flowSlice, jobs: flowJobs };
+}
+function setProbeEnabled(enabled, { autoCollapse = false } = {}) {
+  const next = Boolean(enabled);
   flowProbe.setEnabled(next);
-  $('probe-toggle').setAttribute('aria-checked', String(next));
-});
+  if (!next) probePinnedIsPeer = false;
+  $('probe-toggle')?.setAttribute('aria-checked', String(next));
+  $('app')?.classList.toggle('is-probe-mode', next);
+  if (next && autoCollapse) setPanel(null);
+  updateActiveToolIndicators();
+}
+$('probe-toggle')?.addEventListener('click', () => setProbeEnabled(!flowProbe.enabled, { autoCollapse: true }));
 viewport.addEventListener('pointerdown', e => {
   showroomTour.stop();
   if (flowProbe.enabled) probeDownPos = [e.clientX, e.clientY];
@@ -1547,49 +1795,221 @@ viewport.addEventListener('pointerdown', e => {
 viewport.addEventListener('wheel', () => showroomTour.stop(), { passive: true });
 viewport.addEventListener('pointermove', e => {
   if (!flowProbe.enabled || flowProbe.pinned || e.buttons !== 0 || probeRafPending) return;
+  if (state.speed <= 0 && state.wheelSpeedMps <= 0) { flowProbe.clearResult(); return; }
   probeRafPending = true;
   requestAnimationFrame(() => {
     probeRafPending = false;
-    const pt = flowProbe.pickPoint({ clientX: e.clientX, clientY: e.clientY, domElement: renderer.domElement, camera, rig, slice: flowSlice });
-    if (pt) flowJobs.requestProbe(pt);
-    else if (!flowProbe.pinned) {
-      flowProbe.group.visible = false;
-      if ($('probe-readout')) $('probe-readout').hidden = true;
-    }
+    const target = resolveProbeTarget(e.clientX);
+    const req = flowProbe.pickPoint({ clientX: e.clientX, clientY: e.clientY, domElement: renderer.domElement, camera, rig: target.rig, slice: target.slice });
+    if (req) target.jobs.requestProbe(req);
+    else if (!flowProbe.pinned) flowProbe.clearResult();
   });
 });
 viewport.addEventListener('pointerup', e => {
   if (!flowProbe.enabled || !probeDownPos) return;
   const moved = Math.hypot(e.clientX - probeDownPos[0], e.clientY - probeDownPos[1]);
   probeDownPos = null;
-  if (moved > 5) return;
-  if (flowProbe.pinned) {
+  if (moved > 5 || e.button !== 0) return;
+  // Click near currently pinned marker -> unpin; click elsewhere -> directly pin/re-pin new point!
+  if (flowProbe.pinned && flowProbe.isNearPinnedScreen(e.clientX, e.clientY, camera, viewport, 28)) {
     flowProbe.unpin();
+    probePinnedIsPeer = false;
+    updateActiveToolIndicators();
     return;
   }
-  const pt = flowProbe.pickPoint({ clientX: e.clientX, clientY: e.clientY, domElement: renderer.domElement, camera, rig, slice: flowSlice });
-  if (pt) {
+  const target = resolveProbeTarget(e.clientX);
+  const req = flowProbe.pickPoint({ clientX: e.clientX, clientY: e.clientY, domElement: renderer.domElement, camera, rig: target.rig, slice: target.slice });
+  if (req) {
     flowProbe.pinned = true;
-    flowProbe.pinnedPoint = pt;
-    flowJobs.requestProbe(pt);
+    flowProbe.pinnedRequest = req;
+    probePinnedIsPeer = target.isPeer;
+    target.jobs.requestProbe(req);
+    updateActiveToolIndicators();
+  } else if (flowProbe.pinned) {
+    flowProbe.unpin();
+    probePinnedIsPeer = false;
+    updateActiveToolIndicators();
   }
 });
 
-// 4. Dual-Car Comparison & Curtain Wipe
+// 4. Dual-Car Comparison (Top-Right Popover) & Real-Time WebGL Scissor-Split Curtain
 const aeroCompare = new AeroCompare({
   tableEl: $('compare-table'),
   chartEl: $('compare-chart'),
+  summaryEl: $('compare-summary-text'),
 });
-const curtainCompare = new CurtainCompare(
-  $('compare-curtain'),
-  $('compare-curtain-canvas'),
-  $('compare-curtain-handle'),
-  $('compare-curtain-left'),
-  $('compare-curtain-right'),
-  () => { orbit.enabled = !state.freeMode; },
-);
+
+let peerModel = null, peerRig = null, peerCarId = null, peerLoadSerial = 0;
+let peerFlowCatalog = null, peerFlowJobs = null, peerFlowLayers = null;
+let peerFlowPreview = null, peerFlowSmoke = null, peerFlowSlice = null;
+let curtainSwapped = false;
+
+function disposePeerSession() {
+  peerLoadSerial++;
+  curtainSwapped = false;
+  if (peerFlowJobs) {
+    peerFlowJobs.reset();
+    peerFlowJobs = null;
+  }
+  peerFlowCatalog = null;
+  if (peerFlowLayers) {
+    for (const layer of Object.values(peerFlowLayers)) {
+      carTurntable.remove(layer.group);
+      layer.geometry?.dispose();
+    }
+    peerFlowLayers = null;
+  }
+  if (peerFlowPreview) {
+    carTurntable.remove(peerFlowPreview.lines);
+    peerFlowPreview.lines.geometry?.dispose();
+    peerFlowPreview = null;
+  }
+  if (peerFlowSmoke) {
+    carTurntable.remove(peerFlowSmoke.group);
+    peerFlowSmoke.dispose();
+    peerFlowSmoke = null;
+  }
+  if (peerFlowSlice) {
+    carTurntable.remove(peerFlowSlice.group);
+    peerFlowSlice.dispose();
+    peerFlowSlice = null;
+  }
+  if (peerModel) {
+    carTurntable.remove(peerModel);
+    disposeModel(peerModel);
+    peerModel = null;
+    peerRig = null;
+  }
+  peerCarId = null;
+}
+
+function createPeerFlowStack(carId) {
+  peerFlowLayers = {
+    whole: new FlowLayer(carTurntable, flowMaterial, 'PEER_CFD_FLOW'),
+    bottom: new FlowLayer(carTurntable, flowMaterial, 'PEER_UNDERBODY_FLOW'),
+    side: new FlowLayer(carTurntable, flowMaterial, 'PEER_SIDEPOD_FLOW'),
+  };
+  peerFlowPreview = new FlowPreview(carTurntable, flowMaterial);
+  peerFlowSmoke = new FlowSmoke(carTurntable);
+  peerFlowSlice = new FlowSlice(carTurntable);
+  peerFlowCatalog = new FlowCatalog();
+  peerFlowJobs = new FlowJobs(peerFlowCatalog, peerFlowLayers, () => {}, peerFlowPreview);
+  peerFlowJobs.setExtras({
+    smokeLayer: peerFlowSmoke,
+    getStyle: () => studioExt.flowStyle,
+    getSmokeRakeX: () => studioExt.smokeRakeX,
+    needsField: () => Boolean(studioExt.sliceEnabled || flowProbe.enabled),
+    getSliceRequest: cond => studioExt.sliceEnabled ? {
+      axis: studioExt.sliceAxis,
+      position: studioExt.slicePosition,
+      metric: studioExt.sliceMetric,
+      refSpeedMps: Math.max(1, (cond?.speed ?? state.speed ?? 180) / 3.6),
+    } : null,
+    onSliceResult: res => {
+      if (studioExt.sliceEnabled && (state.speed > 0 || state.wheelSpeedMps > 0)) peerFlowSlice?.applyResult(res);
+      else peerFlowSlice?.setVisible(false);
+    },
+    onProbeResult: res => {
+      if (curtainCompare.active) {
+        flowProbe.applyResult(res, Math.max(1, (state.speed || 0) / 3.6), (peerCarId || '').toUpperCase());
+      }
+    },
+    onStill: () => peerFlowSlice?.setVisible(false),
+    onReset: () => peerFlowSlice?.clear(),
+    onFieldUpdated: () => {
+      if (flowProbe.enabled && flowProbe.pinned && flowProbe.pinnedRequest && probePinnedIsPeer) {
+        peerFlowJobs?.requestProbe(flowProbe.pinnedRequest);
+      }
+      if (studioExt.sliceEnabled && peerFlowSlice && !peerFlowSlice.hasData && (state.speed > 0 || state.wheelSpeedMps > 0)) {
+        peerFlowJobs?.requestSlice({
+          axis: studioExt.sliceAxis,
+          position: studioExt.slicePosition,
+          metric: studioExt.sliceMetric,
+          refSpeedMps: Math.max(1, (state.speed || 180) / 3.6),
+        });
+      }
+    },
+  });
+  peerFlowCatalog.load(carId);
+}
+
+const curtainCompare = new CurtainCompare({
+  overlayEl: $('compare-curtain'),
+  handleEl: $('compare-curtain-handle'),
+  leftLabelEl: $('compare-curtain-left'),
+  rightLabelEl: $('compare-curtain-right'),
+  statusEl: $('compare-curtain-status'),
+  onSwap: () => {
+    curtainSwapped = !curtainSwapped;
+    const leftId = curtainSwapped ? state.model : (peerCarId || (state.model === 'rb19' ? 'rb16b' : 'rb19'));
+    const rightId = curtainSwapped ? (peerCarId || (state.model === 'rb19' ? 'rb16b' : 'rb19')) : state.model;
+    curtainCompare.setCars(leftId, rightId, state.model);
+  },
+  onExit: () => {
+    $('app')?.classList.remove('is-curtain-mode', 'curtain-tools-open');
+    $('compare-curtain-tools')?.setAttribute('aria-pressed', 'false');
+    if (probePinnedIsPeer) {
+      flowProbe.unpin();
+      flowProbe.clearResult();
+      probePinnedIsPeer = false;
+    }
+    disposePeerSession();
+    if (currentModel) currentModel.visible = true;
+    updateActiveToolIndicators();
+  },
+});
+
+async function startCurtainSession() {
+  if (curtainCompare.active) { curtainCompare.deactivate(); return; }
+  if (!configs || !currentModel) return;
+  showroomTour.stop();
+  clearScenarioBanner();
+  aeroHotspots?.clearSelection();
+  unpinForcesPopover();
+  closeAllTelemetryPopovers();
+  setPanel(null);
+
+  const mainId = state.model;
+  const peerId = mainId === 'rb19' ? 'rb16b' : 'rb19';
+  const peerCfg = configs[peerId];
+  if (!peerCfg) return;
+
+  disposePeerSession();
+  curtainSwapped = false;
+  $('app')?.classList.add('is-curtain-mode');
+  // Right = current main car (zero reload!), Left = peer car
+  curtainCompare.activate({ leftCar: peerId, rightCar: mainId });
+  curtainCompare.setLoading(`正在加载对比车型 ${peerCfg.name}…`);
+  updateActiveToolIndicators();
+
+  const serial = ++peerLoadSerial;
+  try {
+    const { scene: pScene, rig: pRig } = await parsePreparedCarModel(peerId, peerCfg, (loadedBytes, denom) => {
+      if (serial !== peerLoadSerial || !curtainCompare.active) return;
+      if (denom) curtainCompare.setLoading(`正在加载对比车型 ${peerCfg.name} · ${Math.min(100, Math.round(loadedBytes / denom * 100))}%`);
+    });
+    if (serial !== peerLoadSerial || !curtainCompare.active) {
+      disposeModel(pScene);
+      return;
+    }
+    pScene.visible = false;
+    peerModel = pScene;
+    peerRig = pRig;
+    peerCarId = peerId;
+    carTurntable.add(peerModel);
+    applyRig(peerRig, { drs: state.drsCurrent, steer: state.steer, spin: state.spin });
+    createPeerFlowStack(peerId);
+    curtainCompare.setLoading('');
+    renderer.shadowMap.needsUpdate = true;
+  } catch (err) {
+    if (serial !== peerLoadSerial) return;
+    curtainCompare.setLoading(`对比车型加载失败：${err?.message || '请重试'}`);
+  }
+}
+
 document.querySelectorAll('[data-compare-axis]').forEach(btn => {
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
     const axis = btn.dataset.compareAxis;
     aeroCompare.setAxis(axis);
     document.querySelectorAll('[data-compare-axis]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.compareAxis === axis)));
@@ -1597,30 +2017,42 @@ document.querySelectorAll('[data-compare-axis]').forEach(btn => {
   });
 });
 $('compare-swap-btn')?.addEventListener('click', async () => {
-  const savedPos = camera.position.clone();
-  const savedTarget = orbit.target.clone();
   const other = state.model === 'rb19' ? 'rb16b' : 'rb19';
-  await loadModel(other);
-  applyInstantOrbitPose(savedPos, savedTarget);
-  aeroHotspots.refreshModel(state.model);
-  aeroCompare.render(flowCatalog, state);
+  await loadModel(other, { preserveCamera: true });
 });
-$('compare-curtain-btn')?.addEventListener('click', async () => {
-  if (curtainCompare.active) { curtainCompare.deactivate(); return; }
-  showroomTour.stop();
-  const leftCar = state.model;
-  const rightCar = leftCar === 'rb19' ? 'rb16b' : 'rb19';
-  const savedPos = camera.position.clone();
-  const savedTarget = orbit.target.clone();
-  curtainCompare.activate({ renderer, scene, camera, worlds, leftCar, rightCar });
-  orbit.enabled = false;
-  await loadModel(rightCar);
-  applyInstantOrbitPose(savedPos, savedTarget);
-  aeroHotspots.refreshModel(state.model);
+$('compare-curtain-btn')?.addEventListener('click', () => { startCurtainSession().catch(() => {}); });
+$('popover-curtain-btn')?.addEventListener('click', e => {
+  e.stopPropagation();
+  startCurtainSession().catch(() => {});
 });
-$('compare-curtain-exit')?.addEventListener('click', () => curtainCompare.deactivate());
+function setCurtainToolsOpen(open) {
+  const next = Boolean(open && curtainCompare.active);
+  $('app')?.classList.toggle('curtain-tools-open', next);
+  $('compare-curtain-tools')?.setAttribute('aria-pressed', String(next));
+  if (next) {
+    if (!state.panel) setPanel('analysis');
+  } else if (curtainCompare.active && state.panel) {
+    setPanel(null);
+  }
+}
+$('compare-curtain-tools')?.addEventListener('click', e => {
+  e.stopPropagation();
+  setCurtainToolsOpen(!$('app')?.classList.contains('curtain-tools-open'));
+});
+$('compare-curtain-swap')?.addEventListener('click', e => {
+  e.stopPropagation();
+  curtainCompare.onSwap?.();
+});
+$('compare-curtain-center')?.addEventListener('click', e => {
+  e.stopPropagation();
+  curtainCompare.setRatio(0.5);
+});
+$('compare-curtain-exit')?.addEventListener('click', e => {
+  e.stopPropagation();
+  curtainCompare.deactivate();
+});
 
-// 5. Classic F1 Corner Scenarios
+// 5. Classic F1 Corner Scenarios (each bound to its bespoke 3D circuit!)
 const scenarioListEl = $('scenario-list');
 if (scenarioListEl) {
   scenarioListEl.innerHTML = '';
@@ -1629,25 +2061,31 @@ if (scenarioListEl) {
     btn.type = 'button';
     btn.className = 'scenario-btn';
     btn.dataset.scenario = sc.id;
+    btn.setAttribute('aria-pressed', 'false');
     btn.innerHTML = `<b>${sc.title}</b><span>${sc.tag}</span>`;
     btn.addEventListener('click', () => {
       showroomTour.stop();
       if (curtainCompare.active) curtainCompare.deactivate();
-      if (state.environment !== sc.environment) setEnvironment(sc.environment);
+      activeScenarioId = sc.id;
+      document.querySelectorAll('[data-scenario]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.scenario === sc.id)));
+      if (state.environment !== sc.environment) {
+        setEnvironment(sc.environment, { preserveCamera: true, fromScenario: true });
+      }
       Object.assign(state, sc.condition);
       state.flow = true;
+      aeroAudio.syncDrs(state.drs);
       showState();
       flyCameraTo(sc.camera);
       if ($('scenario-banner-title')) $('scenario-banner-title').textContent = sc.title;
       if ($('scenario-banner-text')) $('scenario-banner-text').textContent = sc.caption;
       if ($('scenario-banner')) $('scenario-banner').hidden = false;
+      // Auto-collapse drawer so user gets full unobstructed view of the newly loaded F1 circuit!
+      setPanel(null);
     });
     scenarioListEl.appendChild(btn);
   }
 }
-$('scenario-banner-close')?.addEventListener('click', () => {
-  if ($('scenario-banner')) $('scenario-banner').hidden = true;
-});
+$('scenario-banner-close')?.addEventListener('click', () => clearScenarioBanner());
 
 // 6. Showroom Tour
 const showroomTour = new ShowroomTour({
@@ -1662,16 +2100,21 @@ const showroomTour = new ShowroomTour({
   onStop: () => {
     $('tour-toggle')?.setAttribute('aria-checked', 'false');
     if ($('tour-badge')) $('tour-badge').hidden = true;
+    updateActiveToolIndicators();
   },
 });
 function setTourActive(active) {
   if (active) {
     if (curtainCompare.active) curtainCompare.deactivate();
-    if ($('scenario-banner')) $('scenario-banner').hidden = true;
+    clearScenarioBanner();
+    aeroHotspots?.clearSelection();
+    unpinForcesPopover();
+    setPanel(null);
     state.flow = true;
     showroomTour.start();
     $('tour-toggle')?.setAttribute('aria-checked', 'true');
     if ($('tour-badge')) $('tour-badge').hidden = false;
+    updateActiveToolIndicators();
   } else {
     showroomTour.stop();
   }
@@ -1679,23 +2122,32 @@ function setTourActive(active) {
 $('tour-toggle')?.addEventListener('click', () => setTourActive(!showroomTour.active));
 $('tour-stop-btn')?.addEventListener('click', () => setTourActive(false));
 
-// 7. 2K Photo Mode
+// 7. 2K Photo Mode (supports single-car AND live dual-car scissor curtain!)
+let photoStatusTimer = 0;
 $('photo-watermark')?.addEventListener('click', () => {
   studioExt.photoWatermark = !studioExt.photoWatermark;
   $('photo-watermark').setAttribute('aria-checked', String(studioExt.photoWatermark));
 });
 $('photo-capture-btn')?.addEventListener('click', async () => {
   const statusEl = $('photo-status');
+  clearTimeout(photoStatusTimer);
   if (statusEl) statusEl.textContent = '正在渲染 2560×1440 高清 PNG…';
   try {
     const underCar = (!state.freeMode && state.view === 'floor') || camera.position.y < -.05;
+    const isSplit = curtainCompare.active && Boolean(peerModel);
     const res = await capturePhoto2K({
       renderer, scene, camera, worlds, state, forces: readForces(),
       withWatermark: studioExt.photoWatermark,
       underCar,
+      renderFrame: (w, h, u) => renderSceneFrame(w, h, u),
+      splitLabel: isSplit ? `${curtainCompare.leftCar.toUpperCase()} vs ${curtainCompare.rightCar.toUpperCase()} · SPLIT COMPARE` : null,
+      splitRatio: isSplit ? curtainCompare.ratio : null,
       onRestore: () => applyFraming(),
     });
-    if (statusEl && res) statusEl.textContent = `已导出 ${res.filename} (${Math.round(res.bytes / 1024)} KB)`;
+    if (statusEl && res) {
+      statusEl.textContent = `已导出 ${res.filename} (${Math.round(res.bytes / 1024)} KB)`;
+      photoStatusTimer = setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 5000);
+    }
   } catch (err) {
     if (statusEl) statusEl.textContent = `导出失败：${err?.message || '未知错误'}`;
   }
@@ -1707,33 +2159,40 @@ $('audio-toggle')?.addEventListener('click', () => {
   $('audio-toggle').setAttribute('aria-pressed', String(next));
 });
 
-// 9. Aerodynamic Hotspots
+// 9. Aerodynamic Hotspots (live getModel() binding fixes active-car card mismatch!)
 const aeroHotspots = new AeroHotspots(carTurntable, $('hotspot-layer'), $('hotspot-card'), {
+  getModel: () => state.model,
   onSelect: spot => {
     showroomTour.stop();
     flyCameraTo(spot.camera);
   },
   onToggleDrs: () => toggleDrs(),
 });
-$('hotspots-toggle')?.addEventListener('click', () => {
-  const next = !aeroHotspots.enabled;
+function setHotspotsEnabled(enabled, { autoCollapse = false } = {}) {
+  const next = Boolean(enabled);
   aeroHotspots.setEnabled(next);
-  $('hotspots-toggle').setAttribute('aria-checked', String(next));
-});
-// Keep hotspot card in sync when model switches via topbar
-document.querySelectorAll('[data-model]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    setTimeout(() => aeroHotspots.refreshModel(state.model), 50);
-  });
-});
+  $('hotspots-toggle')?.setAttribute('aria-checked', String(next));
+  if (next && autoCollapse) setPanel(null);
+  updateActiveToolIndicators();
+}
+$('hotspots-toggle')?.addEventListener('click', () => setHotspotsEnabled(!aeroHotspots.enabled, { autoCollapse: true }));
 
 async function resetToInitialState() {
+  showroomTour.stop();
+  if (curtainCompare.active) curtainCompare.deactivate();
+  setSliceEnabled(false);
+  setProbeEnabled(false);
+  setHotspotsEnabled(false);
+  setFlowStyle('lines');
+  clearScenarioBanner();
+  unpinForcesPopover();
   setPanel(null);
   closeAllTelemetryPopovers();
   clearSavedCameraPose();
   const activeModel = state.model || DEFAULT_CONFIG.model;
   const envChanged = state.environment !== DEFAULT_CONFIG.environment;
   applyOperatingDefaults({ includeFlow: true });
+  aeroAudio.syncDrs(state.drs);
   state.autoHide = DEFAULT_CONFIG.autoHide;
   $('auto-hide-toggle')?.setAttribute('aria-pressed', String(state.autoHide));
   setAutoHidden(false);
@@ -1763,6 +2222,10 @@ $('brand-home')?.addEventListener('click', e => {
 $('flow-retry').addEventListener('click', () => {
   flowCatalog.retry();
   flowJobs.reset();
+  if (curtainCompare.active) {
+    peerFlowCatalog?.retry();
+    peerFlowJobs?.reset();
+  }
 });
 document.querySelectorAll('[data-flow-preset]').forEach(btn => {
   btn.addEventListener('click', () => applyConditionTarget(FLOW_PRESETS[btn.dataset.flowPreset]));
@@ -1803,6 +2266,67 @@ setEnvironment(state.environment);
 showState();
 persistenceReady = true;
 
+function captureFlowVis(layers, preview, smoke, slice, sliceWant) {
+  return {
+    whole: Boolean(layers?.whole?.group?.visible),
+    bottom: Boolean(layers?.bottom?.group?.visible),
+    side: Boolean(layers?.side?.group?.visible),
+    preview: Boolean(preview?.lines?.visible),
+    smoke: Boolean(smoke?.group?.visible),
+    slice: Boolean(sliceWant && slice?.hasData),
+  };
+}
+
+function applyFlowVis(layers, preview, smoke, slice, vis, show) {
+  if (layers?.whole) layers.whole.group.visible = show && vis.whole;
+  if (layers?.bottom) layers.bottom.group.visible = show && vis.bottom;
+  if (layers?.side) layers.side.group.visible = show && vis.side;
+  if (preview) preview.lines.visible = show && vis.preview;
+  if (smoke) smoke.group.visible = show && vis.smoke;
+  if (slice) slice.group.visible = show && vis.slice;
+}
+
+function renderSceneFrame(w, h, underCar) {
+  worlds.render(camera, scene, !underCar);
+  const sliceWant = Boolean(studioExt.sliceEnabled && (state.speed > 0 || state.wheelSpeedMps > 0));
+  if (curtainCompare.active && peerModel && currentModel) {
+    const mainLayers = { whole: airflow, bottom: underbody, side: sidepod };
+    const mainVis = captureFlowVis(mainLayers, flowPreview, flowSmoke, flowSlice, sliceWant);
+    const peerVis = captureFlowVis(peerFlowLayers, peerFlowPreview, peerFlowSmoke, peerFlowSlice, sliceWant);
+    const splitX = Math.max(1, Math.min(w - 1, Math.round(w * curtainCompare.ratio)));
+    const leftIsMain = curtainSwapped;
+
+    const showSide = isMain => {
+      currentModel.visible = isMain;
+      peerModel.visible = !isMain;
+      applyFlowVis(mainLayers, flowPreview, flowSmoke, flowSlice, mainVis, isMain);
+      applyFlowVis(peerFlowLayers, peerFlowPreview, peerFlowSmoke, peerFlowSlice, peerVis, !isMain);
+    };
+
+    renderer.setScissorTest(true);
+    // Left half (0 .. splitX)
+    showSide(leftIsMain);
+    renderer.setScissor(0, 0, splitX, h);
+    renderer.render(scene, camera);
+
+    // Right half (splitX .. w)
+    showSide(!leftIsMain);
+    renderer.setScissor(splitX, 0, Math.max(1, w - splitX), h);
+    renderer.render(scene, camera);
+
+    renderer.setScissorTest(false);
+    // Restore logical visibility for BOTH flow stacks (never corrupt peer slice/lines/smoke!)
+    currentModel.visible = true;
+    peerModel.visible = false;
+    applyFlowVis(mainLayers, flowPreview, flowSmoke, flowSlice, mainVis, true);
+    applyFlowVis(peerFlowLayers, peerFlowPreview, peerFlowSmoke, peerFlowSlice, peerVis, true);
+  } else {
+    if (peerModel) peerModel.visible = false;
+    flowSlice.setVisible(sliceWant);
+    renderer.render(scene, camera);
+  }
+}
+
 renderer.setAnimationLoop(now => {
   const elapsed = Math.max(0, (now - lastTime) / 1000), dt = Math.min(elapsed, .05);
   lastTime = now;
@@ -1842,23 +2366,33 @@ renderer.setAnimationLoop(now => {
     applyRig(rig, { drs: state.drsCurrent, steer: state.steer, spin: state.spin });
     if (shadowDirty) renderer.shadowMap.needsUpdate = true;
   }
+  if (curtainCompare.active && peerRig && (peerRig._lastDrs !== state.drsCurrent || peerRig._lastSteer !== state.steer || peerRig._lastSpin !== state.spin)) {
+    applyRig(peerRig, { drs: state.drsCurrent, steer: state.steer, spin: state.spin });
+  }
 
   flowMaterial.uniforms.clock.value += dt;
   flowSmoke.setClock(flowMaterial.uniforms.clock.value);
+  peerFlowSmoke?.setClock(flowMaterial.uniforms.clock.value);
   showroomTour.update(dt, carTurntable.rotation.y);
   flowJobs.update(state, rig, now);
+  if (curtainCompare.active && peerFlowJobs && peerRig && peerCarId) {
+    peerFlowJobs.update({ ...state, model: peerCarId }, peerRig, now);
+  }
   updateForcesDisplay();
-  if (state.panel === 'analysis') aeroCompare.render(flowCatalog, state);
+  if (isForcesPopoverOpen()) aeroCompare.render(flowCatalog, state);
   aeroAudio.update(state.speed, state.effWindAngle, state.drs);
   flowProbe.updateOverlay(camera, viewport);
   aeroHotspots.update(camera, rig, viewport);
 
   const prevForestReady = worlds.lastForestReady;
-  worlds.update(dt, state.speed, state.groundSpeed);
-  if (worlds.kind === 'eau-rouge' && !prevForestReady && worlds.lastForestReady) renderer.shadowMap.needsUpdate = true;
+  worlds.update(dt, state.speed, state.groundSpeed, state.effWindAngle);
+  if (isTrackEnvironment(worlds.kind) && !prevForestReady && worlds.lastForestReady) renderer.shadowMap.needsUpdate = true;
   const underCar = (!state.freeMode && state.view === 'floor') || camera.position.y < -.05;
-  floor.visible = !underCar && state.environment !== 'eau-rouge';
-  eauRougeFloor.visible = !underCar && state.environment === 'eau-rouge';
+  const isTrack = isTrackEnvironment(state.environment);
+  floor.visible = !underCar && !isTrack;
+  for (const [k, mesh] of Object.entries(trackShadowFloors)) {
+    mesh.visible = !underCar && k === state.environment;
+  }
   floorInspectionLight.visible = underCar;
 
   const near = THREE.MathUtils.clamp((state.freeMode ? camera.position.length() : camera.position.distanceTo(orbit.target)) * .004, .025, .5);
@@ -1866,8 +2400,7 @@ renderer.setAnimationLoop(now => {
     camera.near = near;
     camera.updateProjectionMatrix();
   }
-  worlds.render(camera, scene, !underCar);
-  renderer.render(scene, camera);
+  renderSceneFrame(viewport.clientWidth, viewport.clientHeight, underCar);
   frameCount++;
   if (now - statsTime > 1000) {
     fps = frameCount * 1000 / (now - statsTime);
@@ -1883,6 +2416,7 @@ window.aeroStudio = {
     previewVisible: flowPreview.lines.visible, smokeVisible: flowSmoke.group.visible,
     smokeLines: flowSmoke.count, sliceVisible: flowSlice.group.visible,
     probeActive: flowProbe.enabled, probeResult: flowProbe.lastResult,
+    probeMarkerScale: flowProbe.markerGroup.scale.x,
     workerPending: Boolean(flowJobs.sent), state: { ...state } }; },
   get extensions() {
     return {
@@ -1891,17 +2425,33 @@ window.aeroStudio = {
       sliceAxis: studioExt.sliceAxis,
       sliceMetric: studioExt.sliceMetric,
       probeEnabled: flowProbe.enabled,
+      probePinned: flowProbe.pinned,
       hotspotsEnabled: aeroHotspots.enabled,
       tourActive: showroomTour.active,
       audioEnabled: aeroAudio.enabled,
       curtainActive: curtainCompare.active,
+      curtainLeft: curtainCompare.leftCar,
+      curtainRight: curtainCompare.rightCar,
+      curtainRatio: curtainCompare.ratio,
+      curtainPeerReady: Boolean(peerModel),
+      curtainPeerFlowReady: Boolean(peerFlowJobs?.presented),
+      mainSliceHasData: Boolean(flowSlice.hasData),
+      peerSliceHasData: Boolean(peerFlowSlice?.hasData),
+      activeScenario: activeScenarioId,
     };
   },
-  capturePhoto2K: (withWatermark = true) => capturePhoto2K({
-    renderer, scene, camera, worlds, state, forces: readForces(), withWatermark,
-    underCar: (!state.freeMode && state.view === 'floor') || camera.position.y < -.05,
-    onRestore: () => applyFraming(),
-  }),
+  capturePhoto2K: (withWatermark = true) => {
+    const underCar = (!state.freeMode && state.view === 'floor') || camera.position.y < -.05;
+    const isSplit = curtainCompare.active && Boolean(peerModel);
+    return capturePhoto2K({
+      renderer, scene, camera, worlds, state, forces: readForces(), withWatermark,
+      underCar,
+      renderFrame: (w, h, u) => renderSceneFrame(w, h, u),
+      splitLabel: isSplit ? `${curtainCompare.leftCar.toUpperCase()} vs ${curtainCompare.rightCar.toUpperCase()} · SPLIT COMPARE` : null,
+      splitRatio: isSplit ? curtainCompare.ratio : null,
+      onRestore: () => applyFraming(),
+    });
+  },
   get forces() { return readForces(); },
   get turntable() { return { carYawDeg: THREE.MathUtils.radToDeg(carTurntable.rotation.y), environmentYawDeg: THREE.MathUtils.radToDeg(worlds.turntableYaw), fanPosition: worlds.root?.userData.fan?.getWorldPosition(new THREE.Vector3()).toArray() || null }; },
   get sidepod() { return { visible: sidepod.group.visible, lines: sidepod.count, stops: sidepod.stops }; },
@@ -1954,6 +2504,7 @@ window.aeroStudio = {
     state.drsCurrent = state.drs;
     showState();
     if (rig) applyRig(rig, { drs: state.drsCurrent, steer: state.steer, spin: state.spin });
+    if (curtainCompare.active && peerRig) applyRig(peerRig, { drs: state.drsCurrent, steer: state.steer, spin: state.spin });
     renderer.shadowMap.needsUpdate = true;
   },
   runKinematicChecks() {

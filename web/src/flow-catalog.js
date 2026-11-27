@@ -390,7 +390,10 @@ export class FlowCatalog {
       onReady?.(this.getCatalog(car));
       return Promise.resolve(this.getCatalog(car));
     }
-    if (this.peerPending.has(car)) return this.peerPending.get(car);
+    if (this.peerPending.has(car)) {
+      const existing = this.peerPending.get(car);
+      return onReady ? existing.then(c => { if (c) onReady(c); return c; }) : existing;
+    }
     const p = (async () => {
       try {
         const response = await fetch(`/flow/${car}/display/manifest.json`, {
@@ -419,6 +422,8 @@ export class FlowCatalog {
     this.cache = new Map();
     this.pending = new Map();
     this.failures = new Set();
+    // Preserve any previously loaded manifest in peerCatalogs before switching primary catalog
+    if (this.catalog?.car) this.peerCatalogs.set(this.catalog.car, this.catalog);
     this.catalog = null;
     const generation = this.controller.signal;
     this.loadingCatalog = true;
@@ -429,6 +434,7 @@ export class FlowCatalog {
       const catalog = readCatalog(await response.json(), car);
       if (!generation.aborted) {
         this.catalog = catalog;
+        this.peerCatalogs.set(car, catalog);
         this.onCatalogReady?.(catalog);
       }
     };

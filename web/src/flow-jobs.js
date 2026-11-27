@@ -38,12 +38,12 @@ export class FlowJobs {
     } catch { return false; }
   }
 
-  requestProbe(point) {
-    if (!this.ready || !this.worker || !point) return false;
+  requestProbe(req) {
+    if (!this.ready || !this.worker || !req) return false;
     const id = ++this.probeSeq;
     this.latestProbeId = id;
     try {
-      this.worker.postMessage({ type: 'probe', id, point });
+      this.worker.postMessage({ type: 'probe', id, point: req });
       return true;
     } catch { return false; }
   }
@@ -59,13 +59,17 @@ export class FlowJobs {
     this.yawChangedAt = null;
     this.setVisible(false);
     this.preview?.hide();
-    this.extras?.smokeLayer?.setVisible(false);
+    this.extras?.smokeLayer?.clear?.();
+    this.extras?.onReset?.();
   }
 
   setVisible(visible) {
-    const useSmoke = this.extras?.getStyle?.() === 'smoke' && Boolean(this.extras?.smokeLayer?.count);
-    for (const layer of Object.values(this.layers)) layer.group.visible = visible && !useSmoke && layer.count > 0;
-    if (this.extras?.smokeLayer) this.extras.smokeLayer.setVisible(visible && useSmoke);
+    const style = this.extras?.getStyle?.() ?? 'lines';
+    const smoke = this.extras?.smokeLayer;
+    const smokeReady = Boolean(smoke && smoke.count > 0 && (!this.key || smoke.lastKey === this.key));
+    const useSmoke = style === 'smoke' && smokeReady;
+    for (const layer of Object.values(this.layers)) layer.group.visible = visible && style !== 'smoke' && layer.count > 0;
+    if (smoke) smoke.setVisible(visible && useSmoke);
   }
 
   initialize(rig, car) {
@@ -121,7 +125,7 @@ export class FlowJobs {
       layer.stops = next.stops;
     }
     if (result.data.smoke && this.extras?.smokeLayer) {
-      this.extras.smokeLayer.applyResult(result.data.smoke);
+      this.extras.smokeLayer.applyResult(result.data.smoke, result.job.key);
     }
     if (result.data.slice) {
       this.extras?.onSliceResult?.(result.data.slice);
@@ -133,14 +137,17 @@ export class FlowJobs {
 
   update(state, rig, now) {
     const condition = captureCondition(state);
+    const showLines = Boolean(state.flow && state.flowDensity > 0);
+    const needsFieldOnly = !showLines && Boolean(this.extras?.needsField?.());
     const style = this.extras?.getStyle?.() ?? 'lines';
     const smokeRakeX = style === 'smoke' ? (this.extras?.getSmokeRakeX?.() ?? 0) : 0;
-    const key = style === 'smoke'
-      ? `${conditionKey(condition)}|smoke:${smokeRakeX.toFixed(2)}`
-      : conditionKey(condition);
+    const key = style === 'smoke' && showLines ? `${conditionKey(condition)}|smoke:${smokeRakeX.toFixed(2)}` : conditionKey(condition);
     this.key = key;
-    if (!state.flow || !state.flowDensity) return this.hide('流线已隐藏');
-    if (!condition.speed && !condition.wheelSpeedMps) return this.hide('静止 · 来流与车轮均为 0');
+    if (!showLines && !needsFieldOnly) return this.hide('流线已隐藏');
+    if (!condition.speed && !condition.wheelSpeedMps) {
+      this.extras?.onStill?.();
+      return this.hide('静止 · 来流与车轮均为 0');
+    }
     if (!rig || rig.config.id !== condition.model || this.catalog.car !== condition.model) return this.hide('正在加载车辆气流…');
     if (this.lastYaw !== null && Math.abs(condition.effWindAngle - this.lastYaw) > 1e-4) {
       this.yawChangedAt = now;
@@ -166,12 +173,14 @@ export class FlowJobs {
     if (this.presented?.key === key && selection.sources) {
       this.departedAt = null;
       this.preview?.hide();
-      this.setVisible(true);
-      this.onStatus(this.presented.mode === 'exact'
-        ? '已求解 CFD 工况'
-        : this.presented.mode === 'interpolated'
-          ? '相邻 CFD 工况插值'
-          : 'CFD 组合近似');
+      this.setVisible(showLines);
+      this.onStatus(!showLines
+        ? '流线已隐藏'
+        : this.presented.mode === 'exact'
+          ? '已求解 CFD 工况'
+          : this.presented.mode === 'interpolated'
+            ? '相邻 CFD 工况插值'
+            : 'CFD 组合近似');
       this.catalog.prewarmCore?.();
       return;
     }
@@ -181,8 +190,12 @@ export class FlowJobs {
     this.departedAt ??= now;
     const sameModel = this.presented?.condition.model === condition.model;
     const yawDiverged = !sameModel || Math.abs(this.presented.condition.effWindAngle - condition.effWindAngle) > YAW_PREVIEW_THRESHOLD_DEG;
-    const keepCfd = sameModel && !yawDiverged && (Boolean(selection.sources) || now - this.departedAt <= PREVIOUS_RESULT_MS);
-    if (this.preview && !keepCfd) {
+    const keepCfd = showLines && sameModel && !yawDiverged && (Boolean(selection.sources) || now - this.departedAt <= PREVIOUS_RESULT_MS);
+    if (!showLines) {
+      this.preview?.hide();
+      this.setVisible(false);
+      this.onStatus('流线已隐藏');
+    } else if (this.preview && !keepCfd) {
       this.setVisible(false);
       this.preview.update(condition, rig);
       this.onStatus((selection.mode === 'loading' ? '正在加载侧风 CFD' : '正在计算流线') + ' · 实时方向预览');
@@ -205,7 +218,7 @@ export class FlowJobs {
     this.watchdog = setTimeout(this.fail, TRACE_TIMEOUT_MS);
     try {
       this.worker.postMessage({ type: 'compute', id, key, condition, sources, deltas, grid: selection.grid,
-        smoke: style === 'smoke', smokeRakeX, slice: sliceReq,
+        smoke: showLines && style === 'smoke', smokeRakeX, slice: sliceReq,
         fields: selection.fields.filter(field => !this.known.has(field.id)),
         rig: snapshotRig(rig, this.meshes, this.versions) });
     } catch { this.fail(); }

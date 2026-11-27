@@ -8,17 +8,23 @@ function fmtN(v) {
   return v == null || !Number.isFinite(v) ? '—' : `${Math.round(v)} N`;
 }
 
-function fmtPct(a, b) {
-  if (!Number.isFinite(a) || !Number.isFinite(b) || Math.abs(a) < 1) return '—';
+function fmtSignedN(v) {
+  if (v == null || !Number.isFinite(v)) return '—';
+  const r = Math.round(v);
+  return `${r > 0 ? '+' : ''}${r} N`;
+}
+
+function fmtPct(a, b, minBase = 1) {
+  if (!Number.isFinite(a) || !Number.isFinite(b) || Math.abs(a) < minBase) return '—';
   const d = ((b - a) / Math.abs(a)) * 100;
   return `${d >= 0 ? '+' : ''}${d.toFixed(1)}%`;
 }
 
 export class AeroCompare {
-  constructor({ tableEl, chartEl, onReady }) {
+  constructor({ tableEl, chartEl, summaryEl = null }) {
     this.tableEl = tableEl;
     this.chartEl = chartEl;
-    this.onReady = onReady;
+    this.summaryEl = summaryEl;
     this.chartAxis = 'speed'; // 'speed' | 'yaw'
     this.showDrsCurve = true;
     this.lastRenderKey = '';
@@ -31,6 +37,10 @@ export class AeroCompare {
 
   setShowDrs(show) {
     this.showDrsCurve = Boolean(show);
+    this.lastRenderKey = '';
+  }
+
+  invalidate() {
     this.lastRenderKey = '';
   }
 
@@ -51,6 +61,7 @@ export class AeroCompare {
     const c19 = flowCatalog.getCatalog('rb19');
     if (!c16 || !c19) {
       if (this.tableEl) this.tableEl.innerHTML = '<p class="compare-loading">正在加载双车 CFD 清单…</p>';
+      if (this.summaryEl) this.summaryEl.textContent = '正在加载同工况双车对照…';
       return;
     }
     const key = [
@@ -63,17 +74,31 @@ export class AeroCompare {
 
     const f16 = this.evalAt(c16, 'rb16b', state);
     const f19 = this.evalAt(c19, 'rb19', state);
+
+    if (this.summaryEl && f16 && f19) {
+      const peerIs19 = state.model !== 'rb19';
+      const cur = peerIs19 ? f16 : f19;
+      const peer = peerIs19 ? f19 : f16;
+      const peerName = peerIs19 ? 'RB19' : 'RB16B';
+      if (cur.downforceN == null || Math.abs(cur.downforceN) < 1) {
+        this.summaryEl.textContent = `静止工况 · 切至「双车对比」可查看速度/侧风极曲线`;
+      } else {
+        this.summaryEl.textContent = `同工况对比 ${peerName}：下压力 ${fmtPct(cur.downforceN, peer.downforceN)} · L/D ${fmtPct(cur.liftToDrag, peer.liftToDrag)}`;
+      }
+    }
+
     if (this.tableEl && f16 && f19) {
       const ld16 = f16.liftToDrag != null ? f16.liftToDrag.toFixed(2) : '—';
       const ld19 = f19.liftToDrag != null ? f19.liftToDrag.toFixed(2) : '—';
+      const is19 = state.model === 'rb19';
       this.tableEl.innerHTML = `
         <div class="compare-grid">
           <span class="cg-head">指标</span>
-          <span class="cg-head cg-16">RB16B<small>2021</small></span>
-          <span class="cg-head cg-19">RB19<small>2023</small></span>
-          <span class="cg-head">差值</span>
+          <span class="cg-head cg-16 ${!is19 ? 'is-cur' : ''}">RB16B<small>${!is19 ? '当前 · 2021' : '2021'}</small></span>
+          <span class="cg-head cg-19 ${is19 ? 'is-cur' : ''}">RB19<small>${is19 ? '当前 · 2023' : '2023'}</small></span>
+          <span class="cg-head" style="text-align:right">19 vs 16B</span>
 
-          <span>下压力</span>
+          <span>下压力 Fz</span>
           <strong>${fmtN(f16.downforceN)}</strong>
           <strong>${fmtN(f19.downforceN)}</strong>
           <em class="cg-delta">${fmtPct(f16.downforceN, f19.downforceN)}</em>
@@ -88,10 +113,15 @@ export class AeroCompare {
           <strong>${ld19}</strong>
           <em class="cg-delta">${fmtPct(f16.liftToDrag, f19.liftToDrag)}</em>
 
+          <span>侧向力 Fy</span>
+          <strong>${fmtSignedN(f16.sideN)}</strong>
+          <strong>${fmtSignedN(f19.sideN)}</strong>
+          <em class="cg-delta">${fmtPct(Math.abs(f16.sideN ?? 0), Math.abs(f19.sideN ?? 0), 25)}</em>
+
           <span class="cg-raw">原始 Fz</span>
           <span class="cg-raw">${fmtN(f16.rawDownforceN)}</span>
           <span class="cg-raw">${fmtN(f19.rawDownforceN)}</span>
-          <span class="cg-raw">${fmtPct(f16.rawDownforceN, f19.rawDownforceN)}</span>
+          <span class="cg-raw" style="text-align:right">${fmtPct(f16.rawDownforceN, f19.rawDownforceN)}</span>
         </div>`;
     }
 
@@ -103,7 +133,7 @@ export class AeroCompare {
   }
 
   buildSpeedSvg(c16, c19, state) {
-    const W = 254, H = 136, padL = 34, padR = 8, padT = 10, padB = 22;
+    const W = 280, H = 136, padL = 34, padR = 8, padT = 10, padB = 22;
     const iw = W - padL - padR, ih = H - padT - padB;
     const pts16 = SPEED_SAMPLES.map(v => ({ x: v, f: this.evalAt(c16, 'rb16b', state, { groundSpeed: v, drs: 0, drsCurrent: 0 }) }));
     const pts19 = SPEED_SAMPLES.map(v => ({ x: v, f: this.evalAt(c19, 'rb19', state, { groundSpeed: v, drs: 0, drsCurrent: 0 }) }));
@@ -137,8 +167,8 @@ export class AeroCompare {
       ${pts19Drs.length ? `<path d="${pathOf(pts19Drs, 'downforceN')}" class="p-line p-19 p-drs"/>` : ''}
       <path d="${pathOf(pts16, 'downforceN')}" class="p-line p-16"/>
       <path d="${pathOf(pts19, 'downforceN')}" class="p-line p-19"/>
-      <circle cx="${curX.toFixed(1)}" cy="${sy(cur16?.downforceN ?? 0).toFixed(1)}" r="3.2" class="p-dot p-16"/>
-      <circle cx="${curX.toFixed(1)}" cy="${sy(cur19?.downforceN ?? 0).toFixed(1)}" r="3.2" class="p-dot p-19"/>
+      <circle cx="${curX.toFixed(1)}" cy="${sy(cur16?.downforceN ?? 0).toFixed(1)}" r="3.4" class="p-dot p-16"/>
+      <circle cx="${curX.toFixed(1)}" cy="${sy(cur19?.downforceN ?? 0).toFixed(1)}" r="3.4" class="p-dot p-19"/>
       <text x="${padL}" y="${H - 5}" class="p-axis">0</text>
       <text x="${sx(180).toFixed(1)}" y="${H - 5}" class="p-axis" text-anchor="middle">180 km/h</text>
       <text x="${W - padR}" y="${H - 5}" class="p-axis" text-anchor="end">350</text>
@@ -151,7 +181,7 @@ export class AeroCompare {
   }
 
   buildYawSvg(c16, c19, state) {
-    const W = 254, H = 136, padL = 34, padR = 8, padT = 10, padB = 22;
+    const W = 280, H = 136, padL = 34, padR = 8, padT = 10, padB = 22;
     const iw = W - padL - padR, ih = H - padT - padB;
     const speed = Math.max(50, state.groundSpeed || 180);
     const pts16 = YAW_SAMPLES.map(a => ({ x: a, f: this.evalAt(c16, 'rb16b', state, { groundSpeed: speed, windAngle: a }) }));
@@ -175,8 +205,8 @@ export class AeroCompare {
       <text x="${padL - 4}" y="${(sy(0) + 3).toFixed(1)}" class="p-axis" text-anchor="end">0</text>
       <path d="${pathOf(pts16)}" class="p-line p-16"/>
       <path d="${pathOf(pts19)}" class="p-line p-19"/>
-      <circle cx="${curX.toFixed(1)}" cy="${sy(cur16?.downforceN ?? 0).toFixed(1)}" r="3.2" class="p-dot p-16"/>
-      <circle cx="${curX.toFixed(1)}" cy="${sy(cur19?.downforceN ?? 0).toFixed(1)}" r="3.2" class="p-dot p-19"/>
+      <circle cx="${curX.toFixed(1)}" cy="${sy(cur16?.downforceN ?? 0).toFixed(1)}" r="3.4" class="p-dot p-16"/>
+      <circle cx="${curX.toFixed(1)}" cy="${sy(cur19?.downforceN ?? 0).toFixed(1)}" r="3.4" class="p-dot p-19"/>
       <text x="${padL}" y="${H - 5}" class="p-axis">-90°</text>
       <text x="${sx(0).toFixed(1)}" y="${H - 5}" class="p-axis" text-anchor="middle">0° (${speed} km/h)</text>
       <text x="${W - padR}" y="${H - 5}" class="p-axis" text-anchor="end">+90°</text>
@@ -188,17 +218,25 @@ export class AeroCompare {
   }
 }
 
+/**
+ * Real-Time WebGL Scissor-Split Curtain Controller.
+ * Both halves share the exact live camera (OrbitControls + WASD + presets + rig + CFD);
+ * dragging the 28px handle strip moves the live scissor split ratio smoothly from 5% to 95%.
+ */
 export class CurtainCompare {
-  constructor(overlayEl, canvasEl, handleEl, leftLabelEl, rightLabelEl, onExit) {
+  constructor({ overlayEl, handleEl, leftLabelEl, rightLabelEl, statusEl, onSwap, onExit }) {
     this.overlay = overlayEl;
-    this.canvas = canvasEl;
     this.handle = handleEl;
     this.leftLabel = leftLabelEl;
     this.rightLabel = rightLabelEl;
+    this.statusEl = statusEl;
+    this.onSwap = onSwap;
     this.onExit = onExit;
     this.active = false;
     this.ratio = 0.5;
     this.dragging = false;
+    this.leftCar = 'rb19';
+    this.rightCar = 'rb16b';
 
     const updateFromClientX = clientX => {
       if (!this.active || !this.overlay) return;
@@ -207,42 +245,68 @@ export class CurtainCompare {
     };
     this.handle?.addEventListener('pointerdown', e => {
       e.preventDefault();
+      e.stopPropagation();
       this.dragging = true;
       this.handle.setPointerCapture?.(e.pointerId);
     });
+    this.handle?.addEventListener('dblclick', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.setRatio(0.5);
+    });
     window.addEventListener('pointermove', e => {
-      if (this.dragging) updateFromClientX(e.clientX);
+      if (this.dragging) {
+        e.stopPropagation();
+        updateFromClientX(e.clientX);
+      }
     });
     window.addEventListener('pointerup', () => { this.dragging = false; });
+    window.addEventListener('pointercancel', () => { this.dragging = false; });
   }
 
   setRatio(ratio) {
-    this.ratio = ratio;
-    const pct = `${(ratio * 100).toFixed(2)}%`;
+    this.ratio = Math.max(0.05, Math.min(0.95, ratio));
+    const pct = `${(this.ratio * 100).toFixed(2)}%`;
     this.overlay?.style.setProperty('--wipe', pct);
   }
 
-  activate({ renderer, scene, camera, worlds, leftCar, rightCar }) {
-    if (!this.overlay || !this.canvas) return;
-    // Render one synchronous frame of Car A and copy to overlay canvas
-    worlds.render(camera, scene, true);
-    renderer.render(scene, camera);
-    this.canvas.width = renderer.domElement.width;
-    this.canvas.height = renderer.domElement.height;
-    const ctx = this.canvas.getContext('2d');
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    ctx.drawImage(renderer.domElement, 0, 0);
-    if (this.leftLabel) this.leftLabel.textContent = leftCar === 'rb19' ? 'RB19 · 2023 (快照)' : 'RB16B · 2021 (快照)';
-    if (this.rightLabel) this.rightLabel.textContent = rightCar === 'rb19' ? 'RB19 · 2023 (实时)' : 'RB16B · 2021 (实时)';
+  nudge(delta) {
+    if (!this.active) return;
+    this.setRatio(this.ratio + delta);
+  }
+
+  setCars(leftCar, rightCar, mainCar = rightCar) {
+    this.leftCar = leftCar;
+    this.rightCar = rightCar;
+    const fmt = id => (id === 'rb19' ? 'RB19 · 2023' : 'RB16B · 2021');
+    if (this.leftLabel) {
+      this.leftLabel.textContent = `左 · ${fmt(leftCar)}${leftCar === mainCar ? '（主车）' : ''}`;
+      this.leftLabel.dataset.car = leftCar;
+    }
+    if (this.rightLabel) {
+      this.rightLabel.textContent = `右 · ${fmt(rightCar)}${rightCar === mainCar ? '（主车）' : ''}`;
+      this.rightLabel.dataset.car = rightCar;
+    }
+  }
+
+  setLoading(text) {
+    if (!this.statusEl) return;
+    this.statusEl.textContent = text || '';
+    this.statusEl.hidden = !text;
+  }
+
+  activate({ leftCar, rightCar }) {
     this.active = true;
+    this.setCars(leftCar, rightCar);
     this.setRatio(0.5);
-    this.overlay.hidden = false;
+    if (this.overlay) this.overlay.hidden = false;
   }
 
   deactivate() {
     if (!this.active) return;
     this.active = false;
     this.dragging = false;
+    this.setLoading('');
     if (this.overlay) this.overlay.hidden = true;
     this.onExit?.();
   }

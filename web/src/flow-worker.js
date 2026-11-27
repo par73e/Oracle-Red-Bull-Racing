@@ -120,19 +120,90 @@ function computeSlice(req) {
   return { axis, position: clampedPos, metric, width, height, bounds, rgba };
 }
 
-function sampleProbe(point) {
+function sampleNearWallDisplay(dispX, dispY, dispZ, out) {
+  if (!sampler?.grid || !sampler?.spec || !sampler?.mask) return false;
+  // Convert display (x, y, z) -> solver (-z, -x, y - 0.005)
+  const sx = -dispZ, sy = -dispX, sz = dispY - 0.005;
+  if (sampler.sample(sx, sy, sz, out, sampler.grid, true)) return true;
+  // Partial-valid trilinear boundary cell fallback: if >= 1 of 8 corners is valid fluid,
+  // compute weighted average of valid corners so near-wall points never flicker dead.
+  const spec = sampler.spec;
+  const [nx, ny, nz] = spec.shape;
+  const gx = ((sx - spec.min[0]) / (spec.max[0] - spec.min[0])) * (nx - 1);
+  const gy = ((sy - spec.min[1]) / (spec.max[1] - spec.min[1])) * (ny - 1);
+  const gz = ((sz - spec.min[2]) / (spec.max[2] - spec.min[2])) * (nz - 1);
+  if (gx < 0 || gy < 0 || gz < 0 || gx > nx - 1 || gy > ny - 1 || gz > nz - 1) return false;
+  const ix = Math.min(nx - 2, Math.floor(gx));
+  const iy = Math.min(ny - 2, Math.floor(gy));
+  const iz = Math.min(nz - 2, Math.floor(gz));
+  const fx = gx - ix, fy = gy - iy, fz = gz - iz;
+  const sxy = nx * ny, i000 = iz * sxy + iy * nx + ix;
+  const ids = [
+    i000, i000 + 1, i000 + nx, i000 + nx + 1,
+    i000 + sxy, i000 + sxy + 1, i000 + sxy + nx, i000 + sxy + nx + 1,
+  ];
+  const omx = 1 - fx, omy = 1 - fy, omz = 1 - fz;
+  const ws = [
+    omx * omy * omz, fx * omy * omz, omx * fy * omz, fx * fy * omz,
+    omx * omy * fz, fx * omy * fz, omx * fy * fz, fx * fy * fz,
+  ];
+  let wSum = 0, svx = 0, svy = 0, svz = 0;
+  for (let k = 0; k < 8; k++) {
+    if (!isValidBit(sampler.mask, ids[k])) continue;
+    const wk = ws[k] + 1e-4;
+    const p = ids[k] * 3;
+    svx += sampler.grid[p] * wk;
+    svy += sampler.grid[p + 1] * wk;
+    svz += sampler.grid[p + 2] * wk;
+    wSum += wk;
+  }
+  if (wSum <= 0) return false;
+  // Convert solver velocity (svx, svy, svz) -> display (-svy, svz, -svx)
+  out.set(-svy / wSum, svz / wSum, -svx / wSum);
+  return true;
+}
+
+function sampleProbe(req) {
+  const isObj = req && !Array.isArray(req);
+  const point = isObj ? req.point : req;
+  const normal = isObj ? req.normal : null;
+  const viewDir = isObj ? req.viewDir : null;
+  const allowMarch = isObj ? Boolean(req.allowMarch) : false;
+
   if (!sampler?.grid || !sampler?.spec || !Array.isArray(point) || point.length !== 3) {
     return { valid: false, point };
   }
-  const [x, y, z] = point;
-  if (!sampler.sample(-z, -x, y - 0.005, _v0, sampler.grid, true)) {
-    return { valid: false, point };
+  let sx = point[0], sy = point[1], sz = point[2];
+  let hit = allowMarch
+    ? sampleNearWallDisplay(sx, sy, sz, _v0)
+    : sampler.sample(-sz, -sx, sy - 0.005, _v0, sampler.grid, true);
+
+  if (!hit && allowMarch) {
+    const dirs = [];
+    if (Array.isArray(normal) && normal.length === 3) dirs.push(normal);
+    if (Array.isArray(viewDir) && viewDir.length === 3) dirs.push(viewDir);
+    dirs.push([0, 1, 0]);
+    const steps = [0.055, 0.11, 0.17, 0.24];
+    outer: for (const step of steps) {
+      for (const dir of dirs) {
+        const tx = point[0] + dir[0] * step;
+        const ty = Math.max(0.03, point[1] + dir[1] * step);
+        const tz = point[2] + dir[2] * step;
+        if (sampleNearWallDisplay(tx, ty, tz, _v0)) {
+          sx = tx; sy = ty; sz = tz;
+          hit = true;
+          break outer;
+        }
+      }
+    }
   }
+
+  if (!hit) return { valid: false, point };
   const speedMps = _v0.length();
   const yawDeg = T.MathUtils.radToDeg(Math.atan2(_v0.x, -_v0.z));
   return {
     valid: true,
-    point,
+    point: [sx, sy, sz],
     velocity: [_v0.x, _v0.y, _v0.z],
     speedMps,
     speedKmh: speedMps * 3.6,

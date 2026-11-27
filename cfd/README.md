@@ -4,6 +4,8 @@
 
 下文保留早期 RB19 单基线流程。当前双车 18 工况与网页插值的复算、结果质量和限制见 [流场库说明](library/README.md)，完成情况见 [交付记录](../docs/design/interactive-airflow-delivery-2026-11-10.md)。
 
+2026-11-26：早期流程在本机生成的 `cases/`、`geometry/`、`results/` 已删除，删除时未另行备份。脚本与 `reports/` 内的摘要保留，按下列步骤可重新生成。
+
 ## 环境
 
 - 主机 Apple Silicon、16 GiB 内存；已有 OrbStack。
@@ -14,7 +16,7 @@
 
 ## 已运行的小算例
 
-官方 `incompressibleFluid/pitzDailySteady`。在 `cases/pitzDailySteady` 保留 blockMesh、checkMesh、foamRun 的原始日志与流线结果。它验证软件环境、网格与数值流程，不等于汽车气动或风洞实验验证。
+官方 `incompressibleFluid/pitzDailySteady`。blockMesh、checkMesh、foamRun 的原始日志与流线结果曾保留在 `cases/pitzDailySteady`，该目录已于 2026-11-26 删除，结论摘要见 `reports/`。它验证软件环境、网格与数值流程，不等于汽车气动或风洞实验验证。
 
 ## 全车试算定义
 
@@ -41,4 +43,4 @@
 - `scripts/export-results.sh`：最后迭代的速度／压力切片、流线和车辆表面数据。
 - `scripts/summarize_run.py`：生成收敛、守恒和力历史摘要；保留局限，不自动给出“工程验收通过”。
 
-现有脚本按本机项目路径运行；不能不经检查就对其他机器的现有 CFD 文件执行。`cases/` 内结果尚未备份到远端。
+现有脚本按本机项目路径运行；不能不经检查就对其他机器的现有 CFD 文件执行。`cases/` 内结果未进入远程仓库，本机副本已于 2026-11-26 删除。

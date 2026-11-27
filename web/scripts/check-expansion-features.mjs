@@ -90,14 +90,21 @@ try {
   for (let i = 3; i < vort.slice.rgba.length; i += 4) if (vort.slice.rgba[i] > 20) vortLit++;
   assert(vortLit > 100, `Vorticity slice should illuminate wake vortices (${vortLit} lit pixels)`);
 
-  // 4. Virtual Pitot Probe check (freestream valid vs solid chassis masked)
+  // 4. Virtual Pitot Probe check (freestream valid, solid chassis masked when allowMarch=false, near-wall marching succeeds when allowMarch=true)
   const pFree = await request({ type: 'probe', id: 3, point: [0, 0.85, 3.2] });
   assert.equal(pFree.probe.valid, true, 'Upstream freestream point must be valid');
   assert(pFree.probe.speedKmh > 140 && pFree.probe.speedKmh < 210, `Freestream speed expected ~180 km/h, got ${pFree.probe.speedKmh}`);
   const pSolid = await request({ type: 'probe', id: 4, point: [0, 0.35, 0.0] });
-  assert.equal(pSolid.probe.valid, false, 'Interior chassis point must be masked invalid');
+  assert.equal(pSolid.probe.valid, false, 'Interior chassis point must be masked invalid when allowMarch=false');
+  const pNearWall = await request({
+    type: 'probe',
+    id: 5,
+    point: { point: [0.68, 0.42, 0.35], normal: [1, 0.2, 0], viewDir: [0.8, 0.4, 0.4], allowMarch: true },
+  });
+  assert.equal(pNearWall.probe.valid, true, 'Close-up near-wall car surface hover with allowMarch=true must snap to valid fluid');
+  assert(pNearWall.probe.speedKmh > 20 && pNearWall.probe.speedKmh < 300, `Near-wall fluid speed out of range: ${pNearWall.probe.speedKmh}`);
 
-  console.log(`Expansion worker checks passed: smoke=${res.smoke.lines} ribbons, sliceX=${opaque} fluid/${cutout} cutout, vortY=${vortLit} lit (${sliceMs.toFixed(1)} ms), probe=${pFree.probe.speedKmh.toFixed(1)} km/h`);
+  console.log(`Expansion worker checks passed: smoke=${res.smoke.lines} ribbons, sliceX=${opaque} fluid/${cutout} cutout, vortY=${vortLit} lit (${sliceMs.toFixed(1)} ms), probe=${pFree.probe.speedKmh.toFixed(1)} km/h, nearWall=${pNearWall.probe.speedKmh.toFixed(1)} km/h`);
 } finally {
   await worker.terminate();
 }

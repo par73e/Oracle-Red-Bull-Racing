@@ -66,14 +66,22 @@ export class FlowSlice {
     this.frame.renderOrder = 3;
     this.mesh.add(this.frame);
     this.lastBounds = null;
+    this.hasData = false;
+  }
+
+  clear() {
+    this.hasData = false;
+    this.lastBounds = null;
+    this.group.visible = false;
   }
 
   setVisible(visible) {
-    this.group.visible = Boolean(visible && this.lastBounds);
+    this.group.visible = Boolean(visible && this.hasData && this.lastBounds);
   }
 
   applyResult(result) {
     if (!result?.rgba || !result.width || !result.height) {
+      this.hasData = false;
       this.group.visible = false;
       return;
     }
@@ -92,6 +100,7 @@ export class FlowSlice {
     }
     this.texture.needsUpdate = true;
     this.lastBounds = bounds;
+    this.hasData = true;
 
     // Position and orient PlaneGeometry (local +X = texture U, local +Y = texture V)
     const uSpan = bounds.uMax - bounds.uMin;

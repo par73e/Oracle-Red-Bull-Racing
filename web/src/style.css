@@ -261,9 +261,28 @@ canvas {
 
 #app.auto-hidden .chrome,
 #app.auto-hidden .drawer,
-#app.auto-hidden .interface-controls {
+#app.auto-hidden .interface-controls,
+#app.auto-hidden .stage-overlay {
   opacity: 0;
   pointer-events: none;
+}
+
+#app.interface-hidden .stage-overlay {
+  display: none !important;
+}
+
+#app.is-probe-mode #viewport {
+  cursor: crosshair;
+}
+
+#app.is-curtain-mode .rail {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#app.is-curtain-mode.curtain-tools-open .rail {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .top-right {
@@ -320,7 +339,12 @@ canvas {
 .downforce-dock .telemetry-popover {
   top: calc(100% + var(--popover-lift));
   bottom: auto;
-  transform: translate(-50%, -8px);
+  left: auto;
+  right: 0;
+  width: min(336px, calc(100vw - 32px));
+  max-height: calc(100svh - 92px);
+  overflow-y: auto;
+  transform: translateY(-8px);
 }
 
 .downforce-dock .telemetry-popover::after {
@@ -329,7 +353,13 @@ canvas {
 }
 
 .downforce-dock .telemetry-item.is-open > .telemetry-popover {
-  transform: translate(-50%, 0);
+  transform: translateY(0);
+}
+
+.downforce-dock .telemetry-item.is-pinned > .readout {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px rgba(224, 43, 40, 0.55);
+  border-radius: 7px;
 }
 
 .interface-controls {
@@ -1702,34 +1732,37 @@ dialog p:last-child {
   padding: 5px 8px;
 }
 
-/* Curtain Wipe A/B Overlay */
+/* Curtain Wipe A/B Real-Time Scissor Overlay */
 .compare-curtain {
   --wipe: 50%;
   position: absolute;
   inset: 0;
-  z-index: 6;
+  z-index: 3;
   pointer-events: none;
 }
 
-#compare-curtain-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  clip-path: inset(0 calc(100% - var(--wipe)) 0 0);
-}
-
-.curtain-handle {
+.curtain-line {
   position: absolute;
   top: 0;
   bottom: 0;
   left: var(--wipe);
   width: 2px;
-  background: rgba(255, 255, 255, 0.85);
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.7);
+  transform: translateX(-1px);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.75);
+  pointer-events: none;
+}
+
+.curtain-handle {
+  position: absolute;
+  top: 114px;
+  bottom: calc(var(--hud-overlay-bottom) + 6px);
+  left: var(--wipe);
+  width: 28px;
+  transform: translateX(-14px);
   pointer-events: auto;
   cursor: ew-resize;
-  transform: translateX(-1px);
+  touch-action: none;
 }
 
 .curtain-knob {
@@ -1737,8 +1770,8 @@ dialog p:last-child {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--surface-strong);
   border: 1.5px solid #ffffff;
@@ -1746,33 +1779,244 @@ dialog p:last-child {
   display: grid;
   place-items: center;
   font-size: 14px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
+  transition: transform 0.14s ease, background-color 0.14s ease;
 }
 
-.curtain-tag {
-  position: absolute;
-  top: 66px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  background: var(--surface-strong);
-  border: 1px solid var(--border-strong);
+.curtain-handle:hover .curtain-knob {
+  background: var(--accent);
+  transform: translate(-50%, -50%) scale(1.06);
 }
 
-.curtain-left { left: 86px; color: #f5c344; }
-.curtain-right { right: 18px; color: #ff6b68; }
-
-.curtain-exit {
+.curtain-bar {
   position: absolute;
   top: 66px;
   left: 50%;
   transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 10px;
+  background: rgba(11, 15, 22, 0.88);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
   pointer-events: auto;
+  max-width: calc(100vw - 32px);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.curtain-bar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.curtain-tag {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.curtain-tag[data-car="rb16b"] { color: #f5c344; }
+.curtain-tag[data-car="rb19"] { color: #ff6b68; }
+
+.curtain-exit {
   background: var(--accent);
   border-color: var(--accent);
   color: #ffffff;
-  padding: 5px 12px;
+  padding: 4px 10px;
+}
+
+.curtain-status {
+  position: absolute;
+  top: 112px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(11, 15, 22, 0.85);
+  border: 1px solid rgba(56, 232, 255, 0.45);
+  color: #b7eef8;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* Rail Active Dot & Active Viewport Tool Pills */
+.rail-dot {
+  display: none;
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-bright);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+.rail-button.has-active .rail-dot {
+  display: block;
+}
+
+.active-pills {
+  position: absolute;
+  top: 66px;
+  left: 16px;
+  z-index: 6;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: min(360px, calc(100vw - 120px));
+  pointer-events: none;
+}
+
+.active-pill {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 6px 4px 9px;
+  border-radius: 999px;
+  background: rgba(11, 15, 22, 0.84);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(224, 43, 40, 0.5);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.active-pill-open {
+  color: inherit;
+  font: inherit;
+  padding: 0;
+}
+
+.active-pill-close {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.active-pill-close:hover {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+/* Scene Grouping & Compact 2-Col Grid */
+.scene-group-label {
+  margin: 0 0 6px;
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.environment-switch.env-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.environment-switch.env-grid-2 button {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 10px;
+}
+
+.chip-accent {
+  background: var(--accent-soft);
+  border-color: rgba(224, 43, 40, 0.55);
+  color: #ffffff;
+}
+
+.chip-accent:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Top-Right Merged Telemetry + Dual-Car Compare Popover */
+.forces-tabs {
+  margin: 8px 0 10px;
+}
+
+.popover-pin-close {
+  padding: 2px 5px;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.compare-teaser {
+  margin-top: 8px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 6px 9px;
+  border-radius: 7px;
+  background: rgba(224, 43, 40, 0.1);
+  border: 1px solid rgba(224, 43, 40, 0.34);
+  color: #ffd5d4;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-align: left;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.compare-teaser:hover {
+  background: rgba(224, 43, 40, 0.22);
+  border-color: var(--accent);
+}
+
+.compare-popover-foot {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.compare-grid .cg-head.is-cur {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.scenario-btn[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.hotspot-cur-tag {
+  font-style: normal;
+  font-size: 9.5px;
+  font-weight: 650;
+  margin-left: 5px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #ffffff;
+  vertical-align: middle;
+}
+
+/* Prevent top center banner from colliding with open left drawer on medium screens */
+@media (min-width: 960px) {
+  #app.drawer-open .scenario-banner,
+  #app.drawer-open .tour-badge {
+    left: calc(50% + 150px);
+    max-width: min(500px, calc(100vw - 440px));
+  }
 }
 
 /* Virtual Pitot Probe Overlay */
@@ -1800,6 +2044,16 @@ dialog p:last-child {
 
 .probe-head strong { color: #38e8ff; }
 .probe-head span { font-size: 11px; color: var(--text-secondary); }
+.probe-car {
+  font-style: normal;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #edf1f6;
+  letter-spacing: 0.03em;
+}
 .probe-pin {
   font-style: normal;
   font-size: 9px;
@@ -1927,7 +2181,6 @@ dialog p:last-child {
   position: absolute;
   top: 0;
   left: 0;
-  transform: translate(-50%, -50%);
   pointer-events: auto;
   display: inline-flex;
   align-items: center;
@@ -1939,8 +2192,7 @@ dialog p:last-child {
   color: var(--text);
   font-size: 11px;
   font-weight: 600;
-  margin-left: -10px;
-  margin-top: -12px;
+  will-change: transform;
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 

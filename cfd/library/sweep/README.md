@@ -19,6 +19,8 @@ cfd/.venv/bin/python -u cfd/library/sweep/run.py
 
 队列先等待本轮 8 个 rolling 种子完成，再在两个车型之间交替、逐工况串行执行；每例最多 4 个求解进程。只修改项目专用 `aero-cfd` 本地 VM 的新算例。未完成目录留在 `cfd/library/cases/<car>-sweep-<key>`，不覆盖旧算例，不删除文件。剩余空间低于 30 GiB、网格失败或求解发散时停止并记录错误，不跳过后宣称完成。重新运行会复用已完成记录和网格；中断求解按原脚本重新分解初始场再求解，不把部分迭代当作完成。
 
+> 2026-11-26 本机清理：来流轴与地面轴的已发布算例（`<car>-sweep-air-*`、`<car>-sweep-ground-*`）连同中断的 `rb16b-sweep-ground-165` 已删除，现只保留 `sweep-drs-050`。`web/public/flow/<car>/sweep/` 的清单与打包数据、`reports/` 内的逐档报告都在 Git 内，不受影响。`run.py` 按 `reports/<car>-sweep-*.json` 判断已完成并跳过这些档位，但它们不能再由 `pack.py` 重新打包或由 `audit.py` 复核；需要时必须重算。
+
 速度变化复用该车型原基准网格；DRS 和转向中间档位从真实 GLB 的机构姿态导出表面，单独封闭体素代理并重新划网格。没有启动 Blender。每例 650 步，逐例记录网格、代理哈希、残差、异常取样、原始最高速度与发布数据哈希。
 
 进度：`cfd/library/reports/sweep-status-2026-11-12.json`。运行日志：`/private/tmp/aero-sweep-run-2026-11-12.log`。每车网页清单：`web/public/flow/<car>/sweep/manifest.json`。清单原子更新，公开已完成数量和计划数量；全量完成后自动执行 `finalize.py`，检查全部节点、边界与哈希、流线碰撞、底盘/侧箱回归并重新构建网页。失败会将队列状态标为 failed，不能视为任务完成。

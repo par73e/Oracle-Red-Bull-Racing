@@ -52,10 +52,11 @@ export const AERO_HOTSPOTS = [
 ];
 
 export class AeroHotspots {
-  constructor(parent, layerEl, cardEl, { onSelect, onToggleDrs }) {
+  constructor(parent, layerEl, cardEl, { getModel, onSelect, onToggleDrs }) {
     this.parent = parent;
     this.layer = layerEl;
     this.card = cardEl;
+    this.getModel = typeof getModel === 'function' ? getModel : () => 'rb16b';
     this.onSelect = onSelect;
     this.onToggleDrs = onToggleDrs;
     this.enabled = false;
@@ -93,7 +94,7 @@ export class AeroHotspots {
     if (this.card) this.card.hidden = true;
   }
 
-  select(id, currentModel = 'rb16b') {
+  select(id, currentModel = null) {
     const spot = AERO_HOTSPOTS.find(s => s.id === id);
     if (!spot) return;
     if (this.activeId === id) {
@@ -102,30 +103,32 @@ export class AeroHotspots {
     }
     this.activeId = id;
     for (const [k, btn] of this.buttons) btn.classList.toggle('is-active', k === id);
-    this.renderCard(spot, currentModel);
+    this.renderCard(spot, currentModel ?? this.getModel());
     this.onSelect?.(spot);
   }
 
-  renderCard(spot, currentModel) {
+  renderCard(spot, currentModel = null) {
     if (!this.card || !spot) return;
-    const is19 = currentModel === 'rb19';
+    const model = currentModel ?? this.getModel();
+    const is19 = model === 'rb19';
+    const curBadge = '<em class="hotspot-cur-tag">当前车型</em>';
     this.card.innerHTML = `
       <div class="hotspot-card-head">
         <strong>${spot.title}</strong>
         <button type="button" class="icon-button hotspot-close" aria-label="关闭导览卡片">✕</button>
       </div>
-      <p class="hotspot-desc ${!is19 ? 'is-current' : ''}"><b>RB16B (2021)</b>：${spot.rb16b}</p>
-      <p class="hotspot-desc ${is19 ? 'is-current' : ''}"><b>RB19 (2023)</b>：${spot.rb19}</p>
+      <p class="hotspot-desc ${!is19 ? 'is-current' : ''}"><b>RB16B (2021)</b>${!is19 ? curBadge : ''}：${spot.rb16b}</p>
+      <p class="hotspot-desc ${is19 ? 'is-current' : ''}"><b>RB19 (2023)</b>${is19 ? curBadge : ''}：${spot.rb19}</p>
       ${spot.hasDrsAction ? '<div class="hotspot-card-foot"><button type="button" class="chip" data-hotspot-drs>切换 DRS 观察尾翼动作</button></div>' : ''}`;
     this.card.querySelector('.hotspot-close')?.addEventListener('click', () => this.clearSelection());
     this.card.querySelector('[data-hotspot-drs]')?.addEventListener('click', () => this.onToggleDrs?.());
     this.card.hidden = false;
   }
 
-  refreshModel(currentModel) {
+  refreshModel(currentModel = null) {
     if (!this.activeId) return;
     const spot = AERO_HOTSPOTS.find(s => s.id === this.activeId);
-    if (spot) this.renderCard(spot, currentModel);
+    if (spot) this.renderCard(spot, currentModel ?? this.getModel());
   }
 
   update(camera, rig, viewportEl) {
@@ -138,14 +141,15 @@ export class AeroHotspots {
       if (!btn) continue;
       const [x, y, z] = spot.point(rig);
       _world.set(x, y, z).applyMatrix4(this.parent.matrixWorld).project(camera);
+      const px = (_world.x * 0.5 + 0.5) * w;
+      const py = (-_world.y * 0.5 + 0.5) * h;
       const visible = _world.z >= -1 && _world.z <= 1
-        && _world.x >= -1.05 && _world.x <= 1.05
-        && _world.y >= -1.05 && _world.y <= 1.05;
+        && px >= 16 && px <= w - 16
+        && py >= 60 && py <= h - 76;
       btn.hidden = !visible;
       if (visible) {
-        const px = (_world.x * 0.5 + 0.5) * w;
-        const py = (-_world.y * 0.5 + 0.5) * h;
-        btn.style.transform = `translate(${Math.round(px)}px, ${Math.round(py)}px)`;
+        // Center the 8px glowing dot (5px padding + 4px radius = 9px from left) onto the 3D point
+        btn.style.transform = `translate3d(${Math.round(px)}px, ${Math.round(py)}px, 0) translate(-9px, -50%)`;
       }
     }
   }

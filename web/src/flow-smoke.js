@@ -70,26 +70,35 @@ export class FlowSmoke {
     this.wand.visible = false;
     this.group.add(this.wand);
     this.count = 0;
+    this.lastKey = null;
   }
 
   setClock(clock) {
     this.material.uniforms.clock.value = clock;
   }
 
-  applyResult(result) {
+  clear() {
+    this.count = 0;
+    this.lastKey = null;
+    this.group.visible = false;
+  }
+
+  applyResult(result, key = null) {
     if (!result?.attributes?.position?.length) {
       this.count = 0;
+      this.lastKey = null;
       this.group.visible = false;
       return;
     }
     const next = new T.BufferGeometry();
-    for (const [key, array] of Object.entries(result.attributes)) {
-      const itemSize = key === 'position' || key === 'sideDir' ? 3 : key === 'uv' ? 2 : 1;
-      next.setAttribute(key, new T.BufferAttribute(array, itemSize));
+    for (const [keyName, array] of Object.entries(result.attributes)) {
+      const itemSize = keyName === 'position' || keyName === 'sideDir' ? 3 : keyName === 'uv' ? 2 : 1;
+      next.setAttribute(keyName, new T.BufferAttribute(array, itemSize));
     }
     this.geometry.dispose();
     this.geometry = this.mesh.geometry = next;
     this.count = result.lines || 0;
+    this.lastKey = key;
     if (result.rakeOrigin) {
       const [rx, ry0, ry1, rz] = result.rakeOrigin;
       const h = Math.max(0.2, ry1 - ry0 + 0.14);
@@ -103,5 +112,12 @@ export class FlowSmoke {
 
   setVisible(visible) {
     this.group.visible = Boolean(visible && this.count > 0);
+  }
+
+  dispose() {
+    this.geometry?.dispose();
+    this.material?.dispose();
+    this.wand?.geometry?.dispose();
+    this.wand?.material?.dispose();
   }
 }

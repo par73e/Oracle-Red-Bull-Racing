@@ -97,6 +97,10 @@ export class AeroAudio {
     return this.enabled;
   }
 
+  syncDrs(drs) {
+    this.lastDrs = drs;
+  }
+
   update(speedKmh, yawDeg = 0, drs = 0) {
     if (this.lastDrs !== null && this.lastDrs !== drs && this.enabled) {
       this.triggerDrs(drs === 1);

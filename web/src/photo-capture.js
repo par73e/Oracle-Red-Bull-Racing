@@ -1,5 +1,5 @@
-function drawTelemetryStamp(ctx, width, height, state, forces) {
-  const carTitle = state.model === 'rb19' ? 'ORACLE RED BULL · RB19 (2023)' : 'RED BULL RACING · RB16B (2021)';
+function drawTelemetryStamp(ctx, width, height, state, forces, splitLabel = null) {
+  const carTitle = splitLabel || (state.model === 'rb19' ? 'ORACLE RED BULL · RB19 (2023)' : 'RED BULL RACING · RB16B (2021)');
   const yaw = state.windAngle ? `${state.windAngle > 0 ? '+' : ''}${state.windAngle}°` : '0°';
   const drs = state.drs ? 'DRS OPEN' : 'DRS CLOSED';
   const df = forces?.downforceN != null ? `Fz ${Math.round(forces.downforceN)} N` : 'Fz —';
@@ -17,11 +17,11 @@ function drawTelemetryStamp(ctx, width, height, state, forces) {
   ctx.strokeStyle = 'rgba(224, 43, 40, 0.78)';
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.roundRect(x, y, boxW, barH, 10);
+  if (ctx.roundRect) ctx.roundRect(x, y, boxW, barH, 10);
+  else ctx.rect(x, y, boxW, barH);
   ctx.fill();
   ctx.stroke();
 
-  // Red Bull accent bar on left edge
   ctx.fillStyle = '#e02b28';
   ctx.fillRect(x + 12, y + 13, 4, barH - 26);
 
@@ -33,7 +33,8 @@ function drawTelemetryStamp(ctx, width, height, state, forces) {
 
 export async function capturePhoto2K({
   renderer, scene, camera, worlds, state, forces,
-  withWatermark = true, underCar = false, onRestore,
+  withWatermark = true, underCar = false, renderFrame = null,
+  splitLabel = null, splitRatio = null, onRestore,
 }) {
   const targetW = 2560, targetH = 1440;
   const prevAspect = camera.aspect;
@@ -45,15 +46,24 @@ export async function capturePhoto2K({
     renderer.setPixelRatio(1);
     renderer.setSize(targetW, targetH, false);
     worlds.resize(targetW, targetH);
-    worlds.render(camera, scene, !underCar);
-    renderer.render(scene, camera);
+    if (renderFrame) {
+      renderFrame(targetW, targetH, underCar);
+    } else {
+      worlds.render(camera, scene, !underCar);
+      renderer.render(scene, camera);
+    }
 
     const out = document.createElement('canvas');
     out.width = targetW;
     out.height = targetH;
     const ctx = out.getContext('2d');
     ctx.drawImage(renderer.domElement, 0, 0, targetW, targetH);
-    if (withWatermark) drawTelemetryStamp(ctx, targetW, targetH, state, forces);
+    if (splitRatio != null) {
+      const sx = Math.round(targetW * splitRatio);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.fillRect(sx - 1, 0, 2, targetH);
+    }
+    if (withWatermark) drawTelemetryStamp(ctx, targetW, targetH, state, forces, splitLabel);
     blob = await new Promise(resolve => out.toBlob(resolve, 'image/png'));
   } finally {
     camera.aspect = prevAspect;
@@ -61,7 +71,8 @@ export async function capturePhoto2K({
     onRestore?.();
   }
   if (!blob) return null;
-  const filename = `redbull-${state.model}-${state.groundSpeed}kmh-2k.png`;
+  const tag = splitLabel ? 'rb16b-vs-rb19' : state.model;
+  const filename = `redbull-${tag}-${state.groundSpeed}kmh-2k.png`;
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

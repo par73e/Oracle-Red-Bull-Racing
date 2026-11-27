@@ -6,8 +6,8 @@
 
 ## 补算和打包
 
-1. 在项目的 `aero-cfd` 虚拟机上运行 `cfd/.venv/bin/python cfd/library/display/solve.py <车型> <工况>`。`--help` 列出工况。在 180 km/h 无自然风下，目录直接读取 `sweep-drs-025`、`sweep-drs-050` 和 `sweep-drs-075` 的已完成算例。通过 `web/scripts/export-flow-geometry.mjs` 导出相应姿态，随后运行 `scripts/close_pose.py`、`sweep/prepare.py` 和 `scripts/run_anchor.sh`。
-2. 从项目根目录运行 `cfd/.venv/bin/python cfd/library/display/catalog.py`。原始算例保留在 `cfd/library/cases/`。网页复用已打包的速度场，从原始采样生成独立的有效点位图。同一车型内容相同的位图共用一个文件，位图与速度文件按 SHA-256 校验。
+1. 在项目的 `aero-cfd` 虚拟机上运行 `cfd/.venv/bin/python cfd/library/display/solve.py <车型> <工况>`。`--help` 列出工况。在 180 km/h 无自然风下，目录原先直接读取 `sweep-drs-025`、`sweep-drs-050` 和 `sweep-drs-075` 的已完成算例；精算主干齐全时，这三个粗网格节点已被取代并跳过，`sweep-drs-025`、`sweep-drs-075` 的算例已于 2026-11-26 删除，`sweep-drs-050` 保留，供 `park-mid-drs1`、`low-mid-drs` 补算时复制。通过 `web/scripts/export-flow-geometry.mjs` 导出相应姿态，随后运行 `scripts/close_pose.py`、`sweep/prepare.py` 和 `scripts/run_anchor.sh`。
+2. 从项目根目录运行 `cfd/.venv/bin/python cfd/library/display/catalog.py`。它读取的原始算例在 `cfd/library/cases/`。2026-11-26 清理后，现有清单里来流与对地车速不同的 201 个节点已无对应算例，重跑时被跳过、不写入新清单，其余 134 个节点与现有清单一致（见 [流场库说明](../README.md)）。网页复用已打包的速度场，从原始采样生成独立的有效点位图。同一车型内容相同的位图共用一个文件，位图与速度文件按 SHA-256 校验。
 3. 在 `web` 目录运行 `npm run validate:worker` 和 `npm run build`。前者包含用户报告的工况回放、浏览器使用的 Worker、求解场碰撞和积分收敛对照，以及数据加载失败和换车回归。
 
 ## 插值验收
